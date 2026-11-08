@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>08 · Cheat Sheet | Seaborn Field Guide</title>
+  <script type="module" crossorigin src="/Visual_Interactive_Learning_Python/assets/modulepreload-polyfill-P2Xu9kJm.js"></script>
+  <script type="module" crossorigin src="/Visual_Interactive_Learning_Python/assets/course-B1UocCr1.js"></script>
+  <link rel="stylesheet" crossorigin href="/Visual_Interactive_Learning_Python/assets/course-BZQ6Etps.css">
+</head>
+<body>
+  <div id="course-root"></div>
+  <template id="lesson-content">
+    <div class="seaborn-cheatsheet">
+      <div class="cheat-grid">
+        <section class="cheat-card">
+          <h2>1 · Figure-level vs axes-level</h2>
+          <p>Figure-level functions create and own a <code>FacetGrid</code>; axes-level functions draw onto an <code>Axes</code> you can place yourself.</p>
+          <table class="cheat-table mt-2">
+            <thead>
+              <tr><th>Figure-level</th><th>Axes-level</th><th>Returns</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>relplot</code></td><td><code>scatterplot</code>, <code>lineplot</code></td><td><code>FacetGrid</code> / <code>Axes</code></td></tr>
+              <tr><td><code>displot</code></td><td><code>histplot</code>, <code>kdeplot</code></td><td><code>FacetGrid</code> / <code>Axes</code></td></tr>
+              <tr><td><code>catplot</code></td><td><code>boxplot</code>, <code>barplot</code></td><td><code>FacetGrid</code> / <code>Axes</code></td></tr>
+              <tr><td><code>lmplot</code></td><td><code>regplot</code></td><td><code>FacetGrid</code> / <code>Axes</code></td></tr>
+            </tbody>
+          </table>
+          <p class="mt-2">Use figure-level when <code>col</code> / <code>row</code> faceting matters. Use axes-level when composing inside an existing Matplotlib layout.</p>
+        </section>
+
+        <section class="cheat-card">
+          <h2>2 · Semantic channels</h2>
+          <p>Every extra column should earn its place by changing a visual channel.</p>
+          <table class="cheat-table mt-2">
+            <thead>
+              <tr><th>Argument</th><th>Encodes</th><th>Typical type</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>x</code>, <code>y</code></td><td>Position</td><td>numeric / date</td></tr>
+              <tr><td><code>hue</code></td><td>Color</td><td>categorical or numeric</td></tr>
+              <tr><td><code>style</code></td><td>Marker / dash</td><td>categorical</td></tr>
+              <tr><td><code>size</code></td><td>Area / width</td><td>numeric</td></tr>
+              <tr><td><code>col</code>, <code>row</code></td><td>Facet position</td><td>categorical</td></tr>
+              <tr><td><code>alpha</code></td><td>Transparency</td><td>constant or column</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="cheat-card">
+          <h2>3 · Statistical layers</h2>
+          <p>Seaborn adds estimates and uncertainty; know which layer you are reading.</p>
+          <ul class="cheat-list mt-2">
+            <li><strong>Regression line</strong> — fitted model per group, not a raw data path.</li>
+            <li><strong>CI band</strong> — bootstrap uncertainty around the estimate; a ribbon, not a guarantee.</li>
+            <li><strong>Histogram + KDE</strong> — frequency bins plus a smoothed density estimate.</li>
+            <li><strong>Boxplot</strong> — median, quartiles, 1.5× IQR whiskers, and outliers.</li>
+            <li><strong>Heatmap</strong> — matrix values encoded by color, with optional annotations and colorbar.</li>
+          </ul>
+        </section>
+
+        <section class="cheat-card">
+          <h2>4 · Theme and finishing</h2>
+          <p>Set the global theme first, then polish the Figure-level object.</p>
+          <pre class="cheat-code mt-2">sns.set_theme(
+  style="whitegrid",
+  context="notebook",
+  font_scale=1.1
+)
+
+g = sns.relplot(...)
+g.set_axis_labels("Total Bill ($)", "Tip ($)")
+g.despine(trim=True)</pre>
+          <p class="mt-2"><code>set_theme</code> changes the Matplotlib rc state. <code>despine</code> removes redundant top and right borders.</p>
+        </section>
+      </div>
+
+      <section class="cheat-card cheat-card--wide">
+        <h2>Component glossary</h2>
+        <p>The twelve layers used by the interactive figure, in callout order.</p>
+        <div class="overflow-x-auto">
+          <table class="cheat-table min-w-[52rem]">
+            <thead>
+              <tr><th>#</th><th>Component</th><th>Object / call</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td><strong>Theme &amp; axes style</strong></td><td><code>sns.set_theme</code></td><td>Sets grid, background, fonts, and context scaling.</td></tr>
+              <tr><td>2</td><td><strong>DataFrame binding</strong></td><td><code>data=df</code></td><td>Maps column-name strings to visual roles.</td></tr>
+              <tr><td>3</td><td><strong>FacetGrid</strong></td><td><code>relplot(col=...)</code></td><td>Builds small multiples with shared axes.</td></tr>
+              <tr><td>4</td><td><strong>Axis labels &amp; ticks</strong></td><td><code>g.set_axis_labels</code></td><td>Labels and formats every subplot from column metadata.</td></tr>
+              <tr><td>5</td><td><strong>Hue &amp; style</strong></td><td><code>hue=</code>, <code>style=</code></td><td>Maps categories to color, marker, or line dash.</td></tr>
+              <tr><td>6</td><td><strong>Size encoding</strong></td><td><code>size=</code>, <code>sizes=</code></td><td>Scales marker area or line width by a numeric column.</td></tr>
+              <tr><td>7</td><td><strong>Regression fit</strong></td><td><code>lmplot</code> / <code>regplot</code></td><td>Fits and draws a model per semantic group.</td></tr>
+              <tr><td>8</td><td><strong>Bootstrap CI band</strong></td><td><code>errorbar=("ci", 95)</code></td><td>Draws uncertainty around an estimated trend or mean.</td></tr>
+              <tr><td>9</td><td><strong>Distribution summary</strong></td><td><code>histplot</code>, <code>kde</code>, <code>boxplot</code></td><td>Shows frequency, density, spread, and outliers.</td></tr>
+              <tr><td>10</td><td><strong>Correlation heatmap</strong></td><td><code>sns.heatmap</code></td><td>Encodes a matrix with color and annotations.</td></tr>
+              <tr><td>11</td><td><strong>Automatic legend</strong></td><td><code>g.legend</code></td><td>Collects hue, style, and size handles into one key.</td></tr>
+              <tr><td>12</td><td><strong>Despine</strong></td><td><code>sns.despine</code></td><td>Removes redundant borders and trims spines.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="cheat-grid">
+        <section class="cheat-card cheat-card--wide">
+          <h2>Five recipes</h2>
+          <div class="cheat-grid mt-2">
+            <div>
+              <span class="cheat-tag">relplot</span>
+              <pre class="cheat-code mt-2">g = sns.relplot(
+  data=tips,
+  x="total_bill", y="tip",
+  col="time",
+  hue="smoker",
+  style="smoker",
+  size="size"
+)</pre>
+            </div>
+            <div>
+              <span class="cheat-tag">lmplot</span>
+              <pre class="cheat-code mt-2">sns.lmplot(
+  data=tips,
+  x="total_bill", y="tip",
+  col="time", hue="smoker",
+  ci=95, palette="Set2"
+)</pre>
+            </div>
+            <div>
+              <span class="cheat-tag">distribution</span>
+              <pre class="cheat-code mt-2">sns.histplot(
+  data=tips, x="total_bill",
+  bins=15, kde=True
+)
+sns.boxplot(data=tips, x="total_bill")</pre>
+            </div>
+            <div>
+              <span class="cheat-tag">heatmap</span>
+              <pre class="cheat-code mt-2">corr = tips.corr(numeric_only=True)
+sns.heatmap(
+  corr, annot=True, fmt=".2f",
+  cmap="coolwarm", center=0
+)</pre>
+            </div>
+            <div class="cheat-card--wide">
+              <span class="cheat-tag">publication polish</span>
+              <pre class="cheat-code mt-2">g = sns.relplot(data=tips, x="total_bill", y="tip", col="time")
+g.set_axis_labels("Total Bill ($ USD)", "Tip ($ USD)")
+g.despine(trim=True)</pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="cheat-card">
+          <h2>Common mistakes</h2>
+          <ul class="cheat-list">
+            <li>Forgetting <code>data=</code> and passing Series positionally loses automatic labels.</li>
+            <li>Using a figure-level function inside an existing <code>Axes</code> layout; it creates its own figure.</li>
+            <li>Reading a CI band as a prediction interval instead of uncertainty around an estimate.</li>
+            <li>Adding hue, style, and size all at once until the legend becomes unreadable.</li>
+            <li>Calling <code>plt.show()</code> when you need the returned <code>FacetGrid</code> for later methods.</li>
+          </ul>
+        </section>
+
+        <section class="cheat-card">
+          <h2>Debugging checklist</h2>
+          <ul class="cheat-list">
+            <li>Print the return value: <code>type(g)</code> tells you whether you have a grid or an axes.</li>
+            <li>Check <code>g.axes</code> or <code>g.axes_dict</code> before touching individual facets.</li>
+            <li>Use <code>g.set_axis_labels(...)</code> instead of looping over every subplot.</li>
+            <li>Move the legend outside the data area with <code>sns.move_legend</code>.</li>
+            <li>Call <code>sns.despine(trim=True)</code> only after all artists and labels are placed.</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </template>
+  <script>
+    window.SEABORN_LESSON = { id: 'cheatsheet' };
+  </script>
+</body>
+</html>

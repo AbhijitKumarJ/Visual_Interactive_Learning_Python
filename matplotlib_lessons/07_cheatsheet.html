@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>07 · Cheat Sheet | Matplotlib Field Guide</title>
+  <script type="module" crossorigin src="/Visual_Interactive_Learning_Python/assets/modulepreload-polyfill-P2Xu9kJm.js"></script>
+  <script type="module" crossorigin src="/Visual_Interactive_Learning_Python/assets/course-DISVVJG7.js"></script>
+  <link rel="stylesheet" crossorigin href="/Visual_Interactive_Learning_Python/assets/course-IRvRCaPR.css">
+</head>
+<body>
+  <div id="course-root"></div>
+  <template id="lesson-content">
+    <div class="space-y-4">
+      <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <section class="cheat-card">
+          <h2>1 · Hierarchy</h2>
+          <p class="mt-2">A Figure contains one or more Axes. Each Axes owns an XAxis, a YAxis, four Spines, and the artists drawn inside the data area.</p>
+          <pre class="mt-3 overflow-x-auto rounded-lg border border-slate-800 bg-slate-950 p-3"><code>fig, ax = plt.subplots()
+fig.suptitle("Figure-level")
+ax.set_title("Axes-level")</code></pre>
+        </section>
+
+        <section class="cheat-card">
+          <h2>2 · Containers vs primitives</h2>
+          <p class="mt-2">Containers hold other artists: Figure, Axes, Axis, Legend. Primitives draw themselves: Line2D, Patch, Text, Tick.</p>
+          <p class="mt-2">When a container changes, it marks itself and its children as stale so the renderer can redraw them.</p>
+        </section>
+
+        <section class="cheat-card">
+          <h2>3 · zorder ladder</h2>
+          <p class="mt-2">Higher values draw later and cover lower values.</p>
+          <ul class="mt-2 space-y-1 font-mono text-[11px] text-slate-300">
+            <li>5.0 · Legend / Annotation</li>
+            <li>3.0 · Text</li>
+            <li>2.0 · Line2D / markers</li>
+            <li>1.0 · Patch / fill_between</li>
+            <li>0.5 · Grid</li>
+          </ul>
+          <p class="mt-2">Set <code>zorder=</code> per artist when the default stack hides what you need.</p>
+        </section>
+
+        <section class="cheat-card">
+          <h2>4 · Coordinate spaces</h2>
+          <p class="mt-2"><code>data</code> follows your x/y values. <code>axes</code> is 0–1 inside the plot box. <code>figure</code> is 0–1 across the whole canvas.</p>
+          <pre class="mt-3 overflow-x-auto rounded-lg border border-slate-800 bg-slate-950 p-3"><code>ax.text(0.5, 0.95, "axes", transform=ax.transAxes)
+fig.text(0.5, 0.02, "figure", ha="center")</code></pre>
+        </section>
+      </div>
+
+      <section class="cheat-card overflow-hidden">
+        <h2>Anatomy quick table</h2>
+        <div class="mt-3 overflow-x-auto">
+          <table class="w-full min-w-[46rem] border-collapse text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-[10px] uppercase tracking-wider text-slate-500">
+                <th class="px-2 py-2">Object</th>
+                <th class="px-2 py-2">Owns</th>
+                <th class="px-2 py-2">Stored in</th>
+                <th class="px-2 py-2">Typical call</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/70 font-mono text-[11px] text-slate-300">
+              <tr><td class="px-2 py-2 text-sky-300">Figure</td><td class="px-2 py-2">Canvas, suptitle, figure legends</td><td class="px-2 py-2">Root object</td><td class="px-2 py-2">plt.figure()</td></tr>
+              <tr><td class="px-2 py-2 text-sky-300">Axes</td><td class="px-2 py-2">Data area, XAxis, YAxis, spines</td><td class="px-2 py-2">fig.axes</td><td class="px-2 py-2">fig.add_subplot()</td></tr>
+              <tr><td class="px-2 py-2 text-emerald-300">Axis</td><td class="px-2 py-2">Locators, formatters, ticks</td><td class="px-2 py-2">ax.xaxis / ax.yaxis</td><td class="px-2 py-2">ax.set_xlim()</td></tr>
+              <tr><td class="px-2 py-2 text-emerald-300">Spine</td><td class="px-2 py-2">Plot border line</td><td class="px-2 py-2">ax.spines</td><td class="px-2 py-2">ax.spines["top"].set_visible(False)</td></tr>
+              <tr><td class="px-2 py-2 text-emerald-300">Tick</td><td class="px-2 py-2">Tick mark plus label</td><td class="px-2 py-2">ax.xaxis / yaxis</td><td class="px-2 py-2">ax.tick_params()</td></tr>
+              <tr><td class="px-2 py-2 text-amber-300">Line2D</td><td class="px-2 py-2">Continuous data curve</td><td class="px-2 py-2">ax.lines</td><td class="px-2 py-2">ax.plot()</td></tr>
+              <tr><td class="px-2 py-2 text-amber-300">Patch</td><td class="px-2 py-2">Filled 2D shape</td><td class="px-2 py-2">ax.patches / collections</td><td class="px-2 py-2">ax.fill_between()</td></tr>
+              <tr><td class="px-2 py-2 text-amber-300">Text</td><td class="px-2 py-2">Title, label, annotation</td><td class="px-2 py-2">ax.texts / ax.title</td><td class="px-2 py-2">ax.set_title()</td></tr>
+              <tr><td class="px-2 py-2 text-fuchsia-300">Legend</td><td class="px-2 py-2">Handles and labels</td><td class="px-2 py-2">ax.legend_</td><td class="px-2 py-2">ax.legend()</td></tr>
+              <tr><td class="px-2 py-2 text-fuchsia-300">Annotation</td><td class="px-2 py-2">Text plus arrow</td><td class="px-2 py-2">ax.texts</td><td class="px-2 py-2">ax.annotate()</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="grid gap-3 lg:grid-cols-2">
+        <section class="cheat-card">
+          <h2>Recipes</h2>
+          <pre class="mt-3 overflow-x-auto rounded-lg border border-slate-800 bg-slate-950 p-3"><code># 1. Explicit object-oriented setup
+fig, ax = plt.subplots(figsize=(8, 5), dpi=100)
+
+# 2. Data + style
+ax.plot(x, y, color="#2563eb", lw=3, label="signal")
+ax.scatter(x, y, s=40, zorder=3)
+ax.fill_between(x, lo, hi, alpha=0.3, zorder=1)
+
+# 3. Axes furniture
+ax.set_title("Signal")
+ax.set_xlabel("time (s)")
+ax.set_ylabel("value")
+ax.grid(True, alpha=0.3)
+ax.legend(loc="upper right")
+
+# 4. Text in different spaces
+ax.annotate("peak", xy=(2, 3), xytext=(2.4, 3.4),
+            arrowprops={"arrowstyle": "->"})
+
+# 5. Save the whole Figure
+fig.tight_layout()
+fig.savefig("plot.png", dpi=150)</code></pre>
+        </section>
+
+        <section class="cheat-card">
+          <h2>Common mistakes</h2>
+          <ul class="mt-2 space-y-2">
+            <li><span class="text-rose-300">plt.title()</span> edits the current Axes through the pyplot state machine. In object-oriented code prefer <code>ax.set_title()</code>.</li>
+            <li>Re-plotting a line creates a second Line2D. Mutate <code>ax.lines[0]</code> when you only need to restyle the existing artist.</li>
+            <li>An annotation outside the axes can be clipped. Pass <code>annotation_clip=False</code> or adjust the limits.</li>
+            <li>Call <code>tight_layout()</code> after adding titles and annotations, not before.</li>
+            <li>A background patch can cover data if its zorder is too high. Check the ladder before changing colors.</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </template>
+  <script>
+    window.MPL_LESSON = { id: 'cheatsheet' };
+  </script>
+</body>
+</html>
