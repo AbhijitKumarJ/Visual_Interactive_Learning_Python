@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🤗 datasets — Interactive Visual Architecture & API Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            slate950: '#0b0f19',
+            slate900: '#111827',
+            slate850: '#161f33',
+            slate800: '#1f2937',
+            hfAmber: '#f59e0b',
+            hfGold: '#fbbf24',
+            arrowCyan: '#06b6d4',
+            torchOrange: '#f97316',
+            emeraldOk: '#10b981',
+          }
+        }
+      }
+    }
+  </script>
+  <style>body{color:#f3f4f6;background-color:#0b0f19;font-family:Inter,system-ui,sans-serif;overflow-x:hidden}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#0b0f19}::-webkit-scrollbar-thumb{background:#374151;border-radius:9999px}::-webkit-scrollbar-thumb:hover{background:#4b5563}.svg-part{cursor:pointer;transition:opacity .22s,filter .22s,transform .18s}.svg-part .part-box{transition:stroke .2s,stroke-width .2s,fill .2s}.svg-part:hover .part-box{stroke:#fbbf24;stroke-width:2.2px;filter:drop-shadow(0 0 8px #fbbf2440)}.svg-part.active-part .part-box{filter:drop-shadow(0 0 12px #f59e0b73);stroke:#fbbf24!important;stroke-width:2.8px!important}.svg-part.active-part .badge-bg{fill:#f59e0b!important;stroke:#fde68a!important}.svg-part.active-part .badge-label{font-weight:700;fill:#0b0f19!important}.svg-part.xray-target .part-box{filter:drop-shadow(0 0 12px #06b6d473);stroke:#06b6d4!important;stroke-width:2.6px!important}@keyframes quizPulse{0%,to{stroke:#f59e0b;stroke-width:2.6px;filter:drop-shadow(0 0 8px #f59e0b73)}50%{stroke:#38bdf8;stroke-width:3.4px;filter:drop-shadow(0 0 16px #38bdf8b3)}}.svg-part.quiz-spotlight .part-box{animation:1.6s ease-in-out infinite quizPulse}.svg-part.dimmed-part{opacity:.16;filter:grayscale(75%)}.svg-part.dimmed-part:hover{opacity:.45}@keyframes dashFlow{to{stroke-dashoffset:-24px}}.flow-line{stroke-dasharray:6 6;animation:1.2s linear infinite dashFlow}.code-line{transition:background-color .15s,border-color .15s}.code-line:hover{background-color:#1f2937bf}.code-line.active-code-line{background-color:#f59e0b24;border-left-color:#f59e0b!important}</style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
+
+  <!-- ================= TOP HEADER & MODE SWITCHER ================= -->
+  <header class="sticky top-0 z-30 bg-slate900/95 backdrop-blur border-b border-slate800 px-4 lg:px-6 py-3">
+    <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <!-- Brand Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/20 via-amber-500/15 to-cyan-500/20 border border-amber-400/40 flex items-center justify-center text-xl shadow-inner">
+          🤗
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">
+              <span class="font-mono text-amber-400">datasets</span> Visual Architecture &amp; API Explorer
+            </h1>
+            <span class="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+              Apache Arrow mmap + Streaming
+            </span>
+          </div>
+          <p class="text-xs text-gray-400">
+            Apache Arrow-Backed Data Structures, Batched Transforms &amp; Zero-Disk Streaming
+          </p>
+        </div>
+      </div>
+
+      <!-- 3-Mode Learning Switcher -->
+      <nav aria-label="Learning Modes" class="flex items-center bg-slate950 p-1 rounded-xl border border-slate800 self-start md:self-auto">
+        <button id="mode-btn-1" onclick="setMode('anatomy')" class="mode-btn px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 bg-amber-500 text-slate950 font-semibold shadow">
+          <span class="font-mono text-xs">1.</span> Visual Anatomy
+        </button>
+        <button id="mode-btn-2" onclick="setMode('quiz')" class="mode-btn px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-gray-300 hover:text-white">
+          <span class="font-mono text-xs">2.</span> Name That Part
+        </button>
+        <button id="mode-btn-3" onclick="setMode('xray')" class="mode-btn px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-gray-300 hover:text-white">
+          <span class="font-mono text-xs">3.</span> Code-to-Output X-Ray
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ================= MAIN SPLIT-PANE WORKSPACE ================= -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-6 py-4 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+    <!-- ================= LEFT PANE: INTERACTIVE SVG & CONTROLS (55% / 7 cols) ================= -->
+    <section class="lg:col-span-7 flex flex-col gap-3 bg-slate900/90 border border-slate800 rounded-2xl p-3 sm:p-4 shadow-xl">
+
+      <!-- Canvas Top Bar: Category Filter Chips & Legend -->
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate800/80">
+        <div class="flex flex-wrap items-center gap-1.5" id="category-filters">
+          <button onclick="setCategoryFilter('all')" data-cat="all" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40 transition">
+            All (10)
+          </button>
+          <button onclick="setCategoryFilter('Ingestion & Splits')" data-cat="Ingestion & Splits" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate800/80 text-gray-300 border border-gray-700 hover:border-gray-500 transition">
+            Ingestion &amp; Splits
+          </button>
+          <button onclick="setCategoryFilter('Arrow Table & Schema')" data-cat="Arrow Table & Schema" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate800/80 text-gray-300 border border-gray-700 hover:border-gray-500 transition">
+            Arrow Table &amp; Schema
+          </button>
+          <button onclick="setCategoryFilter('Transforms & Cache')" data-cat="Transforms & Cache" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate800/80 text-gray-300 border border-gray-700 hover:border-gray-500 transition">
+            Transforms &amp; Cache
+          </button>
+          <button onclick="setCategoryFilter('Streaming & Interop')" data-cat="Streaming & Interop" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate800/80 text-gray-300 border border-gray-700 hover:border-gray-500 transition">
+            Streaming &amp; Interop
+          </button>
+        </div>
+
+        <!-- Color Legend -->
+        <div class="hidden xl:flex items-center gap-3 text-[11px] text-gray-400 font-mono">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>Hub/Splits</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span>Arrow mmap</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>Transforms</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-400 inline-block"></span>Tensors/Stream</span>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE SVG ARCHITECTURE CANVAS -->
+      <div class="relative w-full bg-slate950 rounded-xl border border-slate800 overflow-hidden shadow-inner">
+        <svg id="datasets-svg" viewBox="0 0 920 660" class="w-full h-auto select-none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Subtle Background Dot Grid -->
+            <pattern id="bg-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1" fill="#1e293b" />
+            </pattern>
+            <!-- Arrowhead Markers -->
+            <marker id="arrow-amber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#f59e0b" />
+            </marker>
+            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#06b6d4" />
+            </marker>
+            <marker id="arrow-emerald" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#10b981" />
+            </marker>
+            <marker id="arrow-orange" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#f97316" />
+            </marker>
+          </defs>
+
+          <!-- Canvas Background -->
+          <rect width="920" height="660" fill="#0b0f19" />
+          <rect width="920" height="660" fill="url(#bg-grid)" />
+
+          <!-- Dataflow Connector Pipes (Background Layer) -->
+          <g stroke-width="1.8" fill="none" opacity="0.75">
+            <!-- Hub Loader -> DatasetDict -->
+            <path d="M 446 66 L 462 66" stroke="#f59e0b" class="flow-line" marker-end="url(#arrow-amber)" />
+            <!-- DatasetDict -> Features Schema & Arrow Table -->
+            <path d="M 555 120 L 555 130" stroke="#06b6d4" class="flow-line" marker-end="url(#arrow-cyan)" />
+            <!-- Arrow Table -> Filter/Select -->
+            <path d="M 601 245 L 613 215" stroke="#10b981" class="flow-line" marker-end="url(#arrow-emerald)" />
+            <!-- Arrow Table -> Batched Map -->
+            <path d="M 601 335 L 613 335" stroke="#10b981" class="flow-line" marker-end="url(#arrow-emerald)" />
+            <!-- Arrow Table -> Lazy Transform -->
+            <path d="M 160 410 L 160 420" stroke="#a855f7" class="flow-line" />
+            <!-- Arrow Table -> Format Bridge -->
+            <path d="M 460 410 L 460 420" stroke="#f97316" class="flow-line" marker-end="url(#arrow-orange)" />
+            <!-- Batched Map -> Hub Export -->
+            <path d="M 760 410 L 760 420" stroke="#f59e0b" class="flow-line" marker-end="url(#arrow-amber)" />
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 1. HUB LOADER & SPLIT SLICER (data-part="hub-loader")                     -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="hub-loader" onclick="handlePartClick('hub-loader')" onmouseenter="handlePartHover('hub-loader')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="16" y="14" width="430" height="106" rx="10" fill="#111827" stroke="#f59e0b" stroke-width="1.6" />
+            <!-- Callout Badge #1 -->
+            <rect class="badge-bg" x="26" y="22" width="232" height="22" rx="5" fill="#1f2937" stroke="#f59e0b" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="1" data-title="#1 load_dataset() &amp; Split Slicer" x="34" y="37" fill="#fbbf24" font-family="JetBrains Mono" font-size="11" font-weight="600">
+              #1 load_dataset() &amp; Split Slicer
+            </text>
+            <text x="436" y="36" text-anchor="end" fill="#9ca3af" font-family="JetBrains Mono" font-size="10">Hub / Local Builders</text>
+
+            <!-- Ingestion Code & Split Slicer Box -->
+            <rect x="26" y="50" width="410" height="34" rx="6" fill="#0b0f19" stroke="#374151" />
+            <text x="34" y="65" fill="#e5e7eb" font-family="JetBrains Mono" font-size="10.5">
+              load_dataset(<tspan fill="#fde047">"nyu-mll/glue"</tspan>, <tspan fill="#67e8f9">"mrpc"</tspan>,
+            </text>
+            <text x="34" y="79" fill="#e5e7eb" font-family="JetBrains Mono" font-size="10.5">
+              &#160;&#160;split=<tspan fill="#86efac">"train[:80%]+validation[:20%]"</tspan>)
+            </text>
+
+            <!-- Local & In-Memory Builder Pills -->
+            <g font-family="JetBrains Mono" font-size="9.5" fill="#d1d5db">
+              <rect x="26" y="90" width="52" height="20" rx="4" fill="#1e293b" stroke="#475569" />
+              <text x="52" y="103" text-anchor="middle">"csv"</text>
+
+              <rect x="84" y="90" width="70" height="20" rx="4" fill="#1e293b" stroke="#475569" />
+              <text x="119" y="103" text-anchor="middle">"parquet"</text>
+
+              <rect x="160" y="90" width="90" height="20" rx="4" fill="#1e293b" stroke="#475569" />
+              <text x="205" y="103" text-anchor="middle">"imagefolder"</text>
+
+              <rect x="256" y="90" width="84" height="20" rx="4" fill="#1e293b" stroke="#475569" />
+              <text x="298" y="103" text-anchor="middle">from_dict()</text>
+
+              <rect x="346" y="90" width="90" height="20" rx="4" fill="#1e293b" stroke="#475569" />
+              <text x="391" y="103" text-anchor="middle">from_pandas()</text>
+            </g>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 2. DATASETDICT SPLITS (data-part="dataset-dict")                          -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="dataset-dict" onclick="handlePartClick('dataset-dict')" onmouseenter="handlePartHover('dataset-dict')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="464" y="14" width="440" height="106" rx="10" fill="#111827" stroke="#f59e0b" stroke-width="1.6" />
+            <!-- Callout Badge #2 -->
+            <rect class="badge-bg" x="474" y="22" width="175" height="22" rx="5" fill="#1f2937" stroke="#f59e0b" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="2" data-title="#2 DatasetDict Splits" x="482" y="37" fill="#fbbf24" font-family="JetBrains Mono" font-size="11" font-weight="600">
+              #2 DatasetDict Splits
+            </text>
+            <text x="892" y="36" text-anchor="end" fill="#fde047" font-family="JetBrains Mono" font-size="10">ds_dict["train"]</text>
+
+            <!-- Split Partition Tabs -->
+            <!-- Active Train Split Tab -->
+            <rect x="474" y="50" width="142" height="58" rx="7" fill="#1e293b" stroke="#fbbf24" stroke-width="1.6" />
+            <circle cx="487" cy="64" r="4" fill="#fbbf24" />
+            <text x="496" y="68" fill="#fef08a" font-family="JetBrains Mono" font-size="11" font-weight="700">"train"</text>
+            <text x="484" y="84" fill="#e5e7eb" font-family="JetBrains Mono" font-size="10">num_rows: 3,668</text>
+            <text x="484" y="99" fill="#67e8f9" font-family="JetBrains Mono" font-size="9.5">Active Arrow Table ↓</text>
+
+            <!-- Validation Split Tab -->
+            <rect x="624" y="50" width="132" height="58" rx="7" fill="#0b0f19" stroke="#374151" />
+            <circle cx="636" cy="64" r="3.5" fill="#6b7280" />
+            <text x="645" y="68" fill="#d1d5db" font-family="JetBrains Mono" font-size="11">"validation"</text>
+            <text x="634" y="84" fill="#9ca3af" font-family="JetBrains Mono" font-size="10">num_rows: 408</text>
+            <text x="634" y="99" fill="#6b7280" font-family="JetBrains Mono" font-size="9.5">Isolated Split</text>
+
+            <!-- Test Split Tab -->
+            <rect x="764" y="50" width="128" height="58" rx="7" fill="#0b0f19" stroke="#374151" />
+            <circle cx="776" cy="64" r="3.5" fill="#6b7280" />
+            <text x="785" y="68" fill="#d1d5db" font-family="JetBrains Mono" font-size="11">"test"</text>
+            <text x="774" y="84" fill="#9ca3af" font-family="JetBrains Mono" font-size="10">num_rows: 1,725</text>
+            <text x="774" y="99" fill="#6b7280" font-family="JetBrains Mono" font-size="9.5">Holdout Split</text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 3. FEATURES & CLASSLABEL SCHEMA (data-part="features-schema")             -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="features-schema" onclick="handlePartClick('features-schema')" onmouseenter="handlePartHover('features-schema')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="16" y="132" width="585" height="74" rx="10" fill="#111827" stroke="#06b6d4" stroke-width="1.6" />
+            <!-- Callout Badge #3 -->
+            <rect class="badge-bg" x="26" y="140" width="234" height="20" rx="5" fill="#1f2937" stroke="#06b6d4" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="3" data-title="#3 Features &amp; ClassLabel Schema" x="34" y="154" fill="#67e8f9" font-family="JetBrains Mono" font-size="10.5" font-weight="600">
+              #3 Features &amp; ClassLabel Schema
+            </text>
+            <text x="590" y="154" text-anchor="end" fill="#9ca3af" font-family="JetBrains Mono" font-size="10">ds.features / ds.cast(new_features)</text>
+
+            <!-- Typed Column Schema Boxes (Aligned with Arrow Table Below) -->
+            <!-- Col 1: idx -->
+            <rect x="26" y="165" width="74" height="34" rx="5" fill="#0b0f19" stroke="#164e63" />
+            <text x="32" y="179" fill="#f3f4f6" font-family="JetBrains Mono" font-size="10" font-weight="600">idx</text>
+            <text x="32" y="193" fill="#67e8f9" font-family="JetBrains Mono" font-size="9">Value('int32')</text>
+
+            <!-- Col 2: sentence1 -->
+            <rect x="104" y="165" width="144" height="34" rx="5" fill="#0b0f19" stroke="#164e63" />
+            <text x="112" y="179" fill="#f3f4f6" font-family="JetBrains Mono" font-size="10" font-weight="600">sentence1</text>
+            <text x="112" y="193" fill="#67e8f9" font-family="JetBrains Mono" font-size="9">Value('string')</text>
+
+            <!-- Col 3: sentence2 -->
+            <rect x="252" y="165" width="144" height="34" rx="5" fill="#0b0f19" stroke="#164e63" />
+            <text x="260" y="179" fill="#f3f4f6" font-family="JetBrains Mono" font-size="10" font-weight="600">sentence2</text>
+            <text x="260" y="193" fill="#67e8f9" font-family="JetBrains Mono" font-size="9">Value('string')</text>
+
+            <!-- Col 4: label (ClassLabel) -->
+            <rect x="400" y="165" width="112" height="34" rx="5" fill="#0b0f19" stroke="#f59e0b" />
+            <text x="406" y="179" fill="#fde047" font-family="JetBrains Mono" font-size="10" font-weight="600">label: ClassLabel</text>
+            <text x="406" y="193" fill="#fcd34d" font-family="JetBrains Mono" font-size="9">0↦neg | 1↦pos</text>
+
+            <!-- Multimodal Feature Decoders -->
+            <rect x="516" y="165" width="76" height="34" rx="5" fill="#1e1b4b" stroke="#6366f1" />
+            <text x="554" y="179" text-anchor="middle" fill="#c7d2fe" font-family="JetBrains Mono" font-size="9.5" font-weight="600">Image()</text>
+            <text x="554" y="193" text-anchor="middle" fill="#a5b4fc" font-family="JetBrains Mono" font-size="9">Audio()</text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 4. APACHE ARROW MMAP TABLE (data-part="arrow-table")                      -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="arrow-table" onclick="handlePartClick('arrow-table')" onmouseenter="handlePartHover('arrow-table')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="16" y="214" width="585" height="196" rx="10" fill="#111827" stroke="#06b6d4" stroke-width="1.8" />
+            <!-- Callout Badge #4 -->
+            <rect class="badge-bg" x="26" y="222" width="236" height="22" rx="5" fill="#1f2937" stroke="#06b6d4" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="4" data-title="#4 Dataset (Arrow mmap Table)" x="34" y="237" fill="#67e8f9" font-family="JetBrains Mono" font-size="11" font-weight="600">
+              #4 Dataset (Arrow mmap Table)
+            </text>
+            <text x="590" y="237" text-anchor="end" fill="#22d3ee" font-family="JetBrains Mono" font-size="10">O(1) Zero-Copy: ds[0] | ds[:2]</text>
+
+            <!-- Columnar Memory Buffer Lanes -->
+            <!-- Col 1 Buffer: idx -->
+            <rect x="26" y="250" width="74" height="128" rx="4" fill="#0b0f19" stroke="#1e293b" />
+            <!-- Col 2 Buffer: sentence1 -->
+            <rect x="104" y="250" width="144" height="128" rx="4" fill="#0b0f19" stroke="#1e293b" />
+            <!-- Col 3 Buffer: sentence2 -->
+            <rect x="252" y="250" width="144" height="128" rx="4" fill="#0b0f19" stroke="#1e293b" />
+            <!-- Col 4 Buffer: label -->
+            <rect x="400" y="250" width="112" height="128" rx="4" fill="#0b0f19" stroke="#1e293b" />
+            <!-- Col 5 Buffer: Pointer / Index Lens -->
+            <rect x="516" y="250" width="76" height="128" rx="4" fill="#091526" stroke="#0891b2" stroke-dasharray="3 2" />
+
+            <!-- Table Row Horizontal Dividers -->
+            <line x1="26" y1="282" x2="592" y2="282" stroke="#1f2937" stroke-width="1" />
+            <line x1="26" y1="314" x2="592" y2="314" stroke="#1f2937" stroke-width="1" />
+            <line x1="26" y1="346" x2="592" y2="346" stroke="#1f2937" stroke-width="1" />
+
+            <!-- Row 0 (Highlighted as ds[0] Zero-Copy Slice) -->
+            <rect x="27" y="251" width="564" height="30" rx="3" fill="#06b6d4" fill-opacity="0.1" />
+            <g font-family="JetBrains Mono" font-size="9.5" fill="#e5e7eb">
+              <text x="34" y="270" fill="#67e8f9">0</text>
+              <text x="110" y="270">"Amrozi accused his..."</text>
+              <text x="258" y="270">"Referring to him as..."</text>
+              <text x="408" y="270" fill="#86efac">1 (positive)</text>
+              <text x="524" y="270" fill="#fde047">← ds[0]</text>
+            </g>
+
+            <!-- Row 1 -->
+            <g font-family="JetBrains Mono" font-size="9.5" fill="#9ca3af">
+              <text x="34" y="302" fill="#67e8f9">1</text>
+              <text x="110" y="302">"Yucaipa owned Domin..."</text>
+              <text x="258" y="302">"Yucaipa bought Domi..."</text>
+              <text x="408" y="302" fill="#fca5a5">0 (negative)</text>
+              <text x="524" y="302" fill="#67e8f9">← ds[:2]</text>
+            </g>
+
+            <!-- Row 2 -->
+            <g font-family="JetBrains Mono" font-size="9.5" fill="#e5e7eb">
+              <text x="34" y="334" fill="#67e8f9">2</text>
+              <text x="110" y="334">"They had published..."</text>
+              <text x="258" y="334">"On June 10, the ship..."</text>
+              <text x="408" y="334" fill="#86efac">1 (positive)</text>
+              <text x="524" y="334" fill="#64748b">offset +2</text>
+            </g>
+
+            <!-- Row 3 -->
+            <g font-family="JetBrains Mono" font-size="9.5" fill="#e5e7eb">
+              <text x="34" y="366" fill="#67e8f9">3</text>
+              <text x="110" y="366">"Around 0335 GMT, tab..."</text>
+              <text x="258" y="366">"Tab shares jumped..."</text>
+              <text x="408" y="366" fill="#86efac">1 (positive)</text>
+              <text x="524" y="366" fill="#64748b">offset +3</text>
+            </g>
+
+            <!-- Footer Bar: Disk Cache Path -->
+            <rect x="26" y="383" width="566" height="20" rx="4" fill="#0b0f19" stroke="#1e293b" />
+            <text x="34" y="397" fill="#94a3b8" font-family="JetBrains Mono" font-size="9.5">
+              Disk Backing: <tspan fill="#67e8f9">~/.cache/huggingface/datasets/glue/mrpc/0.0.0/glue-train.arrow</tspan> (RAM copy: 0 MB)
+            </text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 5. FILTER / SELECT / SHUFFLE (data-part="filter-select")                  -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="filter-select" onclick="handlePartClick('filter-select')" onmouseenter="handlePartHover('filter-select')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="615" y="132" width="289" height="128" rx="10" fill="#111827" stroke="#10b981" stroke-width="1.6" />
+            <!-- Callout Badge #5 -->
+            <rect class="badge-bg" x="625" y="140" width="248" height="20" rx="5" fill="#1f2937" stroke="#10b981" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="5" data-title="#5 .filter() / .select() / .shuffle()" x="633" y="154" fill="#6ee7b7" font-family="JetBrains Mono" font-size="10.5" font-weight="600">
+              #5 .filter() / .select() / .shuffle()
+            </text>
+
+            <!-- Predicate Expression -->
+            <rect x="625" y="165" width="269" height="24" rx="4" fill="#0b0f19" stroke="#374151" />
+            <text x="632" y="181" fill="#e5e7eb" font-family="JetBrains Mono" font-size="9.5">
+              ds.filter(<tspan fill="#fde047">lambda</tspan> r: r[<tspan fill="#86efac">"label"</tspan>] == 1)
+            </text>
+
+            <!-- Boolean Mask Pills -->
+            <g font-family="JetBrains Mono" font-size="9.5">
+              <rect x="625" y="195" width="62" height="22" rx="4" fill="#064e3b" stroke="#10b981" />
+              <text x="656" y="210" text-anchor="middle" fill="#a7f3d0">r[0] ✓</text>
+
+              <rect x="694" y="195" width="62" height="22" rx="4" fill="#450a0a" stroke="#ef4444" opacity="0.65" />
+              <text x="725" y="210" text-anchor="middle" fill="#fca5a5">r[1] ✗</text>
+
+              <rect x="763" y="195" width="62" height="22" rx="4" fill="#064e3b" stroke="#10b981" />
+              <text x="794" y="210" text-anchor="middle" fill="#a7f3d0">r[2] ✓</text>
+
+              <rect x="832" y="195" width="62" height="22" rx="4" fill="#064e3b" stroke="#10b981" />
+              <text x="863" y="210" text-anchor="middle" fill="#a7f3d0">r[3] ✓</text>
+            </g>
+
+            <!-- Select & Split Sub-bar -->
+            <rect x="625" y="223" width="269" height="28" rx="4" fill="#0b0f19" stroke="#1e293b" />
+            <text x="632" y="241" fill="#9ca3af" font-family="JetBrains Mono" font-size="9.5">
+              Index View: <tspan fill="#6ee7b7">select([0,2,3])</tspan> | <tspan fill="#fde047">train_test_split()</tspan>
+            </text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 6. VECTORIZED BATCHED .MAP() (data-part="batched-map")                    -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="batched-map" onclick="handlePartClick('batched-map')" onmouseenter="handlePartHover('batched-map')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="615" y="270" width="289" height="140" rx="10" fill="#111827" stroke="#10b981" stroke-width="1.6" />
+            <!-- Callout Badge #6 -->
+            <rect class="badge-bg" x="625" y="278" width="258" height="20" rx="5" fill="#1f2937" stroke="#10b981" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="6" data-title="#6 .map(batched=True, num_proc=4)" x="633" y="292" fill="#6ee7b7" font-family="JetBrains Mono" font-size="10.5" font-weight="600">
+              #6 .map(batched=True, num_proc=4)
+            </text>
+
+            <!-- Parallel Multiprocessing Workers -->
+            <g font-family="JetBrains Mono" font-size="9">
+              <rect x="625" y="304" width="63" height="22" rx="4" fill="#064e3b" stroke="#10b981" />
+              <text x="656" y="318" text-anchor="middle" fill="#a7f3d0">Proc #1</text>
+
+              <rect x="693" y="304" width="63" height="22" rx="4" fill="#064e3b" stroke="#10b981" />
+              <text x="724" y="318" text-anchor="middle" fill="#a7f3d0">Proc #2</text>
+
+              <rect x="761" y="304" width="63" height="22" rx="4" fill="#064e3b" stroke="#10b981" />
+              <text x="792" y="318" text-anchor="middle" fill="#a7f3d0">Proc #3</text>
+
+              <rect x="829" y="304" width="65" height="22" rx="4" fill="#064e3b" stroke="#10b981" />
+              <text x="861" y="318" text-anchor="middle" fill="#a7f3d0">Proc #4</text>
+            </g>
+
+            <!-- Materialized Output Columns -->
+            <rect x="625" y="332" width="269" height="46" rx="5" fill="#0b0f19" stroke="#374151" />
+            <text x="633" y="348" fill="#67e8f9" font-family="JetBrains Mono" font-size="9.5">
+              + input_ids: <tspan fill="#e5e7eb">[101, 2023, 2003, 102]</tspan>
+            </text>
+            <text x="633" y="364" fill="#67e8f9" font-family="JetBrains Mono" font-size="9.5">
+              + attention_mask: <tspan fill="#e5e7eb">[1, 1, 1, 1]</tspan>
+            </text>
+
+            <!-- Pruned Columns Indicator -->
+            <text x="628" y="396" fill="#fca5a5" font-family="JetBrains Mono" font-size="9.5">
+              remove_columns=["sentence1", "sentence2"]
+            </text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 7. .SET_TRANSFORM() ON-THE-FLY HOOK (data-part="lazy-transform")          -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="lazy-transform" onclick="handlePartClick('lazy-transform')" onmouseenter="handlePartHover('lazy-transform')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="16" y="422" width="290" height="108" rx="10" fill="#111827" stroke="#a855f7" stroke-width="1.6" />
+            <!-- Callout Badge #7 -->
+            <rect class="badge-bg" x="26" y="430" width="268" height="20" rx="5" fill="#1f2937" stroke="#a855f7" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="7" data-title="#7 .set_transform() On-the-Fly Hook" x="34" y="444" fill="#d8b4fe" font-family="JetBrains Mono" font-size="10.5" font-weight="600">
+              #7 .set_transform() On-the-Fly Hook
+            </text>
+
+            <rect x="26" y="456" width="270" height="42" rx="5" fill="#0b0f19" stroke="#4c1d95" />
+            <text x="34" y="473" fill="#e9d5ff" font-family="JetBrains Mono" font-size="9.5">
+              ds.set_transform(augment_batch)
+            </text>
+            <text x="34" y="489" fill="#c084fc" font-family="JetBrains Mono" font-size="9.5">
+              jitter(img) ↦ pixel_values | char_count
+            </text>
+
+            <text x="30" y="516" fill="#a7f3d0" font-family="JetBrains Mono" font-size="9.5">
+              ⚡ RAM-Only at Read Time (Disk Write: 0 MB)
+            </text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 8. .WITH_FORMAT() FRAMEWORK BRIDGE (data-part="format-bridge")            -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="format-bridge" onclick="handlePartClick('format-bridge')" onmouseenter="handlePartHover('format-bridge')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="320" y="422" width="305" height="108" rx="10" fill="#111827" stroke="#f97316" stroke-width="1.6" />
+            <!-- Callout Badge #8 -->
+            <rect class="badge-bg" x="330" y="430" width="275" height="20" rx="5" fill="#1f2937" stroke="#f97316" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="8" data-title="#8 .with_format(&quot;torch&quot; | &quot;pandas&quot;)" x="338" y="444" fill="#fdba74" font-family="JetBrains Mono" font-size="10.5" font-weight="600">
+              #8 .with_format("torch" | "pandas")
+            </text>
+
+            <rect x="330" y="456" width="285" height="42" rx="5" fill="#0b0f19" stroke="#7c2d12" />
+            <text x="338" y="473" fill="#fed7aa" font-family="JetBrains Mono" font-size="9.5">
+              ds.with_format(<tspan fill="#fde047">"torch"</tspan>, columns=[...])
+            </text>
+            <text x="338" y="489" fill="#fb923c" font-family="JetBrains Mono" font-size="9.5">
+              ↦ DataLoader(batch_size=32) | pd.DataFrame
+            </text>
+
+            <text x="334" y="516" fill="#9ca3af" font-family="JetBrains Mono" font-size="9.5">
+              Zero-Copy Arrow Buffer ↦ Tensor / DataFrame
+            </text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 10. .PUSH_TO_HUB() & CACHE CONTROL (data-part="hub-export")               -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="hub-export" onclick="handlePartClick('hub-export')" onmouseenter="handlePartHover('hub-export')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="639" y="422" width="265" height="108" rx="10" fill="#111827" stroke="#f59e0b" stroke-width="1.6" />
+            <!-- Callout Badge #10 -->
+            <rect class="badge-bg" x="649" y="430" width="245" height="20" rx="5" fill="#1f2937" stroke="#f59e0b" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="10" data-title="#10 .push_to_hub() &amp; Cache Control" x="657" y="444" fill="#fbbf24" font-family="JetBrains Mono" font-size="10.5" font-weight="600">
+              #10 .push_to_hub() &amp; Cache Control
+            </text>
+
+            <rect x="649" y="456" width="245" height="42" rx="5" fill="#0b0f19" stroke="#374151" />
+            <text x="657" y="473" fill="#fde047" font-family="JetBrains Mono" font-size="9.5">
+              ds.push_to_hub("user/mrpc", private=True)
+            </text>
+            <text x="657" y="489" fill="#67e8f9" font-family="JetBrains Mono" font-size="9.5">
+              ds.save_to_disk("./arrow_dir")
+            </text>
+
+            <text x="653" y="516" fill="#9ca3af" font-family="JetBrains Mono" font-size="9.5">
+              cleanup_cache_files() | disable_caching()
+            </text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- 9. ITERABLEDATASET STREAMING LANE (data-part="iterable-stream")           -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="iterable-stream" onclick="handlePartClick('iterable-stream')" onmouseenter="handlePartHover('iterable-stream')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="16" y="542" width="888" height="104" rx="10" fill="#111827" stroke="#f97316" stroke-width="1.6" />
+            <!-- Callout Badge #9 -->
+            <rect class="badge-bg" x="26" y="550" width="268" height="20" rx="5" fill="#1f2937" stroke="#f97316" stroke-width="1.2" />
+            <text class="badge-label part-badge-text" data-num="9" data-title="#9 IterableDataset (streaming=True)" x="34" y="564" fill="#fdba74" font-family="JetBrains Mono" font-size="10.5" font-weight="600">
+              #9 IterableDataset (streaming=True)
+            </text>
+            <text x="892" y="564" text-anchor="end" fill="#fb923c" font-family="JetBrains Mono" font-size="10">
+              45 TB Corpus (HuggingFaceFW/fineweb) — 0 GB Local Disk Used
+            </text>
+
+            <!-- Streaming Pipeline Stages -->
+            <!-- Stage A: Remote Shards -->
+            <rect x="26" y="578" width="195" height="56" rx="6" fill="#0b0f19" stroke="#374151" />
+            <text x="36" y="596" fill="#fde047" font-family="JetBrains Mono" font-size="9.5" font-weight="600">Remote Parquet Shards</text>
+            <text x="36" y="612" fill="#9ca3af" font-family="JetBrains Mono" font-size="9">num_shards: 4 (HTTP Range)</text>
+            <text x="36" y="626" fill="#67e8f9" font-family="JetBrains Mono" font-size="9">[shard_0] [shard_1] [shard_2]</text>
+
+            <path d="M 223 606 L 245 606" stroke="#f97316" stroke-width="1.8" class="flow-line" marker-end="url(#arrow-orange)" />
+
+            <!-- Stage B: Reservoir Shuffle Buffer -->
+            <rect x="250" y="578" width="235" height="56" rx="6" fill="#0b0f19" stroke="#f97316" />
+            <text x="260" y="596" fill="#fdba74" font-family="JetBrains Mono" font-size="9.5" font-weight="600">Reservoir Shuffle Buffer</text>
+            <text x="260" y="612" fill="#e5e7eb" font-family="JetBrains Mono" font-size="9">.shuffle(seed=42, buffer_size=10_000)</text>
+            <text x="260" y="626" fill="#86efac" font-family="JetBrains Mono" font-size="9">ds.set_epoch(epoch) per loop</text>
+
+            <path d="M 487 606 L 509 606" stroke="#f97316" stroke-width="1.8" class="flow-line" marker-end="url(#arrow-orange)" />
+
+            <!-- Stage C: Lazy Stream .map() / .filter() -->
+            <rect x="514" y="578" width="185" height="56" rx="6" fill="#0b0f19" stroke="#374151" />
+            <text x="524" y="596" fill="#6ee7b7" font-family="JetBrains Mono" font-size="9.5" font-weight="600">Lazy Stream Chain</text>
+            <text x="524" y="612" fill="#e5e7eb" font-family="JetBrains Mono" font-size="9">ds.map(fn).remove_columns()</text>
+            <text x="524" y="626" fill="#9ca3af" font-family="JetBrains Mono" font-size="9">Evaluated on yield</text>
+
+            <path d="M 701 606 L 723 606" stroke="#f97316" stroke-width="1.8" class="flow-line" marker-end="url(#arrow-orange)" />
+
+            <!-- Stage D: Iterator Consumption -->
+            <rect x="728" y="578" width="164" height="56" rx="6" fill="#0b0f19" stroke="#10b981" />
+            <text x="738" y="596" fill="#a7f3d0" font-family="JetBrains Mono" font-size="9.5" font-weight="600">Stream Consumer</text>
+            <text x="738" y="612" fill="#fde047" font-family="JetBrains Mono" font-size="9">next(iter(ds))</text>
+            <text x="738" y="626" fill="#67e8f9" font-family="JetBrains Mono" font-size="9">ds.take(3) | ds.skip(10)</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- LIVE DOMAIN STATUS BAR (Coordinates / Memory Backing / Complexity) -->
+      <div id="domain-status-bar" class="bg-slate950 border border-slate800 rounded-xl px-3.5 py-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+        <div>
+          <span class="text-gray-500 block text-[10px] uppercase">Component</span>
+          <span id="status-comp" class="text-amber-400 font-semibold truncate block">#4 Dataset (Arrow Table)</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block text-[10px] uppercase">Official Type</span>
+          <span id="status-type" class="text-cyan-300 truncate block">datasets.arrow_dataset.Dataset</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block text-[10px] uppercase">Memory Backing</span>
+          <span id="status-mem" class="text-emerald-300 truncate block">Apache Arrow mmap (0 MB RAM)</span>
+        </div>
+        <div>
+          <span class="text-gray-500 block text-[10px] uppercase">Access &amp; Shape</span>
+          <span id="status-access" class="text-orange-300 truncate block">O(1) Random | (3668, 4)</span>
+        </div>
+      </div>
+
+      <!-- Quick-Jump Numbered Component Pills -->
+      <div class="flex flex-wrap items-center gap-1.5 pt-1" id="quick-jump-bar">
+        <!-- Populated dynamically by JS -->
+      </div>
+    </section>
+
+    <!-- ================= RIGHT PANE: SYNCHRONIZED WORKSPACE (45% / 5 cols) ================= -->
+    <aside class="lg:col-span-5 flex flex-col gap-4">
+
+      <!-- ========================================================================= -->
+      <!-- MODE 1 PANEL: VISUAL ANATOMY INSPECTOR                                    -->
+      <!-- ========================================================================= -->
+      <div id="panel-anatomy" class="bg-slate900/90 border border-slate800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col gap-4">
+        <div class="flex items-start justify-between gap-3 border-b border-slate800 pb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="anat-badge" class="px-2 py-0.5 rounded-md text-xs font-mono font-bold bg-amber-500 text-slate950">#4</span>
+              <span id="anat-cat" class="text-xs font-mono uppercase tracking-wider text-cyan-400">Arrow Table &amp; Schema</span>
+            </div>
+            <h2 id="anat-title" class="text-lg sm:text-xl font-bold text-white mt-1">
+              Dataset (Apache Arrow mmap Table)
+            </h2>
+          </div>
+          <button onclick="cycleComponent(1)" title="Inspect Next Component" class="px-2.5 py-1.5 rounded-lg bg-slate800 hover:bg-gray-700 text-xs font-mono text-gray-200 border border-gray-700 transition shrink-0">
+            Next Part →
+          </button>
+        </div>
+
+        <!-- Metadata Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+          <div class="bg-slate950 border border-slate800 rounded-xl p-3">
+            <span class="text-gray-500 uppercase font-mono text-[10px] block">Official Python Class / Method</span>
+            <code id="anat-type" class="text-cyan-300 font-mono font-semibold mt-0.5 block break-all">datasets.Dataset</code>
+          </div>
+          <div class="bg-slate950 border border-slate800 rounded-xl p-3">
+            <span class="text-gray-500 uppercase font-mono text-[10px] block">Access Path &amp; Complexity</span>
+            <code id="anat-access" class="text-amber-300 font-mono font-semibold mt-0.5 block break-all">ds[i], ds[a:b], ds["col"] — O(1)</code>
+          </div>
+        </div>
+
+        <!-- Visual Role / Plain-English Architecture Explanation -->
+        <div class="bg-slate950/90 border border-slate800 rounded-xl p-3.5">
+          <h3 class="text-xs font-mono uppercase tracking-wider text-gray-400 mb-1.5 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span> Under-the-Hood Architecture Role
+          </h3>
+          <p id="anat-role" class="text-sm text-gray-200 leading-relaxed"></p>
+        </div>
+
+        <!-- Primary Code Pattern -->
+        <div class="bg-slate950 border border-slate800 rounded-xl overflow-hidden">
+          <div class="flex items-center justify-between px-3.5 py-2 bg-slate900 border-b border-slate800">
+            <span id="anat-syn1-label" class="text-xs font-mono text-emerald-400 font-medium">Primary Idiomatic Syntax</span>
+            <button onclick="copyCode('anat-syn1-code', this)" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition">
+              Copy
+            </button>
+          </div>
+          <pre class="p-3.5 text-xs font-mono text-gray-100 overflow-x-auto leading-relaxed"><code id="anat-syn1-code"></code></pre>
+        </div>
+
+        <!-- Alternative / Advanced Code Pattern -->
+        <div class="bg-slate950 border border-slate800 rounded-xl overflow-hidden">
+          <div class="flex items-center justify-between px-3.5 py-2 bg-slate900 border-b border-slate800">
+            <span id="anat-syn2-label" class="text-xs font-mono text-amber-400 font-medium">Alternative / Advanced Pattern</span>
+            <button onclick="copyCode('anat-syn2-code', this)" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition">
+              Copy
+            </button>
+          </div>
+          <pre class="p-3.5 text-xs font-mono text-gray-100 overflow-x-auto leading-relaxed"><code id="anat-syn2-code"></code></pre>
+        </div>
+
+        <!-- Pro Tip Callout -->
+        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200 flex items-start gap-2.5">
+          <span class="text-base leading-none mt-0.5">💡</span>
+          <div id="anat-pitfall" class="leading-relaxed"></div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- MODE 2 PANEL: BEGINNER TERMINOLOGY QUIZ ("NAME THAT PART")                -->
+      <!-- ========================================================================= -->
+      <div id="panel-quiz" class="hidden bg-slate900/90 border border-slate800 rounded-2xl p-4 sm:p-5 shadow-xl flex-col gap-4">
+        <!-- Quiz Header & Scoreboard -->
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate800 pb-3">
+          <div>
+            <span class="text-xs font-mono uppercase tracking-wider text-amber-400">Interactive Recall Drill</span>
+            <h2 class="text-lg font-bold text-white">Name That 🤗 datasets Component</h2>
+          </div>
+          <div class="flex items-center gap-2 font-mono text-xs">
+            <div class="px-2.5 py-1 rounded-lg bg-slate950 border border-slate800">
+              Score: <span id="quiz-score" class="text-emerald-400 font-bold">0/0</span>
+            </div>
+            <div class="px-2.5 py-1 rounded-lg bg-slate950 border border-slate800">
+              Streak: <span id="quiz-streak" class="text-amber-400 font-bold">0</span> 🔥
+            </div>
+            <div class="px-2.5 py-1 rounded-lg bg-slate950 border border-slate800">
+              Best: <span id="quiz-best" class="text-cyan-400 font-bold">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prompt Banner -->
+        <div class="bg-slate950 border border-amber-500/40 rounded-xl p-3.5">
+          <div class="flex items-center justify-between text-xs font-mono text-amber-300 mb-1">
+            <span id="quiz-target-badge">SPOTLIGHTING PART #1 ON DIAGRAM</span>
+            <span class="text-gray-400">Click option or click SVG directly</span>
+          </div>
+          <p id="quiz-prompt" class="text-sm text-gray-100 leading-relaxed font-medium"></p>
+        </div>
+
+        <!-- 4 Multiple Choice Option Cards -->
+        <div id="quiz-options" class="grid grid-cols-1 gap-2.5">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Quiz Feedback & Explanation Box -->
+        <div id="quiz-feedback" class="hidden rounded-xl p-3.5 border text-xs leading-relaxed"></div>
+
+        <!-- Quiz Footer Actions -->
+        <div class="flex items-center justify-between pt-1">
+          <button onclick="resetQuizStats()" class="text-xs font-mono text-gray-400 hover:text-gray-200 underline">
+            Reset Score
+          </button>
+          <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate950 font-semibold text-xs font-mono transition shadow">
+            Next Question →
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- MODE 3 PANEL: PROGRESSIVE CODE-TO-OUTPUT X-RAY                            -->
+      <!-- ========================================================================= -->
+      <div id="panel-xray" class="hidden bg-slate900/90 border border-slate800 rounded-2xl p-4 sm:p-5 shadow-xl flex-col gap-3.5">
+        <!-- Recipe Selector & Progressive Build Toggle -->
+        <div class="flex flex-col gap-2.5 border-b border-slate800 pb-3">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-mono uppercase tracking-wider text-cyan-400">5 Curated Code Walkthroughs</span>
+            <!-- Build Step-by-Step Toggle -->
+            <label class="flex items-center gap-2 cursor-pointer select-none bg-slate950 px-2.5 py-1 rounded-lg border border-slate800">
+              <input type="checkbox" id="progressive-toggle" checked onchange="toggleProgressiveBuild(this.checked)" class="accent-amber-500 rounded cursor-pointer" />
+              <span class="text-xs font-mono text-amber-300">Build Step-by-Step</span>
+            </label>
+          </div>
+
+          <select id="snippet-select" onchange="selectSnippet(parseInt(this.value, 10))" aria-label="Select Code Walkthrough Recipe" class="w-full bg-slate950 border border-gray-700 focus:border-amber-400 rounded-xl px-3 py-2 text-xs sm:text-sm font-mono text-gray-100 outline-none">
+            <!-- Populated dynamically with the 5 snippets -->
+          </select>
+        </div>
+
+        <!-- Step Navigation Controls -->
+        <div class="flex items-center justify-between gap-2 bg-slate950 px-3 py-2 rounded-xl border border-slate800">
+          <button onclick="stepXray(-1)" class="px-3 py-1 rounded-lg bg-slate800 hover:bg-gray-700 text-xs font-mono text-gray-200 border border-gray-700 transition">
+            ← Prev Line
+          </button>
+          <span id="xray-step-indicator" class="text-xs font-mono text-amber-400 font-semibold">
+            Line 1 of 5
+          </span>
+          <button onclick="stepXray(1)" class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-xs font-mono text-slate950 font-semibold transition">
+            Next Line →
+          </button>
+        </div>
+
+        <!-- Interactive Line-by-Line Code Viewer -->
+        <div id="xray-code-container" class="bg-slate950 border border-slate800 rounded-xl overflow-hidden divide-y divide-slate800/60 font-mono text-xs">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Active Line Explanation Card -->
+        <div class="bg-slate950 border border-cyan-500/30 rounded-xl p-3.5 flex flex-col gap-2">
+          <div class="flex items-center justify-between gap-2">
+            <span id="xray-line-title" class="text-xs font-mono font-bold text-cyan-300 uppercase tracking-wide"></span>
+            <div id="xray-linked-badges" class="flex items-center gap-1 flex-wrap"></div>
+          </div>
+          <p id="xray-explanation" class="text-xs sm:text-sm text-gray-200 leading-relaxed"></p>
+        </div>
+
+        <!-- Simulated REPL / Arrow State Output Console -->
+        <div class="bg-slate950 border border-slate800 rounded-xl overflow-hidden">
+          <div class="px-3 py-1.5 bg-slate900 border-b border-slate800 flex items-center justify-between text-[11px] font-mono text-gray-400">
+            <span>Live Python / Arrow State Output</span>
+            <span id="xray-mem-badge" class="text-emerald-400">mmap active</span>
+          </div>
+          <pre id="xray-output-console" class="p-3 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed"></pre>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- ================= APPLICATION DATA & INTERACTIVE LOGIC ================= -->
+  <script>
+    // ============================================================================
+    // 1. ALL 10 HUGGING FACE DATASETS COMPONENTS METADATA
+    // ============================================================================
+    const COMPONENTS = [
+      {
+        id: 'hub-loader',
+        badgeNum: 1,
+        name: 'load_dataset() & Split Slicer',
+        category: 'Ingestion & Splits',
+        objectType: 'datasets.load_dataset()',
+        accessPath: 'load_dataset(path, name, split=...)',
+        memoryStatus: 'Downloads & Compiles to Disk Arrow Cache',
+        complexity: 'O(1) Slicing at Arrow Boundary | (3668, 4)',
+        visualRole: 'The universal factory gateway for 🤗 datasets. It pulls remote repositories from the Hugging Face Hub, parses local files ("csv", "json", "parquet", "text"), infers multimodal folder hierarchies ("imagefolder", "audiofolder"), or ingests in-memory dicts and Pandas DataFrames into memory-mapped Apache Arrow tables.',
+        syntaxPrimary: {
+          label: 'Hub Benchmark & Slicing Syntax',
+          code: `from datasets import load_dataset\n\n# Load single split or slice percentages directly\ntrain_ds = load_dataset("nyu-mll/glue", "mrpc", split="train")\ncombined = load_dataset("nyu-mll/glue", "mrpc", split="train[:80%]+validation[:20%]")`
+        },
+        syntaxAlternative: {
+          label: 'Local Files, Folders & In-Memory Dict/Pandas',
+          code: `from datasets import Dataset, load_dataset\n\ncsv_ds = load_dataset("csv", data_files={"train": "train.csv", "test": "test.csv"})\nimg_ds = load_dataset("imagefolder", data_dir="./pokemon", split="train")\ndict_ds = Dataset.from_dict({"text": ["Hello", "World"], "label": [1, 0]})`
+        },
+        pitfall: 'Multi-configuration benchmarks like "glue" require a config name (e.g., "mrpc" or "sst2"). Omitting it raises a ValueError listing all valid configurations.'
+      },
+      {
+        id: 'dataset-dict',
+        badgeNum: 2,
+        name: 'DatasetDict Splits Container',
+        category: 'Ingestion & Splits',
+        objectType: 'datasets.DatasetDict',
+        accessPath: 'ds_dict["train"] / ds_dict.map(...)',
+        memoryStatus: 'Dictionary of Memory-Mapped Arrow Tables',
+        complexity: 'O(1) Split Key Lookup | 3 Splits',
+        visualRole: 'When load_dataset() is called without a split= argument, it returns a DatasetDict—a dictionary wrapper mapping split names ("train", "validation", "test") to isolated Dataset instances. Calling .map() or .filter() on a DatasetDict automatically broadcasts the transformation across every split simultaneously.',
+        syntaxPrimary: {
+          label: 'Inspecting & Indexing DatasetDict Splits',
+          code: `ds_dict = load_dataset("nyu-mll/glue", "mrpc")\nprint(ds_dict.keys())  # dict_keys(['train', 'validation', 'test'])\n\ntrain_ds = ds_dict["train"]  # Isolates the train Dataset`
+        },
+        syntaxAlternative: {
+          label: 'Broadcasting .map() Across All Splits at Once',
+          code: `# Tokenizes train, validation, and test splits in one call\ntokenized_dict = ds_dict.map(tokenize_fn, batched=True)\ntokenized_dict.push_to_hub("username/mrpc-all-splits")`
+        },
+        pitfall: 'Keep train and validation splits inside a DatasetDict during deterministic preprocessing (like tokenization) so your transformations never drift out of sync across splits.'
+      },
+      {
+        id: 'features-schema',
+        badgeNum: 3,
+        name: 'Features & ClassLabel Schema',
+        category: 'Arrow Table & Schema',
+        objectType: 'datasets.Features / ClassLabel / Value',
+        accessPath: 'ds.features / ds.cast(new_features)',
+        memoryStatus: 'Arrow Schema Metadata Header',
+        complexity: 'O(1) Schema Inspection | int2str / str2int',
+        visualRole: 'Defines the strict columnar schema backing the Arrow table. Scalar primitives use Value("int32" | "string"), categorical targets use ClassLabel(names=[...]) for bidirectional integer-to-string mapping, and media columns use lazy Image() or Audio(sampling_rate=16000) decoders that only decode bytes when indexed.',
+        syntaxPrimary: {
+          label: 'Schema Inspection & ClassLabel Casting',
+          code: `from datasets import ClassLabel\n\nnew_features = ds.features.copy()\nnew_features["label"] = ClassLabel(names=["negative", "positive"])\ncasted_ds = ds.cast(new_features)\nprint(casted_ds.features["label"].int2str(1))  # 'positive'`
+        },
+        syntaxAlternative: {
+          label: 'Multimodal Column Casting (Audio & Vision)',
+          code: `from datasets import Audio, Image\n\n# Automatically resamples audio to 16kHz on-the-fly when indexed\naudio_ds = audio_ds.cast_column("audio", Audio(sampling_rate=16_000))\nvision_ds = vision_ds.cast_column("image", Image(mode="RGB"))`
+        },
+        pitfall: 'Image() and Audio() columns store file paths/bytes in Arrow and decode into PIL.Image or waveform arrays only when you index a row—saving gigabytes of RAM.'
+      },
+      {
+        id: 'arrow-table',
+        badgeNum: 4,
+        name: 'Dataset (Apache Arrow mmap Table)',
+        category: 'Arrow Table & Schema',
+        objectType: 'datasets.Dataset',
+        accessPath: 'ds[0] (Row Dict) | ds[:2] (Batch Dict)',
+        memoryStatus: 'Disk-Backed Apache Arrow mmap (Zero-Copy)',
+        complexity: 'O(1) Random Pointer Access | (3668, 4)',
+        visualRole: 'The core map-style dataset backed by an immutable, columnar Apache Arrow table mapped directly from disk (~/.cache/huggingface/datasets/*.arrow). Because Arrow uses contiguous columnar buffers without deserialization overhead, indexing any row ds[i] or slice ds[:100] executes in O(1) time with near-zero RAM footprint.',
+        syntaxPrimary: {
+          label: 'Zero-Copy Row & Slice Indexing',
+          code: `# Single index returns a Python dict for that row\nrow_0 = train_ds[0]          # {'idx': 0, 'sentence1': '...', 'label': 1}\n\n# Slice returns a dict of lists (columnar batch)\nbatch_2 = train_ds[:2]       # {'idx': [0, 1], 'label': [1, 0]}`
+        },
+        syntaxAlternative: {
+          label: 'Column Access & Structural Manipulation',
+          code: `labels_col = train_ds["label"]  # Full column list\nrenamed_ds = train_ds.rename_column("label", "labels")\npruned_ds  = train_ds.select_columns(["sentence1", "label"])`
+        },
+        pitfall: 'In older versions or naive loops, iterating over ds["column"] loaded the entire column into Python RAM. Slice batches (ds[i:i+batch_size]) for constant memory usage.'
+      },
+      {
+        id: 'filter-select',
+        badgeNum: 5,
+        name: '.filter() / .select() / .shuffle()',
+        category: 'Transforms & Cache',
+        objectType: 'Dataset.filter() / .select() / .train_test_split()',
+        accessPath: 'ds.filter(fn) / ds.select(indices)',
+        memoryStatus: 'Arrow Index Mapping Table (Cached)',
+        complexity: 'O(N) Filter Scan / O(k) Index Select',
+        visualRole: 'Row-level subsetting and reordering operations. .filter() evaluates a boolean predicate (row-by-row or batched) to keep matching rows; .select() picks explicit integer indices; .shuffle() and .train_test_split() build lightweight Arrow index permutation mappings without duplicating the full dataset payload.',
+        syntaxPrimary: {
+          label: 'Boolean Row Filtering & Partition Splitting',
+          code: `# Keep only positive paraphrase pairs\npositive_ds = train_ds.filter(lambda row: row["label"] == 1, num_proc=4)\n\n# Create 80/20 train/test split\nsplits = positive_ds.train_test_split(test_size=0.2, seed=42)`
+        },
+        syntaxAlternative: {
+          label: 'Explicit Index Selection & Shuffling',
+          code: `top_samples = train_ds.select([0, 10, 25, 50])\nshuffled_ds = train_ds.shuffle(seed=42)`
+        },
+        pitfall: 'Combine batched=True with .filter() (e.g., using Pandas or list comprehensions) when filtering millions of rows for up to 10x faster throughput.'
+      },
+      {
+        id: 'batched-map',
+        badgeNum: 6,
+        name: 'Vectorized Batched .map()',
+        category: 'Transforms & Cache',
+        objectType: 'Dataset.map(batched=True, num_proc=N)',
+        accessPath: 'ds.map(fn, batched=True, remove_columns=[...])',
+        memoryStatus: 'Writes New Serialized Arrow Cache File',
+        complexity: 'O(N / (B * P)) Vectorized Multiprocessing',
+        visualRole: 'The workhorse transformation engine of 🤗 datasets. With batched=True, it feeds dictionaries of column lists (default batch_size=1000) to Rust-backed tokenizers or vectorized functions across num_proc CPU workers, materializing new columns (like input_ids) and pruning raw text columns into a new Arrow cache file.',
+        syntaxPrimary: {
+          label: 'Parallel Batched Tokenization & Column Pruning',
+          code: `def tokenize_fn(batch):\n    return tokenizer(batch["sentence1"], batch["sentence2"], truncation=True)\n\ntokenized_ds = train_ds.map(\n    tokenize_fn,\n    batched=True,\n    batch_size=1000,\n    num_proc=4,\n    remove_columns=["sentence1", "sentence2", "idx"]\n)`
+        },
+        syntaxAlternative: {
+          label: 'Dataset Expansion / Chunking (1-to-Many Rows)',
+          code: `# When batched=True, returning lists of a different length\n# lets you split long documents into multiple chunked rows!\nchunked_ds = raw_ds.map(chunk_documents_fn, batched=True, remove_columns=raw_ds.column_names)`
+        },
+        pitfall: 'If your map function uses unpicklable objects (like open DB connections) with num_proc > 1, Python multiprocessing will raise a PicklingError. Initialize heavy resources inside the worker or make them picklable.'
+      },
+      {
+        id: 'lazy-transform',
+        badgeNum: 7,
+        name: '.set_transform() On-the-Fly Hook',
+        category: 'Transforms & Cache',
+        objectType: 'Dataset.set_transform(fn) / .with_transform(fn)',
+        accessPath: 'ds.set_transform(augment_batch)',
+        memoryStatus: '100% Ephemeral RAM (0 MB Disk Write)',
+        complexity: 'O(batch_size) Executed on Read Query',
+        visualRole: 'Registers a lazy callback function that intercepts __getitem__ / batch reads on-the-fly without writing anything to disk. Ideal for stochastic computer vision augmentations (random crops, ColorJitter) or dynamic padding where you want fresh random variations every epoch without filling up your SSD.',
+        syntaxPrimary: {
+          label: 'Dynamic Image Augmentation on Read',
+          code: `from torchvision.transforms import ColorJitter, Compose, ToTensor\njitter = Compose([ColorJitter(brightness=0.5, hue=0.3), ToTensor()])\n\ndef transforms(examples):\n    examples["pixel_values"] = [jitter(img.convert("RGB")) for img in examples["image"]]\n    return examples\n\nvision_ds.set_transform(transforms)`
+        },
+        syntaxAlternative: {
+          label: 'Resetting or Functional with_transform()',
+          code: `# Non-mutating copy with transform hook attached\naug_ds = ds.with_transform(augment_batch)\n\n# Clear on-the-fly transform hook immediately\nds.set_transform(None)`
+        },
+        pitfall: 'Note that set_transform() replaces any previous format set by set_format(). If you use set_transform(), convert outputs to tensors inside your transform function.'
+      },
+      {
+        id: 'format-bridge',
+        badgeNum: 8,
+        name: '.with_format() Framework Bridge',
+        category: 'Streaming & Interop',
+        objectType: 'Dataset.with_format() / .set_format()',
+        accessPath: 'ds.with_format(type="torch" | "pandas" | "numpy")',
+        memoryStatus: 'Zero-Copy Arrow Buffer View to Tensors',
+        complexity: 'O(1) Buffer Wrap | torch.Tensor / pd.DataFrame',
+        visualRole: 'Configures the output container format returned when indexing the dataset ("torch", "tensorflow", "numpy", "jax", "pandas", "polars", "arrow"). Whitelisting numeric columns via columns=[...] masks out raw string columns at read time so torch.utils.data.DataLoader collates clean tensor batches.',
+        syntaxPrimary: {
+          label: 'PyTorch Zero-Copy Bridge & DataLoader',
+          code: `from torch.utils.data import DataLoader\n\ntorch_ds = tokenized_ds.with_format(\n    type="torch",\n    columns=["input_ids", "attention_mask", "label"]\n)\ndataloader = DataLoader(torch_ds, batch_size=32, shuffle=True)`
+        },
+        syntaxAlternative: {
+          label: 'Pandas Vectorized Processing & Export',
+          code: `pandas_ds = ds.with_format("pandas")\ndf_slice  = pandas_ds[:5]          # Returns pd.DataFrame\nfull_df   = ds.to_pandas()         # Exports entire table to DataFrame`
+        },
+        pitfall: 'Prefer ds.with_format("torch") (returns a new Dataset view) over ds.set_format("torch") (mutates in-place) when sharing the same base dataset across multiple pipelines.'
+      },
+      {
+        id: 'iterable-stream',
+        badgeNum: 9,
+        name: 'IterableDataset (streaming=True)',
+        category: 'Streaming & Interop',
+        objectType: 'datasets.IterableDataset',
+        accessPath: 'next(iter(stream_ds)) / stream_ds.take(N)',
+        memoryStatus: 'HTTP Chunk Stream + RAM Reservoir Buffer (0 GB Disk)',
+        complexity: 'O(1) Startup | Sequential Stream Iteration',
+        visualRole: 'Created when load_dataset(..., streaming=True) is enabled. Instead of downloading multi-terabyte datasets (like 45TB FineWeb or C4), it streams remote Parquet/JSONL shards over HTTP on-the-fly. Uses an in-memory Reservoir Shuffle Buffer (buffer_size=10_000) and set_epoch() for randomized training loops.',
+        syntaxPrimary: {
+          label: 'Instant Zero-Disk Streaming & Buffer Shuffling',
+          code: `stream_ds = load_dataset("HuggingFaceFW/fineweb", split="train", streaming=True)\n\n# Shuffle within a 10,000-example RAM reservoir buffer\nshuffled = stream_ds.shuffle(seed=42, buffer_size=10_000)\nsample_3 = list(shuffled.take(3))`
+        },
+        syntaxAlternative: {
+          label: 'Multi-Epoch Training Loop with set_epoch()',
+          code: `for epoch in range(3):\n    shuffled.set_epoch(epoch)  # Re-seeds shuffle buffer for epoch\n    for batch in DataLoader(shuffled.with_format("torch"), batch_size=32):\n        train_step(batch)`
+        },
+        pitfall: 'An IterableDataset does not support random integer indexing like stream_ds[500]. Use next(iter(stream_ds)), .take(n), or .skip(n) to inspect samples.'
+      },
+      {
+        id: 'hub-export',
+        badgeNum: 10,
+        name: '.push_to_hub() & Cache Control',
+        category: 'Transforms & Cache',
+        objectType: 'Dataset.push_to_hub() / .save_to_disk() / .cleanup_cache_files()',
+        accessPath: 'ds.push_to_hub("org/repo") / ds.cleanup_cache_files()',
+        memoryStatus: 'Parquet Hub Shards / Local Arrow Directory',
+        complexity: 'Parallel Shard Upload (num_proc=8)',
+        visualRole: 'Manages persistence, Hub publishing, and local disk hygiene. .push_to_hub() converts the Arrow table into compressed Parquet shards and commits them to Hugging Face Hub; .save_to_disk() serializes the exact Arrow state locally; .cleanup_cache_files() purges stale intermediate .arrow transform caches.',
+        syntaxPrimary: {
+          label: 'Publish Processed Dataset to Hugging Face Hub',
+          code: `# Requires ` + '`hf auth login`' + ` or token parameter\ntokenized_ds.push_to_hub("username/mrpc-processed", private=True)\n\n# Local Arrow persistence & reload\ntokenized_ds.save_to_disk("./local_arrow_ds")`
+        },
+        syntaxAlternative: {
+          label: 'Cache Hygiene & Disabling Cache',
+          code: `from datasets import disable_caching, load_from_disk\n\nreloaded_ds = load_from_disk("./local_arrow_ds")\nremoved_files = reloaded_ds.cleanup_cache_files()  # Frees disk space\ndisable_caching()  # Disables caching globally for session`
+        },
+        pitfall: 'If you hit HfHubHTTPError: 429 Too Many Requests when uploading large datasets via push_to_hub(), upgrade datasets >= 2.15.0 to commit shards in a single atomic operation.'
+      }
+    ];
+
+    // ============================================================================
+    // 2. MODE 3: 5 CURATED PROGRESSIVE CODE WALKTHROUGH RECIPES
+    // ============================================================================
+    const CODE_SNIPPETS = [
+      {
+        id: 'snippet-1',
+        title: '1. Hub Ingestion, Subsets & Split Slicing',
+        lines: [
+          {
+            code: 'from datasets import load_dataset',
+            title: 'Summon the Universal Hub & File Gateway',
+            targetParts: ['hub-loader'],
+            revealParts: ['hub-loader'],
+            explanation: 'Imports load_dataset(), the unified entry point for pulling repositories from the Hugging Face Hub, local CSV/Parquet files, or multimodal folders into Apache Arrow storage.',
+            output: `>>> # 🤗 datasets engine initialized\n>>> # Default cache root: ~/.cache/huggingface/datasets`,
+            memBadge: '0 MB RAM'
+          },
+          {
+            code: 'ds_dict = load_dataset("nyu-mll/glue", "mrpc")',
+            title: 'Fetch Multi-Split Benchmark Bundle (DatasetDict)',
+            targetParts: ['hub-loader', 'dataset-dict'],
+            revealParts: ['hub-loader', 'dataset-dict'],
+            explanation: 'Downloads and compiles the Microsoft Research Paraphrase Corpus (MRPC) configuration of GLUE. Because split= is omitted, it returns a DatasetDict isolating train, validation, and test splits.',
+            output: `DatasetDict({\n    train: Dataset({ features: ['sentence1', 'sentence2', 'label', 'idx'], num_rows: 3668 }),\n    validation: Dataset({ features: ['sentence1', 'sentence2', 'label', 'idx'], num_rows: 408 }),\n    test: Dataset({ features: ['sentence1', 'sentence2', 'label', 'idx'], num_rows: 1725 })\n})`,
+            memBadge: 'Arrow mmap compiled'
+          },
+          {
+            code: 'train_ds = load_dataset("nyu-mll/glue", "mrpc", split="train")',
+            title: 'Target a Single Split Directly into an Arrow Table',
+            targetParts: ['dataset-dict', 'features-schema', 'arrow-table'],
+            revealParts: ['hub-loader', 'dataset-dict', 'features-schema', 'arrow-table'],
+            explanation: 'Passing split="train" bypasses the DatasetDict wrapper and returns a map-style Dataset object backed directly by a memory-mapped Arrow file on disk with O(1) random access.',
+            output: `Dataset({\n    features: ['sentence1', 'sentence2', 'label', 'idx'],\n    num_rows: 3668\n})\n>>> train_ds[0]\n{'sentence1': 'Amrozi accused his brother...', 'label': 1, 'idx': 0}`,
+            memBadge: 'O(1) mmap pointer'
+          },
+          {
+            code: 'sub_train = load_dataset("nyu-mll/glue", "mrpc", split="train[:1000]")',
+            title: 'Slice Contiguous Row Windows at the Arrow Boundary',
+            targetParts: ['hub-loader', 'arrow-table'],
+            revealParts: ['hub-loader', 'dataset-dict', 'features-schema', 'arrow-table'],
+            explanation: 'Uses string slicing syntax to bind an Arrow table view over the first 1,000 rows of the training split without duplicating the underlying cache file on disk.',
+            output: `Dataset({\n    features: ['sentence1', 'sentence2', 'label', 'idx'],\n    num_rows: 1000\n})`,
+            memBadge: 'Reuses Arrow cache'
+          },
+          {
+            code: 'combined = load_dataset("nyu-mll/glue", "mrpc", split="train[:80%]+validation[:80%]")',
+            title: 'Cross-Split Percentage Fusion',
+            targetParts: ['hub-loader', 'dataset-dict', 'arrow-table'],
+            revealParts: ['hub-loader', 'dataset-dict', 'features-schema', 'arrow-table'],
+            explanation: 'Slices the first 80% of rows from "train" (2,934 rows) and the first 80% from "validation" (326 rows), concatenating them into a single unified Dataset of 3,260 rows.',
+            output: `Dataset({\n    features: ['sentence1', 'sentence2', 'label', 'idx'],\n    num_rows: 3260\n})`,
+            memBadge: 'Zero-copy concat'
+          }
+        ]
+      },
+      {
+        id: 'snippet-2',
+        title: '2. Local, In-Memory & Multimodal Construction',
+        lines: [
+          {
+            code: 'raw_dict = {"text": ["Great model!", "Needs work."], "label": [1, 0]}',
+            title: 'Prepare Columnar Python Dictionary',
+            targetParts: ['hub-loader'],
+            revealParts: ['hub-loader'],
+            explanation: 'Defines a Python dictionary mapping feature column names ("text", "label") to equal-length lists of row values.',
+            output: `>>> len(raw_dict["text"]) == len(raw_dict["label"])\nTrue (2 rows)`,
+            memBadge: 'Python dict in RAM'
+          },
+          {
+            code: 'dict_ds = Dataset.from_dict(raw_dict)',
+            title: 'Materialize Python Dict into an Immutable Arrow Table',
+            targetParts: ['hub-loader', 'features-schema', 'arrow-table'],
+            revealParts: ['hub-loader', 'features-schema', 'arrow-table'],
+            explanation: 'Dataset.from_dict() infers Apache Arrow types automatically (string -> Value("string"), int -> Value("int64")) and constructs a columnar pyarrow.Table.',
+            output: `Dataset({\n    features: {'text': Value('string'), 'label': Value('int64')},\n    num_rows: 2\n})`,
+            memBadge: 'Arrow Table built'
+          },
+          {
+            code: 'df_ds = Dataset.from_pandas(df, preserve_index=False)',
+            title: 'Zero-Copy Pandas DataFrame Ingestion',
+            targetParts: ['hub-loader', 'arrow-table', 'format-bridge'],
+            revealParts: ['hub-loader', 'features-schema', 'arrow-table', 'format-bridge'],
+            explanation: 'Converts an existing pandas.DataFrame into a Dataset using PyArrow C++ memory converters. Passing preserve_index=False prevents adding an extra __index_level_0__ column.',
+            output: `Dataset({\n    features: {'prompt': Value('string'), 'tokens': Value('int64')},\n    num_rows: 2\n})`,
+            memBadge: 'PyArrow zero-copy'
+          },
+          {
+            code: 'csv_ds = load_dataset("csv", data_files={"train": "train.csv", "test": "test.csv"})',
+            title: 'Multi-Threaded Packaged File Builder ("csv" / "parquet")',
+            targetParts: ['hub-loader', 'dataset-dict', 'arrow-table'],
+            revealParts: ['hub-loader', 'dataset-dict', 'features-schema', 'arrow-table', 'format-bridge'],
+            explanation: 'Invokes the built-in Arrow streaming CSV parser to read delimited files (including compressed .csv.gz) directly into partitioned DatasetDict splits.',
+            output: `DatasetDict({\n    train: Dataset({ features: ['id', 'text', 'label'], num_rows: 5000 }),\n    test: Dataset({ features: ['id', 'text', 'label'], num_rows: 1000 })\n})`,
+            memBadge: 'Arrow disk cache'
+          },
+          {
+            code: 'img_ds = load_dataset("imagefolder", data_dir="./pokemon", split="train")',
+            title: 'Automated Multimodal Folder Parsing (ImageFolder / AudioFolder)',
+            targetParts: ['hub-loader', 'features-schema', 'arrow-table'],
+            revealParts: ['hub-loader', 'dataset-dict', 'features-schema', 'arrow-table', 'format-bridge'],
+            explanation: 'Scans directory structures (e.g., pokemon/train/fire/charmander.png), automatically infers ClassLabel names from subfolder names, and binds lazy Image() decoders.',
+            output: `Dataset({\n    features: {'image': Image(mode=None, decode=True), 'label': ClassLabel(names=['fire', 'grass', 'water'])},\n    num_rows: 151\n})`,
+            memBadge: 'Lazy Image() decoder'
+          }
+        ]
+      },
+      {
+        id: 'snippet-3',
+        title: '3. Vectorized Batched .map(), Filtering & Cache Management',
+        lines: [
+          {
+            code: 'def tokenize_fn(batch): return tokenizer(batch["sentence1"], batch["sentence2"], truncation=True)',
+            title: 'Define Batch-Aware Tokenization Callback',
+            targetParts: ['batched-map'],
+            revealParts: ['arrow-table', 'batched-map'],
+            explanation: 'Accepts a batch dictionary of column lists (batch["sentence1"], batch["sentence2"]) and returns a dictionary containing newly tokenized lists (input_ids, attention_mask).',
+            output: `>>> # Function ready for vectorized Rust tokenizer execution`,
+            memBadge: 'Batch callable'
+          },
+          {
+            code: 'tokenized_ds = train_ds.map(tokenize_fn, batched=True, batch_size=1000, num_proc=4, remove_columns=["sentence1", "sentence2", "idx"])',
+            title: 'Execute Multi-Core Batched .map() & Prune Raw Text Columns',
+            targetParts: ['arrow-table', 'batched-map'],
+            revealParts: ['arrow-table', 'batched-map'],
+            explanation: 'Spawns 4 parallel processes (num_proc=4), feeds 1,000 rows per batch into the Rust tokenizer, drops raw string columns, and serializes the resulting table to an Arrow cache file.',
+            output: `Map (num_proc=4): 100%|██████████| 3668/3668 [00:00<00:00, 9420.15 examples/s]\nDataset({\n    features: ['label', 'input_ids', 'token_type_ids', 'attention_mask'],\n    num_rows: 3668\n})`,
+            memBadge: 'New .arrow cache saved'
+          },
+          {
+            code: 'positive_ds = tokenized_ds.filter(lambda row: row["label"] == 1)',
+            title: 'Filter Rows via Boolean Predicate Mask',
+            targetParts: ['arrow-table', 'filter-select'],
+            revealParts: ['arrow-table', 'batched-map', 'filter-select'],
+            explanation: 'Scans the "label" column and constructs an Arrow index mask retaining only rows where label == 1 (equivalent paraphrases).',
+            output: `Filter: 100%|██████████| 3668/3668 [00:00<00:00, 48120.00 examples/s]\nDataset({ features: ['label', 'input_ids', 'token_type_ids', 'attention_mask'], num_rows: 2474 })`,
+            memBadge: 'Filtered index view'
+          },
+          {
+            code: 'splits = positive_ds.train_test_split(test_size=0.2, seed=42)',
+            title: 'Shuffle & Partition into Train/Test DatasetDict',
+            targetParts: ['filter-select', 'dataset-dict'],
+            revealParts: ['dataset-dict', 'arrow-table', 'batched-map', 'filter-select'],
+            explanation: 'Randomly permutes indices using seed=42 and partitions the filtered dataset into an 80% train (1,979 rows) and 20% test (495 rows) DatasetDict.',
+            output: `DatasetDict({\n    train: Dataset({ num_rows: 1979 }),\n    test: Dataset({ num_rows: 495 })\n})`,
+            memBadge: 'Zero-copy split'
+          },
+          {
+            code: 'removed_count = train_ds.cleanup_cache_files()',
+            title: 'Purge Stale Intermediate Arrow Cache Files',
+            targetParts: ['arrow-table', 'hub-export'],
+            revealParts: ['dataset-dict', 'arrow-table', 'batched-map', 'filter-select', 'hub-export'],
+            explanation: 'Deletes unreferenced intermediate .arrow cache files in the dataset cache directory while keeping currently open memory-mapped files intact.',
+            output: `>>> removed_count\n2  # Freed 2 stale transform cache files from ~/.cache/huggingface/datasets`,
+            memBadge: 'Disk cache cleaned'
+          }
+        ]
+      },
+      {
+        id: 'snippet-4',
+        title: '4. Schema Alignment, Lazy Transforms & PyTorch/Pandas Interop',
+        lines: [
+          {
+            code: 'new_features = ds.features.copy(); new_features["label"] = ClassLabel(names=["negative", "positive"])',
+            title: 'Clone Features Schema & Define Semantic ClassLabel',
+            targetParts: ['features-schema'],
+            revealParts: ['features-schema', 'arrow-table'],
+            explanation: 'Clones the dataset schema dictionary and replaces the integer label definition with a bidirectional ClassLabel mapping (0 -> "negative", 1 -> "positive").',
+            output: `{'sentence1': Value('string'), 'label': ClassLabel(names=['negative', 'positive']), 'idx': Value('int32')}`,
+            memBadge: 'Schema definition'
+          },
+          {
+            code: 'casted_ds = ds.cast(new_features)',
+            title: 'Project Arrow Table Across Revised Schema',
+            targetParts: ['features-schema', 'arrow-table'],
+            revealParts: ['features-schema', 'arrow-table'],
+            explanation: 'Validates and casts the underlying Arrow column types to match new_features, unlocking int2str() and str2int() label utilities.',
+            output: `Casting the dataset: 100%|██████████| 3668/3668 [00:00<00:00, 62000.00 examples/s]\n>>> casted_ds.features["label"].int2str(1)\n'positive'`,
+            memBadge: 'Arrow schema updated'
+          },
+          {
+            code: 'casted_ds.set_transform(augment_batch)',
+            title: 'Attach Ephemeral On-the-Fly Transform Hook (Zero Disk Write)',
+            targetParts: ['arrow-table', 'lazy-transform'],
+            revealParts: ['features-schema', 'arrow-table', 'lazy-transform'],
+            explanation: 'Registers augment_batch to run dynamically in RAM whenever rows are indexed (e.g., random image ColorJitter or dynamic features) without rewriting the Arrow cache on disk.',
+            output: `>>> # On-the-fly hook active: Disk Write = 0 MB\n>>> list(casted_ds[0].keys())\n['sentence1', 'sentence2', 'label', 'idx', 'char_count']`,
+            memBadge: 'RAM-only transform'
+          },
+          {
+            code: 'torch_ds = tokenized_ds.with_format(type="torch", columns=["input_ids", "attention_mask", "label"])',
+            title: 'Zero-Copy Framework Bridge to PyTorch Tensors',
+            targetParts: ['arrow-table', 'format-bridge'],
+            revealParts: ['features-schema', 'arrow-table', 'lazy-transform', 'format-bridge'],
+            explanation: 'Configures the dataset view to convert whitelisted numeric Arrow buffers directly into torch.Tensor objects while masking out unused string columns.',
+            output: `>>> torch_ds[0]\n{'label': tensor(1), 'input_ids': tensor([101, 2023, ...]), 'attention_mask': tensor([1, 1, ...])}`,
+            memBadge: 'Zero-copy Tensor view'
+          },
+          {
+            code: 'loader = DataLoader(torch_ds, batch_size=32, shuffle=True)',
+            title: 'Feed Formatted Dataset into PyTorch DataLoader',
+            targetParts: ['format-bridge'],
+            revealParts: ['features-schema', 'arrow-table', 'lazy-transform', 'format-bridge'],
+            explanation: 'Wraps torch_ds in a standard PyTorch DataLoader that leverages O(1) Arrow random access to collate shuffled 32-sample tensor batches.',
+            output: `>>> batch = next(iter(loader))\n>>> {k: v.shape for k, v in batch.items()}\n{'label': torch.Size([32]), 'input_ids': torch.Size([32, 128]), 'attention_mask': torch.Size([32, 128])}`,
+            memBadge: 'Batch tensor ready'
+          }
+        ]
+      },
+      {
+        id: 'snippet-5',
+        title: '5. Zero-Disk Streaming (IterableDataset) & Hub Sharing',
+        lines: [
+          {
+            code: 'stream_ds = load_dataset("HuggingFaceFW/fineweb", split="train", streaming=True)',
+            title: 'Initialize Instant Zero-Disk HTTP Stream (IterableDataset)',
+            targetParts: ['hub-loader', 'iterable-stream'],
+            revealParts: ['hub-loader', 'iterable-stream'],
+            explanation: 'Setting streaming=True returns an IterableDataset that streams remote Parquet shards over HTTP on-the-fly, letting you work with a 45 TB dataset immediately with 0 GB local disk usage.',
+            output: `IterableDataset({\n    features: ['text', 'id', 'dump', 'url', 'date', 'language_score', 'token_count'],\n    num_shards: 4\n})`,
+            memBadge: '0 GB Disk Used'
+          },
+          {
+            code: 'mapped_stream = stream_ds.map(add_prefix).remove_columns(["timestamp"])',
+            title: 'Chain Lazy On-the-Fly Stream Transformations',
+            targetParts: ['iterable-stream', 'batched-map'],
+            revealParts: ['hub-loader', 'iterable-stream', 'batched-map'],
+            explanation: 'Chains lazy .map() and .remove_columns() stages onto the stream pipeline; transformations execute per example only as the iterator is consumed.',
+            output: `>>> # Lazy pipeline registered on IterableDataset (no computation until iteration)`,
+            memBadge: 'Lazy generator chain'
+          },
+          {
+            code: 'shuffled_stream = mapped_stream.shuffle(seed=42, buffer_size=10_000)',
+            title: 'Configure In-Memory Reservoir Shuffle Buffer',
+            targetParts: ['iterable-stream'],
+            revealParts: ['hub-loader', 'iterable-stream', 'batched-map'],
+            explanation: 'Because streaming datasets cannot random-access the entire corpus, .shuffle() maintains a 10,000-sample reservoir buffer in RAM and samples randomly from it as new items stream in.',
+            output: `>>> # Reservoir Shuffle Buffer allocated: buffer_size=10,000 examples`,
+            memBadge: '10k RAM Buffer'
+          },
+          {
+            code: 'shuffled_stream.set_epoch(epoch); sample_batch = list(shuffled_stream.take(3))',
+            title: 'Set Epoch Seed & Pull Stream Samples with .take()',
+            targetParts: ['iterable-stream', 'format-bridge'],
+            revealParts: ['hub-loader', 'iterable-stream', 'batched-map', 'format-bridge'],
+            explanation: 'set_epoch(epoch) updates the effective shuffle seed per training epoch, and .take(3) pulls the first 3 processed items from the stream.',
+            output: `[{'text': 'My text: How AP reported in all formats...', 'token_count': 717},\n {'text': 'My text: Founded in 2015, Golden Bees...', 'token_count': 412},\n {'text': 'My text: Beginners BBQ Class in Missoula...', 'token_count': 289}]`,
+            memBadge: 'Streamed 3 records'
+          },
+          {
+            code: 'tokenized_ds.push_to_hub("username/mrpc-tokenized", private=True)',
+            title: 'Publish Processed Dataset Repository to Hugging Face Hub',
+            targetParts: ['hub-export'],
+            revealParts: ['hub-loader', 'iterable-stream', 'batched-map', 'format-bridge', 'hub-export'],
+            explanation: 'Converts the processed dataset into compressed Parquet shards and uploads them directly to a private repository on the Hugging Face Hub.',
+            output: `Uploading the dataset shards: 100%|██████████| 1/1 [00:01<00:00, 1.12s/it]\nCommitInfo(commit_url='https://huggingface.co/datasets/username/mrpc-tokenized/commit/main')`,
+            memBadge: 'Published to HF Hub'
+          }
+        ]
+      }
+    ];
+
+    // ============================================================================
+    // 3. STATE MANAGEMENT
+    // ============================================================================
+    let currentMode = 'anatomy'; // 'anatomy' | 'quiz' | 'xray'
+    let selectedPartId = 'arrow-table';
+    let activeCategory = 'all';
+
+    // Quiz State
+    let quizState = {
+      targetId: null,
+      options: [],
+      answered: false,
+      score: 0,
+      total: 0,
+      streak: 0,
+      bestStreak: 0,
+      queue: []
+    };
+
+    // X-Ray State
+    let xrayState = {
+      snippetIndex: 0,
+      lineIndex: 0,
+      progressiveBuild: true
+    };
+
+    // ============================================================================
+    // 4. INITIALIZATION & HELPER FUNCTIONS
+    // ============================================================================
+    function getComponent(id) {
+      return COMPONENTS.find(c => c.id === id) || COMPONENTS[3];
+    }
+
+    function initApp() {
+      renderQuickJumpBar();
+      renderSnippetDropdown();
+      selectComponent('arrow-table');
+      initQuizQueue();
+    }
+
+    function renderQuickJumpBar() {
+      const bar = document.getElementById('quick-jump-bar');
+      bar.innerHTML = COMPONENTS.map(c => `
+        <button
+          onclick="handlePartClick('${c.id}')"
+          id="jump-pill-${c.id}"
+          class="jump-pill px-2.5 py-1 rounded-lg text-[11px] font-mono border transition flex items-center gap-1 bg-slate950 text-gray-300 border-slate800 hover:border-amber-400"
+        >
+          <span class="text-amber-400 font-bold">#${c.badgeNum}</span>
+          <span class="pill-title">${c.name.split(' ')[0]}</span>
+        </button>
+      `).join('');
+    }
+
+    // ============================================================================
+    // 5. MODE SWITCHING ('anatomy' | 'quiz' | 'xray')
+    // ============================================================================
+    function setMode(mode) {
+      currentMode = mode;
+
+      // Update Top Mode Buttons
+      const modeMap = { anatomy: 'mode-btn-1', quiz: 'mode-btn-2', xray: 'mode-btn-3' };
+      Object.entries(modeMap).forEach(([key, btnId]) => {
+        const btn = document.getElementById(btnId);
+        if (key === mode) {
+          btn.className = 'mode-btn px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 bg-amber-500 text-slate950 font-semibold shadow';
+        } else {
+          btn.className = 'mode-btn px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 text-gray-300 hover:text-white';
+        }
+      });
+
+      // Toggle Right-Hand Panels
+      document.getElementById('panel-anatomy').classList.toggle('hidden', mode !== 'anatomy');
+      document.getElementById('panel-anatomy').classList.toggle('flex', mode === 'anatomy');
+
+      document.getElementById('panel-quiz').classList.toggle('hidden', mode !== 'quiz');
+      document.getElementById('panel-quiz').classList.toggle('flex', mode === 'quiz');
+
+      document.getElementById('panel-xray').classList.toggle('hidden', mode !== 'xray');
+      document.getElementById('panel-xray').classList.toggle('flex', mode === 'xray');
+
+      // Mask or Unmask SVG Badge Labels for Quiz Mode
+      updateSvgBadgeLabels(mode === 'quiz');
+
+      // Reset visual states per mode
+      if (mode === 'anatomy') {
+        selectComponent(selectedPartId);
+      } else if (mode === 'quiz') {
+        if (!quizState.targetId || quizState.answered) {
+          nextQuizQuestion();
+        } else {
+          syncSvgHighlights();
+        }
+      } else if (mode === 'xray') {
+        renderXrayPanel();
+      }
+    }
+
+    function updateSvgBadgeLabels(maskForQuiz) {
+      document.querySelectorAll('.part-badge-text').forEach(textEl => {
+        const num = textEl.getAttribute('data-num');
+        const fullTitle = textEl.getAttribute('data-title');
+        textEl.textContent = maskForQuiz ? `#${num} ? (Mystery Part)` : fullTitle;
+      });
+      // Also mask quick-jump pills during quiz mode
+      COMPONENTS.forEach(c => {
+        const pill = document.getElementById(`jump-pill-${c.id}`);
+        if (pill) {
+          const titleSpan = pill.querySelector('.pill-title');
+          if (titleSpan) {
+            titleSpan.textContent = maskForQuiz ? '?' : c.name.split(' ')[0];
+          }
+        }
+      });
+    }
+
+    // ============================================================================
+    // 6. SVG PART INTERACTION & HIGHLIGHT SYNCHRONIZATION
+    // ============================================================================
+    function handlePartClick(partId) {
+      if (currentMode === 'quiz') {
+        submitQuizAnswer(partId);
+        return;
+      }
+      if (currentMode === 'xray') {
+        // In X-Ray mode, clicking an SVG part jumps to the first line in the current snippet that targets it,
+        // or updates the status bar if not in the current snippet.
+        const snippet = CODE_SNIPPETS[xrayState.snippetIndex];
+        const matchingLineIdx = snippet.lines.findIndex(l => l.targetParts.includes(partId));
+        if (matchingLineIdx !== -1) {
+          xrayState.lineIndex = matchingLineIdx;
+          renderXrayPanel();
+        }
+        updateStatusBar(partId);
+        return;
+      }
+      selectComponent(partId);
+    }
+
+    function handlePartHover(partId) {
+      if (currentMode !== 'quiz') {
+        updateStatusBar(partId);
+      }
+    }
+
+    function handlePartLeave() {
+      if (currentMode === 'anatomy') {
+        updateStatusBar(selectedPartId);
+      } else if (currentMode === 'xray') {
+        const line = CODE_SNIPPETS[xrayState.snippetIndex].lines[xrayState.lineIndex];
+        if (line && line.targetParts.length > 0) {
+          updateStatusBar(line.targetParts[0]);
+        }
+      }
+    }
+
+    function updateStatusBar(partId) {
+      const comp = getComponent(partId);
+      document.getElementById('status-comp').textContent = `#${comp.badgeNum} ${comp.name}`;
+      document.getElementById('status-type').textContent = comp.objectType;
+      document.getElementById('status-mem').textContent = comp.memoryStatus;
+      document.getElementById('status-access').textContent = comp.complexity;
+    }
+
+    function setCategoryFilter(category) {
+      activeCategory = category;
+      document.querySelectorAll('.cat-chip').forEach(btn => {
+        const isMatch = btn.getAttribute('data-cat') === category;
+        btn.className = isMatch
+          ? 'cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40 transition'
+          : 'cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate800/80 text-gray-300 border border-gray-700 hover:border-gray-500 transition';
+      });
+      syncSvgHighlights();
+    }
+
+    function syncSvgHighlights() {
+      const allParts = document.querySelectorAll('.svg-part');
+
+      allParts.forEach(el => {
+        const id = el.getAttribute('data-part');
+        const comp = getComponent(id);
+
+        el.classList.remove('active-part', 'xray-target', 'quiz-spotlight', 'dimmed-part');
+
+        // Category Filter Dimming (applies if category !== 'all')
+        const matchesCategory = activeCategory === 'all' || comp.category === activeCategory;
+
+        if (currentMode === 'anatomy') {
+          if (id === selectedPartId) {
+            el.classList.add('active-part');
+          } else if (!matchesCategory) {
+            el.classList.add('dimmed-part');
+          }
+        } else if (currentMode === 'quiz') {
+          if (id === quizState.targetId) {
+            el.classList.add('quiz-spotlight');
+          } else if (!quizState.answered) {
+            el.classList.add('dimmed-part');
+          }
+        } else if (currentMode === 'xray') {
+          const snippet = CODE_SNIPPETS[xrayState.snippetIndex];
+          const currentLine = snippet.lines[xrayState.lineIndex];
+          const isTarget = currentLine.targetParts.includes(id);
+
+          // Gather cumulative revealed parts up to current line
+          const revealedSet = new Set();
+          for (let i = 0; i <= xrayState.lineIndex; i++) {
+            snippet.lines[i].revealParts.forEach(p => revealedSet.add(p));
+          }
+
+          if (isTarget) {
+            el.classList.add('active-part', 'xray-target');
+          } else if (xrayState.progressiveBuild && !revealedSet.has(id)) {
+            el.classList.add('dimmed-part');
+          } else if (!matchesCategory) {
+            el.classList.add('dimmed-part');
+          }
+        }
+      });
+
+      // Sync Quick-Jump Pills
+      COMPONENTS.forEach(c => {
+        const pill = document.getElementById(`jump-pill-${c.id}`);
+        if (!pill) return;
+        const isActive = (currentMode === 'anatomy' && c.id === selectedPartId) ||
+                         (currentMode === 'quiz' && c.id === quizState.targetId) ||
+                         (currentMode === 'xray' && CODE_SNIPPETS[xrayState.snippetIndex].lines[xrayState.lineIndex].targetParts.includes(c.id));
+        pill.className = isActive
+          ? 'jump-pill px-2.5 py-1 rounded-lg text-[11px] font-mono border transition flex items-center gap-1 bg-amber-500/20 text-amber-200 border-amber-400 shadow'
+          : 'jump-pill px-2.5 py-1 rounded-lg text-[11px] font-mono border transition flex items-center gap-1 bg-slate950 text-gray-300 border-slate800 hover:border-amber-400';
+      });
+    }
+
+    // ============================================================================
+    // 7. MODE 1: VISUAL ANATOMY INSPECTOR LOGIC
+    // ============================================================================
+    function selectComponent(partId) {
+      selectedPartId = partId;
+      const comp = getComponent(partId);
+
+      document.getElementById('anat-badge').textContent = `#${comp.badgeNum}`;
+      document.getElementById('anat-cat').textContent = comp.category;
+      document.getElementById('anat-title').textContent = comp.name;
+      document.getElementById('anat-type').textContent = comp.objectType;
+      document.getElementById('anat-access').textContent = comp.accessPath;
+      document.getElementById('anat-role').textContent = comp.visualRole;
+
+      document.getElementById('anat-syn1-label').textContent = comp.syntaxPrimary.label;
+      document.getElementById('anat-syn1-code').textContent = comp.syntaxPrimary.code;
+
+      document.getElementById('anat-syn2-label').textContent = comp.syntaxAlternative.label;
+      document.getElementById('anat-syn2-code').textContent = comp.syntaxAlternative.code;
+
+      document.getElementById('anat-pitfall').innerHTML = `<strong class="text-amber-300 font-semibold">Best Practice / Gotcha:</strong> ${comp.pitfall}`;
+
+      updateStatusBar(partId);
+      syncSvgHighlights();
+    }
+
+    function cycleComponent(direction) {
+      const idx = COMPONENTS.findIndex(c => c.id === selectedPartId);
+      const nextIdx = (idx + direction + COMPONENTS.length) % COMPONENTS.length;
+      selectComponent(COMPONENTS[nextIdx].id);
+    }
+
+    function copyCode(elementId, btnEl) {
+      const text = document.getElementById(elementId).textContent;
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      const original = btnEl.textContent;
+      btnEl.textContent = 'Copied ✓';
+      btnEl.classList.add('text-emerald-400', 'border-emerald-500');
+      setTimeout(() => {
+        btnEl.textContent = original;
+        btnEl.classList.remove('text-emerald-400', 'border-emerald-500');
+      }, 1400);
+    }
+
+    // ============================================================================
+    // 8. MODE 2: BEGINNER TERMINOLOGY QUIZ ("NAME THAT PART")
+    // ============================================================================
+    function initQuizQueue() {
+      quizState.queue = COMPONENTS.map(c => c.id).sort(() => Math.random() - 0.5);
+    }
+
+    function nextQuizQuestion() {
+      if (quizState.queue.length === 0) {
+        initQuizQueue();
+      }
+      const targetId = quizState.queue.pop();
+      const targetComp = getComponent(targetId);
+
+      // Build 3 distractors + 1 correct answer
+      const distractors = COMPONENTS
+        .filter(c => c.id !== targetId)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+
+      const options = [targetComp, ...distractors].sort(() => Math.random() - 0.5);
+
+      quizState.targetId = targetId;
+      quizState.options = options;
+      quizState.answered = false;
+
+      // Update Quiz UI
+      document.getElementById('quiz-target-badge').textContent = `SPOTLIGHTING PART #${targetComp.badgeNum} ON DIAGRAM`;
+      document.getElementById('quiz-prompt').textContent = targetComp.visualRole;
+
+      const feedbackEl = document.getElementById('quiz-feedback');
+      feedbackEl.classList.add('hidden');
+
+      renderQuizOptions();
+      syncSvgHighlights();
+
+      // Mask status bar component name until answered
+      document.getElementById('status-comp').textContent = `Mystery Part #${targetComp.badgeNum} (?)`;
+      document.getElementById('status-type').textContent = 'Select the matching 🤗 datasets API';
+      document.getElementById('status-mem').textContent = targetComp.memoryStatus;
+      document.getElementById('status-access').textContent = targetComp.complexity;
+    }
+
+    function renderQuizOptions() {
+      const container = document.getElementById('quiz-options');
+      container.innerHTML = quizState.options.map((opt, idx) => `
+        <button
+          onclick="submitQuizAnswer('${opt.id}')"
+          id="quiz-opt-${opt.id}"
+          class="w-full text-left p-3 rounded-xl border bg-slate950 border-slate800 hover:border-amber-400 transition flex items-center justify-between gap-3 group"
+        >
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="w-6 h-6 rounded-lg bg-slate800 text-amber-400 font-mono text-xs font-bold flex items-center justify-center shrink-0">
+              ${String.fromCharCode(65 + idx)}
+            </span>
+            <div class="truncate">
+              <div class="text-sm font-semibold text-gray-100 group-hover:text-amber-300 truncate">${opt.name}</div>
+              <div class="text-[11px] font-mono text-cyan-400 truncate">${opt.objectType}</div>
+            </div>
+          </div>
+          <span class="text-xs font-mono text-gray-500 shrink-0">#${opt.badgeNum}</span>
+        </button>
+      `).join('');
+    }
+
+    function submitQuizAnswer(chosenId) {
+      if (quizState.answered) return;
+      quizState.answered = true;
+      quizState.total += 1;
+
+      const isCorrect = chosenId === quizState.targetId;
+      const targetComp = getComponent(quizState.targetId);
+      const chosenComp = getComponent(chosenId);
+
+      if (isCorrect) {
+        quizState.score += 1;
+        quizState.streak += 1;
+        if (quizState.streak > quizState.bestStreak) {
+          quizState.bestStreak = quizState.streak;
+        }
+      } else {
+        quizState.streak = 0;
+      }
+
+      // Update Scoreboard
+      document.getElementById('quiz-score').textContent = `${quizState.score}/${quizState.total}`;
+      document.getElementById('quiz-streak').textContent = `${quizState.streak}`;
+      document.getElementById('quiz-best').textContent = `${quizState.bestStreak}`;
+
+      // Highlight Option Buttons
+      quizState.options.forEach(opt => {
+        const btn = document.getElementById(`quiz-opt-${opt.id}`);
+        if (!btn) return;
+        if (opt.id === quizState.targetId) {
+          btn.className = 'w-full text-left p-3 rounded-xl border bg-emerald-500/15 border-emerald-500 flex items-center justify-between gap-3';
+        } else if (opt.id === chosenId && !isCorrect) {
+          btn.className = 'w-full text-left p-3 rounded-xl border bg-red-500/15 border-red-500 flex items-center justify-between gap-3';
+        } else {
+          btn.className = 'w-full text-left p-3 rounded-xl border bg-slate950 border-slate800 opacity-50 flex items-center justify-between gap-3';
+        }
+      });
+
+      // Reveal Explanation Box
+      const feedbackEl = document.getElementById('quiz-feedback');
+      feedbackEl.classList.remove('hidden');
+      if (isCorrect) {
+        feedbackEl.className = 'rounded-xl p-3.5 border bg-emerald-500/10 border-emerald-500/40 text-emerald-200 text-xs leading-relaxed';
+        feedbackEl.innerHTML = `<strong class="text-emerald-300 font-mono block mb-1">✓ Correct! #${targetComp.badgeNum} is ${targetComp.name} (${targetComp.objectType})</strong>Syntax: <code class="text-amber-300 font-mono">${targetComp.accessPath}</code>`;
+      } else {
+        feedbackEl.className = 'rounded-xl p-3.5 border bg-red-500/10 border-red-500/40 text-red-200 text-xs leading-relaxed';
+        feedbackEl.innerHTML = `<strong class="text-red-300 font-mono block mb-1">✗ Not quite — you selected #${chosenComp.badgeNum} (${chosenComp.name}).</strong>Spotlighted Part #${targetComp.badgeNum} is <strong class="text-amber-300">${targetComp.name}</strong> (<code class="font-mono text-cyan-300">${targetComp.objectType}</code>).`;
+      }
+
+      updateStatusBar(quizState.targetId);
+      syncSvgHighlights();
+    }
+
+    function resetQuizStats() {
+      quizState.score = 0;
+      quizState.total = 0;
+      quizState.streak = 0;
+      document.getElementById('quiz-score').textContent = '0/0';
+      document.getElementById('quiz-streak').textContent = '0';
+      nextQuizQuestion();
+    }
+
+    // ============================================================================
+    // 9. MODE 3: PROGRESSIVE CODE-TO-OUTPUT X-RAY LOGIC
+    // ============================================================================
+    function renderSnippetDropdown() {
+      const select = document.getElementById('snippet-select');
+      select.innerHTML = CODE_SNIPPETS.map((s, idx) => `
+        <option value="${idx}">${s.title}</option>
+      `).join('');
+    }
+
+    function selectSnippet(index) {
+      xrayState.snippetIndex = index;
+      xrayState.lineIndex = 0;
+      renderXrayPanel();
+    }
+
+    function stepXray(delta) {
+      const snippet = CODE_SNIPPETS[xrayState.snippetIndex];
+      const nextLine = (xrayState.lineIndex + delta + snippet.lines.length) % snippet.lines.length;
+      xrayState.lineIndex = nextLine;
+      renderXrayPanel();
+    }
+
+    function selectXrayLine(lineIdx) {
+      xrayState.lineIndex = lineIdx;
+      renderXrayPanel();
+    }
+
+    function toggleProgressiveBuild(enabled) {
+      xrayState.progressiveBuild = enabled;
+      syncSvgHighlights();
+    }
+
+    function renderXrayPanel() {
+      const snippet = CODE_SNIPPETS[xrayState.snippetIndex];
+      const currentLine = snippet.lines[xrayState.lineIndex];
+
+      // Update Step Indicator
+      document.getElementById('xray-step-indicator').textContent =
+        `Line ${xrayState.lineIndex + 1} of ${snippet.lines.length}`;
+
+      // Render Interactive Code Lines
+      const codeContainer = document.getElementById('xray-code-container');
+      codeContainer.innerHTML = snippet.lines.map((lineObj, idx) => {
+        const isActive = idx === xrayState.lineIndex;
+        const isPast = idx < xrayState.lineIndex;
+        return `
+          <div
+            onclick="selectXrayLine(${idx})"
+            class="code-line px-3 py-2.5 cursor-pointer border-l-4 flex items-start gap-2.5 ${
+              isActive
+                ? 'active-code-line border-amber-400 text-white'
+                : isPast
+                ? 'border-emerald-500/50 text-gray-300'
+                : 'border-transparent text-gray-400'
+            }"
+          >
+            <span class="text-[11px] font-mono ${isActive ? 'text-amber-400 font-bold' : 'text-gray-500'} select-none shrink-0 mt-0.5">
+              ${idx + 1}
+            </span>
+            <pre class="whitespace-pre-wrap break-all font-mono text-xs leading-relaxed flex-1"><code>${escapeHtml(lineObj.code)}</code></pre>
+          </div>
+        `;
+      }).join('');
+
+      // Update Active Line Explanation & Linked Badges
+      document.getElementById('xray-line-title').textContent = currentLine.title;
+      document.getElementById('xray-explanation').textContent = currentLine.explanation;
+
+      const badgesContainer = document.getElementById('xray-linked-badges');
+      badgesContainer.innerHTML = currentLine.targetParts.map(partId => {
+        const comp = getComponent(partId);
+        return `
+          <span class="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[10px]">
+            #${comp.badgeNum} ${comp.name.split(' ')[0]}
+          </span>
+        `;
+      }).join('');
+
+      // Update Simulated REPL Console Output
+      document.getElementById('xray-output-console').textContent = currentLine.output;
+      document.getElementById('xray-mem-badge').textContent = currentLine.memBadge;
+
+      if (currentLine.targetParts.length > 0) {
+        updateStatusBar(currentLine.targetParts[0]);
+      }
+
+      syncSvgHighlights();
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // Keyboard Navigation Support (Left/Right/Up/Down arrows)
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      if (currentMode === 'xray') {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          stepXray(1);
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          stepXray(-1);
+        }
+      } else if (currentMode === 'anatomy') {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          cycleComponent(1);
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          cycleComponent(-1);
+        }
+      }
+    });
+
+    // Boot Application on DOM Load
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>

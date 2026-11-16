@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TorchSharp Visual Architecture & Code X-Ray</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            ide: {
+              bg: '#0b0f19',
+              panel: '#111827',
+              card: '#161f33',
+              border: '#1e293b',
+              hover: '#26344d'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>*{box-sizing:border-box}body{color:#f1f5f9;background-color:#0b0f19;font-family:Inter,system-ui,sans-serif;overflow-x:hidden}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#0b0f19}::-webkit-scrollbar-thumb{background:#334155;border-radius:9999px}::-webkit-scrollbar-thumb:hover{background:#475569}.svg-part{cursor:pointer;transition:opacity .28s cubic-bezier(.4,0,.2,1),filter .25s,transform .2s}.svg-part .part-box{transition:stroke-width .2s,stroke .2s,fill .2s}.svg-part:hover .part-box{stroke-width:2.6px;filter:brightness(1.18)}.svg-part.active-part .part-box{filter:drop-shadow(0 0 12px #6366f18c);stroke-width:3px!important}.svg-part.dimmed-part{filter:grayscale(65%);opacity:.15!important}.svg-part.revealed-part{opacity:1!important}@keyframes quizSpotlight{0%,to{filter:drop-shadow(0 0 6px #f59e0bbf)brightness(1.1)}50%{filter:drop-shadow(0 0 18px #f59e0b)brightness(1.32)}}.svg-part.quiz-target{animation:1.5s ease-in-out infinite quizSpotlight}.svg-part.quiz-target .part-box{stroke:#fbbf24!important;stroke-width:3.2px!important}@keyframes flowForward{to{stroke-dashoffset:-24px}}@keyframes flowBackward{to{stroke-dashoffset:24px}}.forward-flow-line{stroke-dasharray:6 6;animation:1.1s linear infinite flowForward}.backward-flow-line{stroke-dasharray:7 5;animation:.95s linear infinite flowBackward}.code-line{cursor:pointer;transition:background-color .15s,border-color .15s}.code-line:hover{background-color:#33415573}.code-line.active-line{background-color:#6366f138;border-left:3px solid #6366f1}.tok-kw{color:#818cf8;font-weight:600}.tok-type{color:#22d3ee}.tok-fn{color:#34d399}.tok-str{color:#fbbf24}.tok-num{color:#f472b6}.tok-cmt{color:#64748b;font-style:italic}.view-toggle-btn{color:#94a3b8;border:1px solid #0000;border-radius:.5rem;padding:.5rem .75rem;font-size:.75rem;font-weight:600;line-height:1rem;transition:color .15s,background-color .15s,border-color .15s}.view-toggle-btn:hover{color:#e2e8f0}.view-toggle-btn.is-active{color:#c7d2fe;background:#6366f12e;border-color:#818cf880}.code-tab{color:#94a3b8;border:1px solid #0000;border-radius:.45rem;padding:.35rem .65rem;font-family:JetBrains Mono,monospace;font-size:.7rem;transition:color .15s,background-color .15s,border-color .15s}.code-tab:hover{color:#e2e8f0}.code-tab.is-active{color:#c7d2fe;background:#6366f12e;border-color:#818cf873}body.focus-mode{height:100vh;overflow:hidden}body.focus-mode>header,body.focus-mode #canvas-header,body.focus-mode #status-bar,body.focus-mode #component-filters-bar{display:none}body.focus-mode #focus-bar{display:flex}body.focus-mode .forward-flow-line,body.focus-mode .backward-flow-line{opacity:0!important}body.focus-mode .svg-part:not(.active-part){pointer-events:none;opacity:0!important;filter:none!important}body.focus-mode .svg-part.active-part{filter:drop-shadow(0 0 22px #6366f180)}body.focus-mode main{flex:1;grid-template-columns:minmax(0,.9fr) minmax(420px,1.1fr);align-items:stretch;gap:.5rem;max-width:none;min-height:0;padding:.5rem}body.focus-mode main>section{min-height:0}body.focus-mode main>section:first-child{grid-column:1}body.focus-mode main>aside{grid-column:2;min-height:0}body.focus-mode main>section:first-child>div.relative{flex:1;min-height:0}body.focus-mode #torchsharp-svg{width:100%;height:100%;max-height:none}body.focus-mode #panel-explore{min-height:0;overflow:hidden}body.focus-mode #inspector-header{flex:none;padding:.75rem 1.25rem}body.focus-mode #inspector-meta{display:none}body.focus-mode #inspector-scroll{flex-direction:column;gap:.875rem;padding:1rem 1.25rem;display:flex;overflow:hidden}body.focus-mode #inspector-scroll>*+*{margin-top:0}body.focus-mode #inspector-notes{flex:auto;min-height:0;padding-right:.25rem;overflow-y:auto}body.focus-mode #insp-code-dock{flex-direction:column;flex:none;min-height:0;max-height:48%;display:flex}body.focus-mode #insp-code-tabs{flex:none;display:flex}body.focus-mode #insp-code-dock .inspector-code-card{display:none}body.focus-mode #insp-code-dock .inspector-code-card.is-active{flex-direction:column;flex:auto;min-height:0;display:flex}body.focus-mode #insp-code-dock pre{flex:auto;min-height:0;overflow-y:auto}body.focus-mode #insp-title{font-size:1.1rem;line-height:1.3}body.focus-mode #insp-intuition{font-size:.85rem;line-height:1.6}@media (width<=1023px){body.focus-mode{height:auto;overflow:auto}body.focus-mode main{grid-template-columns:1fr}body.focus-mode main>section:first-child,body.focus-mode main>aside{grid-column:1/-1}body.focus-mode main>section:first-child{min-height:70vh}body.focus-mode main>section:first-child>div.relative{flex:none}body.focus-mode #torchsharp-svg{height:auto;max-height:70vh}body.focus-mode #inspector-scroll,body.focus-mode #inspector-notes{overflow:visible}body.focus-mode #insp-code-dock{max-height:none}body.focus-mode #insp-code-dock .inspector-code-card.is-active{display:flex}}</style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
+
+  <!-- ================= TOP HEADER & 3-MODE SWITCHER ================= -->
+  <header class="border-b border-slate-800 bg-ide-panel/95 backdrop-blur sticky top-0 z-30 px-4 py-3 lg:px-6">
+    <div class="max-w-[1640px] mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      <!-- Brand & Title -->
+      <div class="flex items-start sm:items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0 font-mono font-extrabold text-white text-sm border border-white/15">
+          T#
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">
+              TorchSharp Visual Architecture &amp; Code X-Ray
+            </h1>
+            <span class="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+              LibTorch C# Bindings
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">
+            .NET C# Bindings to Native C++ LibTorch — Tensors, <code class="text-amber-300 font-mono">DisposeScope</code>, <code class="text-cyan-300 font-mono">nn.Module</code> &amp; Autograd
+          </p>
+        </div>
+      </div>
+
+      <!-- 3-Button Mode Switcher + Reading View Toggle -->
+      <div class="flex flex-wrap items-center gap-2 self-start lg:self-auto w-full sm:w-auto">
+        <div class="flex items-center bg-slate-950/90 p-1 rounded-xl border border-slate-800 overflow-x-auto" role="tablist" aria-label="Learning Modes">
+          <button id="mode-btn-1" onclick="setMode('explore')" class="mode-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap bg-indigo-600 text-white shadow-md shadow-indigo-600/25">
+            <span class="w-2 h-2 rounded-full bg-cyan-300"></span>
+            <span>1. Visual Anatomy</span>
+          </button>
+          <button id="mode-btn-2" onclick="setMode('quiz')" class="mode-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap text-slate-400 hover:text-slate-200">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span>2. Name That Part</span>
+          </button>
+          <button id="mode-btn-3" onclick="setMode('xray')" class="mode-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap text-slate-400 hover:text-slate-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>3. Code-to-Output X-Ray</span>
+          </button>
+        </div>
+
+        <div class="flex items-center bg-slate-950/90 p-1 rounded-xl border border-slate-800" role="group" aria-label="Reading view">
+          <button id="view-btn-consolidated" type="button" onclick="setFocusView(false)" aria-pressed="true" class="view-toggle-btn is-active" title="Show all components together">
+            Consolidated
+          </button>
+          <button id="view-btn-focus" type="button" onclick="setFocusView(true)" aria-pressed="false" class="view-toggle-btn" title="Read one component at a time in a larger isolated view">
+            Focused
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- COMPACT FOCUSED-READING BAR -->
+  <div id="focus-bar" class="hidden items-center justify-between gap-3 px-4 sm:px-6 py-2 border-b border-indigo-500/25 bg-slate-950/95 backdrop-blur-md">
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="text-[11px] font-mono uppercase tracking-wider text-indigo-300 font-bold shrink-0">Focused view</span>
+      <span id="focus-nav-current" class="text-xs text-slate-400 font-mono truncate">Component 1 of 10</span>
+    </div>
+    <button type="button" onclick="setFocusView(false)" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-300 hover:text-white hover:border-indigo-500/50 transition">
+      Exit focus <span class="text-slate-500">(Esc)</span>
+    </button>
+  </div>
+
+  <!-- ================= MAIN SPLIT WORKSPACE ================= -->
+  <main class="flex-1 max-w-[1640px] w-full mx-auto p-3 sm:p-4 lg:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-start">
+
+    <!-- ================= LEFT COLUMN (55% / 7 cols): INTERACTIVE SVG & CHIPS ================= -->
+    <section class="lg:col-span-7 flex flex-col bg-ide-panel border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+      <!-- Top Bar inside SVG Panel -->
+      <div id="canvas-header" class="px-4 py-2.5 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-xs font-mono font-semibold text-slate-300">
+            Interactive LibTorch Native Memory &amp; Neural Graph Canvas
+          </span>
+        </div>
+        <div id="canvas-mode-hint" class="text-[11px] font-mono text-indigo-300 bg-indigo-950/60 border border-indigo-800/50 px-2.5 py-0.5 rounded-md">
+          Click or hover any numbered block ①–⑩ to inspect its C# &amp; LibTorch anatomy
+        </div>
+      </div>
+
+      <!-- Interactive SVG Diagram Container -->
+      <div class="relative w-full bg-[#080c14] p-2 sm:p-3 flex items-center justify-center overflow-hidden">
+        <svg id="torchsharp-svg" viewBox="0 0 920 600" class="w-full h-auto max-h-[600px] select-none rounded-xl" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Subtle Background Engineering Grid -->
+            <pattern id="eng-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+              <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#1e293b" stroke-width="0.6" stroke-opacity="0.55" />
+            </pattern>
+            <!-- Arrowhead Markers -->
+            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#06b6d4" />
+            </marker>
+            <marker id="arrow-indigo" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#818cf8" />
+            </marker>
+            <marker id="arrow-rose" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#f43f5e" />
+            </marker>
+            <marker id="arrow-emerald" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+            </marker>
+            <marker id="arrow-violet" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7" />
+            </marker>
+          </defs>
+
+          <!-- Background Canvas Rect -->
+          <rect width="920" height="600" rx="12" fill="#080c14" />
+          <rect width="920" height="600" rx="12" fill="url(#eng-grid)" />
+
+          <!-- ========================================================================= -->
+          <!-- ① DISPOSE SCOPE (Outer Protective Boundary + Native Memory Tracker Bar)  -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="dispose-scope" data-focus-box="488 24 402 58">
+            <!-- Outer dashed boundary frame -->
+            <rect class="part-box" x="14" y="14" width="892" height="572" rx="14"
+                  fill="#f59e0b" fill-opacity="0.02" stroke="#f59e0b" stroke-width="2" stroke-dasharray="10 5" />
+            <!-- Top-right DisposeScope Header Pill -->
+            <rect class="part-box" x="488" y="24" width="402" height="58" rx="9"
+                  fill="#1c160c" stroke="#f59e0b" stroke-width="1.8" />
+            <!-- Badge ① -->
+            <rect x="498" y="33" width="128" height="22" rx="5" fill="#f59e0b" />
+            <text x="562" y="48" text-anchor="middle" fill="#0b0f19" font-family="JetBrains Mono" font-weight="700" font-size="11" class="badge-label">① DisposeScope</text>
+            <text x="634" y="48" fill="#fde68a" font-family="JetBrains Mono" font-weight="600" font-size="11">using var scope = NewDisposeScope()</text>
+            <!-- Memory Tracker Gauge -->
+            <text x="500" y="70" fill="#fbbf24" font-family="JetBrains Mono" font-size="10">LibTorch C++ Heap: 6 Active Tensors</text>
+            <rect x="708" y="61" width="105" height="11" rx="5" fill="#292524" stroke="#78350f" stroke-width="1" />
+            <rect x="709" y="62" width="64" height="9" rx="4" fill="#10b981" />
+            <text x="820" y="70" fill="#34d399" font-family="JetBrains Mono" font-size="9.5" font-weight="600">Auto-Freed}</text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- ② DEVICE TARGET (CPU Host RAM <-> CUDA GPU VRAM Routing Bar)             -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="device-target">
+            <rect class="part-box" x="28" y="24" width="446" height="58" rx="9"
+                  fill="#0c1928" stroke="#06b6d4" stroke-width="1.8" />
+            <!-- Badge ② -->
+            <rect x="38" y="33" width="118" height="22" rx="5" fill="#06b6d4" />
+            <text x="97" y="48" text-anchor="middle" fill="#080c14" font-family="JetBrains Mono" font-weight="700" font-size="11" class="badge-label">② Target Device</text>
+            <text x="165" y="48" fill="#67e8f9" font-family="JetBrains Mono" font-weight="600" font-size="11">cuda.is_available() ? CUDA : CPU</text>
+            <!-- Host RAM vs CUDA VRAM nodes -->
+            <rect x="38" y="60" width="132" height="16" rx="4" fill="#1e293b" stroke="#475569" stroke-width="1" />
+            <text x="104" y="71" text-anchor="middle" fill="#cbd5e1" font-family="JetBrains Mono" font-size="9.5">.NET Host RAM (CPU)</text>
+            <path d="M 176 68 L 254 68" stroke="#06b6d4" stroke-width="1.8" marker-end="url(#arrow-cyan)" />
+            <text x="215" y="64" text-anchor="middle" fill="#22d3ee" font-family="JetBrains Mono" font-size="9" font-weight="700">.to(device)</text>
+            <rect x="262" y="59" width="198" height="17" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="1.2" />
+            <text x="361" y="71" text-anchor="middle" fill="#6ee7b7" font-family="JetBrains Mono" font-size="9.5" font-weight="600">NVIDIA GPU VRAM (DeviceType.CUDA)</text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- ③ INPUT TENSOR (torch.Tensor [16, 10] + .NET Array Interop Bridge)       -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="input-tensor">
+            <rect class="part-box" x="28" y="96" width="204" height="332" rx="10"
+                  fill="#0f172a" stroke="#38bdf8" stroke-width="1.8" />
+            <!-- Badge ③ -->
+            <rect x="38" y="106" width="132" height="22" rx="5" fill="#0284c7" />
+            <text x="104" y="121" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-weight="700" font-size="11" class="badge-label">③ Input Tensor</text>
+            <text x="178" y="121" fill="#7dd3fc" font-family="JetBrains Mono" font-size="10.5" font-weight="700">[16, 10]</text>
+
+            <text x="40" y="144" fill="#e2e8f0" font-family="JetBrains Mono" font-size="10.5" font-weight="600">Tensor batchX (Float32)</text>
+            <text x="40" y="159" fill="#94a3b8" font-family="JetBrains Mono" font-size="9.5">16 samples × 10 features</text>
+
+            <!-- Concrete 2D Tensor Matrix Grid (4x3 representative cells) -->
+            <g transform="translate(38, 168)">
+              <rect x="0" y="0" width="184" height="114" rx="6" fill="#090d16" stroke="#1e293b" stroke-width="1.2" />
+              <!-- Row 0 -->
+              <rect x="8" y="8" width="40" height="22" rx="3" fill="#0c2a40" stroke="#0284c7" stroke-width="0.9" />
+              <text x="28" y="23" text-anchor="middle" fill="#7dd3fc" font-family="JetBrains Mono" font-size="10">0.42f</text>
+              <rect x="52" y="8" width="40" height="22" rx="3" fill="#1e1b4b" stroke="#4f46e5" stroke-width="0.9" />
+              <text x="72" y="23" text-anchor="middle" fill="#a5b4fc" font-family="JetBrains Mono" font-size="10">-1.18f</text>
+              <rect x="96" y="8" width="40" height="22" rx="3" fill="#0c2a40" stroke="#0284c7" stroke-width="0.9" />
+              <text x="116" y="23" text-anchor="middle" fill="#7dd3fc" font-family="JetBrains Mono" font-size="10">0.95f</text>
+              <text x="158" y="23" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="11">⋯</text>
+
+              <!-- Row 1 -->
+              <rect x="8" y="35" width="40" height="22" rx="3" fill="#1e1b4b" stroke="#4f46e5" stroke-width="0.9" />
+              <text x="28" y="50" text-anchor="middle" fill="#a5b4fc" font-family="JetBrains Mono" font-size="10">-0.31f</text>
+              <rect x="52" y="35" width="40" height="22" rx="3" fill="#0c2a40" stroke="#0284c7" stroke-width="0.9" />
+              <text x="72" y="50" text-anchor="middle" fill="#7dd3fc" font-family="JetBrains Mono" font-size="10">2.04f</text>
+              <rect x="96" y="35" width="40" height="22" rx="3" fill="#0c2a40" stroke="#0284c7" stroke-width="0.9" />
+              <text x="116" y="50" text-anchor="middle" fill="#7dd3fc" font-family="JetBrains Mono" font-size="10">0.17f</text>
+              <text x="158" y="50" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="11">⋯</text>
+
+              <!-- Row 2 -->
+              <rect x="8" y="62" width="40" height="22" rx="3" fill="#0c2a40" stroke="#0284c7" stroke-width="0.9" />
+              <text x="28" y="77" text-anchor="middle" fill="#7dd3fc" font-family="JetBrains Mono" font-size="10">1.60f</text>
+              <rect x="52" y="62" width="40" height="22" rx="3" fill="#0c2a40" stroke="#0284c7" stroke-width="0.9" />
+              <text x="72" y="77" text-anchor="middle" fill="#7dd3fc" font-family="JetBrains Mono" font-size="10">0.08f</text>
+              <rect x="96" y="62" width="40" height="22" rx="3" fill="#1e1b4b" stroke="#4f46e5" stroke-width="0.9" />
+              <text x="116" y="77" text-anchor="middle" fill="#a5b4fc" font-family="JetBrains Mono" font-size="10">-0.75f</text>
+              <text x="158" y="77" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="11">⋯</text>
+
+              <!-- Ellipsis bottom row -->
+              <text x="92" y="102" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="10">⋮  (Batch Rows 0..15)  ⋮</text>
+            </g>
+
+            <!-- .NET Memory Bridge Box -->
+            <rect x="38" y="294" width="184" height="62" rx="6" fill="#111c2d" stroke="#334155" stroke-width="1" />
+            <text x="46" y="311" fill="#38bdf8" font-family="JetBrains Mono" font-size="9.5" font-weight="700">.NET Managed Array Bridge:</text>
+            <text x="46" y="327" fill="#cbd5e1" font-family="JetBrains Mono" font-size="9.5">• from_array(float[])</text>
+            <text x="46" y="343" fill="#cbd5e1" font-family="JetBrains Mono" font-size="9.5">• .cpu().data&lt;float&gt;()</text>
+
+            <!-- Reshape & Pointer metadata -->
+            <rect x="38" y="364" width="184" height="52" rx="6" fill="#090d16" stroke="#1e293b" stroke-width="1" />
+            <text x="46" y="381" fill="#94a3b8" font-family="JetBrains Mono" font-size="9.5">Views: <tspan fill="#e2e8f0">.reshape() / .view()</tspan></text>
+            <text x="46" y="397" fill="#94a3b8" font-family="JetBrains Mono" font-size="9.5">Handle: <tspan fill="#fbbf24">at::Tensor* (C++)</tspan></text>
+          </g>
+
+          <!-- Forward Flow Connector: Input Tensor -> Custom Module -->
+          <path d="M 232 235 L 254 235" stroke="#06b6d4" stroke-width="2.2" class="forward-flow-line" marker-end="url(#arrow-cyan)" />
+
+          <!-- ========================================================================= -->
+          <!-- ④ CUSTOM nn.Module<Tensor, Tensor> (Outer Neural Network Container)      -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="custom-module">
+            <rect class="part-box" x="256" y="96" width="386" height="332" rx="12"
+                  fill="#131629" stroke="#6366f1" stroke-width="2.2" />
+            <!-- Module Header Banner -->
+            <rect x="266" y="106" width="366" height="54" rx="8" fill="#1e1b4b" stroke="#4f46e5" stroke-width="1.2" />
+            <!-- Badge ④ -->
+            <rect x="275" y="114" width="138" height="22" rx="5" fill="#6366f1" />
+            <text x="344" y="129" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-weight="700" font-size="11" class="badge-label">④ Custom nn.Module</text>
+            <text x="422" y="129" fill="#c7d2fe" font-family="JetBrains Mono" font-weight="700" font-size="10.5">: nn.Module&lt;Tensor, Tensor&gt;</text>
+            <text x="276" y="150" fill="#a5b4fc" font-family="JetBrains Mono" font-size="10">override Tensor forward(Tensor input) — Base("MLP")</text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- ⑤ SUB-LAYERS (Modules.Linear _fc1, functional.relu, Dropout, _fc2)       -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="linear-layers">
+            <rect class="part-box" x="268" y="168" width="362" height="168" rx="9"
+                  fill="#0b1020" stroke="#818cf8" stroke-width="1.8" />
+            <!-- Badge ⑤ -->
+            <rect x="278" y="177" width="134" height="21" rx="5" fill="#4f46e5" />
+            <text x="345" y="191" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-weight="700" font-size="10.5" class="badge-label">⑤ Sub-Layers &amp; Ops</text>
+            <text x="422" y="191" fill="#cbd5e1" font-family="JetBrains Mono" font-size="10">using var h1 = _fc1.forward(x)</text>
+
+            <!-- Layer 1: _fc1 Linear(10, 32) -->
+            <rect x="278" y="206" width="104" height="118" rx="7" fill="#151c33" stroke="#6366f1" stroke-width="1.4" />
+            <text x="330" y="223" text-anchor="middle" fill="#a5b4fc" font-family="JetBrains Mono" font-weight="700" font-size="10.5">_fc1: Linear</text>
+            <text x="330" y="237" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono" font-size="9.5">in: 10 → out: 32</text>
+            <!-- Mini weight grid -->
+            <rect x="290" y="245" width="80" height="44" rx="4" fill="#090d16" stroke="#312e81" />
+            <text x="330" y="264" text-anchor="middle" fill="#818cf8" font-family="JetBrains Mono" font-size="9">W1: [32, 10]</text>
+            <text x="330" y="279" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="9">b1: [32]</text>
+            <text x="330" y="312" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono" font-size="9">Out: [16, 32]</text>
+
+            <!-- Arrow _fc1 -> ReLU/Dropout -->
+            <path d="M 382 265 L 396 265" stroke="#818cf8" stroke-width="1.6" marker-end="url(#arrow-indigo)" />
+
+            <!-- Activation + Dropout Block -->
+            <rect x="400" y="206" width="102" height="118" rx="7" fill="#151c33" stroke="#10b981" stroke-width="1.4" />
+            <text x="451" y="223" text-anchor="middle" fill="#6ee7b7" font-family="JetBrains Mono" font-weight="700" font-size="10">ReLU + Dropout</text>
+            <!-- Visual ReLU graph -->
+            <rect x="414" y="231" width="74" height="42" rx="4" fill="#090d16" stroke="#065f46" />
+            <line x1="420" y1="264" x2="482" y2="264" stroke="#334155" stroke-width="1" />
+            <line x1="451" y1="236" x2="451" y2="269" stroke="#334155" stroke-width="1" />
+            <polyline points="422,264 451,264 478,239" fill="none" stroke="#10b981" stroke-width="2.2" />
+            <text x="451" y="288" text-anchor="middle" fill="#cbd5e1" font-family="JetBrains Mono" font-size="9">functional.relu</text>
+            <text x="451" y="303" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono" font-size="9">_dropout(p=0.2)</text>
+            <text x="451" y="317" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono" font-size="8.5">using var act</text>
+
+            <!-- Arrow ReLU -> _fc2 -->
+            <path d="M 502 265 L 516 265" stroke="#818cf8" stroke-width="1.6" marker-end="url(#arrow-indigo)" />
+
+            <!-- Layer 2: _fc2 Linear(32, 2) -->
+            <rect x="520" y="206" width="98" height="118" rx="7" fill="#151c33" stroke="#6366f1" stroke-width="1.4" />
+            <text x="569" y="223" text-anchor="middle" fill="#a5b4fc" font-family="JetBrains Mono" font-weight="700" font-size="10.5">_fc2: Linear</text>
+            <text x="569" y="237" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono" font-size="9.5">in: 32 → out: 2</text>
+            <rect x="530" y="245" width="78" height="44" rx="4" fill="#090d16" stroke="#312e81" />
+            <text x="569" y="264" text-anchor="middle" fill="#818cf8" font-family="JetBrains Mono" font-size="9">W2: [2, 32]</text>
+            <text x="569" y="279" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="9">b2: [2]</text>
+            <text x="569" y="312" text-anchor="middle" fill="#34d399" font-family="JetBrains Mono" font-size="9">Out: [16, 2]</text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- ⑥ RegisterComponents() (C# Reflection Parameter & Device Binder)         -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="register-components">
+            <!-- Connector rays up to sub-layers -->
+            <path d="M 330 348 L 330 326" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow-violet)" />
+            <path d="M 451 348 L 451 326" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow-violet)" />
+            <path d="M 569 348 L 569 326" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrow-violet)" />
+
+            <rect class="part-box" x="268" y="348" width="362" height="68" rx="9"
+                  fill="#1f1235" stroke="#a855f7" stroke-width="1.8" />
+            <!-- Badge ⑥ -->
+            <rect x="278" y="357" width="176" height="22" rx="5" fill="#a855f7" />
+            <text x="366" y="372" text-anchor="middle" fill="#080c14" font-family="JetBrains Mono" font-weight="700" font-size="11" class="badge-label">⑥ RegisterComponents()</text>
+            <text x="464" y="372" fill="#e9d5ff" font-family="JetBrains Mono" font-weight="600" font-size="10">Constructor Mandate!</text>
+            <text x="278" y="394" fill="#d8b4fe" font-family="JetBrains Mono" font-size="9.5">Scans C# fields (_fc1, _fc2, _dropout) → registers weights</text>
+            <text x="278" y="408" fill="#c084fc" font-family="JetBrains Mono" font-size="9.5">into model.parameters(), .to(device), &amp; state_dict</text>
+          </g>
+
+          <!-- Forward Flow Connector: Module -> Output Logits -->
+          <path d="M 642 200 L 664 200" stroke="#06b6d4" stroke-width="2.2" class="forward-flow-line" marker-end="url(#arrow-cyan)" />
+
+          <!-- ========================================================================= -->
+          <!-- ⑦ OUTPUT LOGITS & SOFTMAX (Logits [16, 2], Softmax, Argmax)              -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="logits-output">
+            <rect class="part-box" x="666" y="96" width="224" height="196" rx="10"
+                  fill="#0c1f24" stroke="#10b981" stroke-width="1.8" />
+            <!-- Badge ⑦ -->
+            <rect x="676" y="106" width="152" height="22" rx="5" fill="#10b981" />
+            <text x="752" y="121" text-anchor="middle" fill="#080c14" font-family="JetBrains Mono" font-weight="700" font-size="11" class="badge-label">⑦ Logits &amp; Softmax</text>
+            <text x="836" y="121" fill="#6ee7b7" font-family="JetBrains Mono" font-weight="700" font-size="10.5">[16, 2]</text>
+
+            <!-- Raw Logits Box -->
+            <rect x="676" y="135" width="204" height="44" rx="6" fill="#091318" stroke="#1e293b" />
+            <text x="684" y="150" fill="#94a3b8" font-family="JetBrains Mono" font-size="9.5">Raw Logits:</text>
+            <rect x="754" y="139" width="54" height="20" rx="3" fill="#1e293b" />
+            <text x="781" y="153" text-anchor="middle" fill="#cbd5e1" font-family="JetBrains Mono" font-size="10">-0.84f</text>
+            <rect x="814" y="139" width="58" height="20" rx="3" fill="#064e3b" stroke="#10b981" stroke-width="1" />
+            <text x="843" y="153" text-anchor="middle" fill="#6ee7b7" font-family="JetBrains Mono" font-size="10" font-weight="700">+2.31f</text>
+            <text x="684" y="172" fill="#64748b" font-family="JetBrains Mono" font-size="9">Unnormalized linear scores</text>
+
+            <!-- Softmax + Argmax Box -->
+            <rect x="676" y="186" width="204" height="96" rx="6" fill="#091318" stroke="#065f46" />
+            <text x="684" y="203" fill="#34d399" font-family="JetBrains Mono" font-size="9.5" font-weight="600">functional.softmax(dim: -1)</text>
+            <rect x="684" y="211" width="88" height="22" rx="4" fill="#1e293b" />
+            <text x="728" y="226" text-anchor="middle" fill="#94a3b8" font-family="JetBrains Mono" font-size="10">P(0) = 0.04</text>
+            <rect x="780" y="211" width="92" height="22" rx="4" fill="#065f46" stroke="#34d399" />
+            <text x="826" y="226" text-anchor="middle" fill="#ecfdf5" font-family="JetBrains Mono" font-size="10" font-weight="700">P(1) = 0.96</text>
+
+            <text x="684" y="252" fill="#a7f3d0" font-family="JetBrains Mono" font-size="9.5">probs.argmax(dim: -1)</text>
+            <text x="684" y="270" fill="#fbbf24" font-family="JetBrains Mono" font-size="10" font-weight="700">→ .item&lt;long&gt;() == 1L</text>
+          </g>
+
+          <!-- Flow Connector: Logits -> Loss Criterion -->
+          <path d="M 778 292 L 778 312" stroke="#10b981" stroke-width="2" class="forward-flow-line" marker-end="url(#arrow-emerald)" />
+
+          <!-- ========================================================================= -->
+          <!-- ⑧ LOSS FUNCTION (nn.CrossEntropyLoss + Target Labels batchY)             -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="loss-function">
+            <rect class="part-box" x="666" y="314" width="224" height="114" rx="10"
+                  fill="#23121b" stroke="#f43f5e" stroke-width="1.8" />
+            <!-- Badge ⑧ -->
+            <rect x="676" y="323" width="144" height="22" rx="5" fill="#f43f5e" />
+            <text x="748" y="338" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-weight="700" font-size="11" class="badge-label">⑧ Loss Criterion</text>
+            <text x="828" y="338" fill="#fda4af" font-family="JetBrains Mono" font-size="10" font-weight="700">Scalar []</text>
+
+            <text x="676" y="361" fill="#fecdd3" font-family="JetBrains Mono" font-size="10" font-weight="600">nn.CrossEntropyLoss()</text>
+            <text x="676" y="377" fill="#cbd5e1" font-family="JetBrains Mono" font-size="9.5">Target batchY: <tspan fill="#38bdf8">Int64 [16]</tspan></text>
+            <rect x="676" y="386" width="204" height="32" rx="5" fill="#140a0f" stroke="#881337" />
+            <text x="778" y="406" text-anchor="middle" fill="#fb7185" font-family="JetBrains Mono" font-size="10.5" font-weight="700">loss.item&lt;float&gt;() = 0.2145f</text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- ⑨ AUTOGRAD BACKWARD PASS (loss.backward() & Reverse Gradient Graph)      -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="autograd-backward">
+            <!-- Reverse gradient dashed arrows from Loss back into Module Layers -->
+            <path d="M 666 392 L 569 392 L 569 326" fill="none" stroke="#f43f5e" stroke-width="2.2" class="backward-flow-line" marker-end="url(#arrow-rose)" />
+            <path d="M 569 442 L 330 442 L 330 326" fill="none" stroke="#f43f5e" stroke-width="2.2" class="backward-flow-line" marker-end="url(#arrow-rose)" />
+
+            <rect class="part-box" x="28" y="446" width="614" height="122" rx="10"
+                  fill="#21101c" stroke="#f43f5e" stroke-width="1.8" />
+            <!-- Badge ⑨ -->
+            <rect x="38" y="456" width="166" height="22" rx="5" fill="#e11d48" />
+            <text x="121" y="471" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-weight="700" font-size="11" class="badge-label">⑨ Autograd Backward</text>
+            <text x="214" y="471" fill="#fda4af" font-family="JetBrains Mono" font-weight="700" font-size="11">loss.backward() — Dynamic Reverse-Mode Tape</text>
+
+            <!-- Gradient computation boxes inside Autograd bar -->
+            <rect x="38" y="486" width="185" height="68" rx="6" fill="#130911" stroke="#881337" />
+            <text x="48" y="504" fill="#fb7185" font-family="JetBrains Mono" font-size="10" font-weight="700">1. Graph Traversal</text>
+            <text x="48" y="521" fill="#cbd5e1" font-family="JetBrains Mono" font-size="9.5">Walks backward from scalar</text>
+            <text x="48" y="536" fill="#cbd5e1" font-family="JetBrains Mono" font-size="9.5">loss through C++ grad_fn</text>
+
+            <rect x="235" y="486" width="195" height="68" rx="6" fill="#130911" stroke="#881337" />
+            <text x="245" y="504" fill="#fb7185" font-family="JetBrains Mono" font-size="10" font-weight="700">2. Weight Gradients (∇L)</text>
+            <text x="245" y="521" fill="#fde68a" font-family="JetBrains Mono" font-size="9.5">_fc2.weight.grad ← ∂L/∂W2</text>
+            <text x="245" y="536" fill="#fde68a" font-family="JetBrains Mono" font-size="9.5">_fc1.weight.grad ← ∂L/∂W1</text>
+
+            <rect x="442" y="486" width="188" height="68" rx="6" fill="#130911" stroke="#881337" />
+            <text x="452" y="504" fill="#fb7185" font-family="JetBrains Mono" font-size="10" font-weight="700">3. Accumulation Rule</text>
+            <text x="452" y="521" fill="#cbd5e1" font-family="JetBrains Mono" font-size="9.5">Requires: <tspan fill="#34d399">requires_grad=true</tspan></text>
+            <text x="452" y="536" fill="#fbbf24" font-family="JetBrains Mono" font-size="9.5">Must clear via zero_grad()!</text>
+          </g>
+
+          <!-- ========================================================================= -->
+          <!-- ⑩ OPTIMIZER & INFERENCE GUARD (optim.Adam / no_grad() / model.save)      -->
+          <!-- ========================================================================= -->
+          <g class="svg-part" data-part="optimizer-step">
+            <rect class="part-box" x="666" y="446" width="224" height="122" rx="10"
+                  fill="#0f1d1d" stroke="#14b8a6" stroke-width="1.8" />
+            <!-- Badge ⑩ -->
+            <rect x="676" y="456" width="168" height="22" rx="5" fill="#14b8a6" />
+            <text x="760" y="471" text-anchor="middle" fill="#080c14" font-family="JetBrains Mono" font-weight="700" font-size="11" class="badge-label">⑩ Optimizer &amp; Eval</text>
+
+            <!-- Split sub-cards: Training Step vs Inference Mode -->
+            <rect x="676" y="484" width="98" height="72" rx="5" fill="#091316" stroke="#0f766e" />
+            <text x="682" y="499" fill="#2dd4bf" font-family="JetBrains Mono" font-size="9.5" font-weight="700">Train Mode</text>
+            <text x="682" y="514" fill="#cbd5e1" font-family="JetBrains Mono" font-size="8.8">model.train()</text>
+            <text x="682" y="528" fill="#cbd5e1" font-family="JetBrains Mono" font-size="8.8">opt.zero_grad()</text>
+            <text x="682" y="542" fill="#34d399" font-family="JetBrains Mono" font-size="8.8" font-weight="700">opt.step()</text>
+
+            <rect x="782" y="484" width="98" height="72" rx="5" fill="#091316" stroke="#334155" />
+            <text x="788" y="499" fill="#38bdf8" font-family="JetBrains Mono" font-size="9.5" font-weight="700">Eval &amp; Save</text>
+            <text x="788" y="514" fill="#cbd5e1" font-family="JetBrains Mono" font-size="8.8">model.eval()</text>
+            <text x="788" y="528" fill="#fbbf24" font-family="JetBrains Mono" font-size="8.8">using(no_grad())</text>
+            <text x="788" y="542" fill="#a5b4fc" font-family="JetBrains Mono" font-size="8.8">model.save()</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Live Coordinate / Native Telemetry Status Bar -->
+      <div id="status-bar" class="px-4 py-2.5 bg-slate-950 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+        <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
+          <span class="text-slate-500 block text-[10px]">ACTIVE COMPONENT</span>
+          <span id="status-part-id" class="text-indigo-300 font-semibold">① dispose-scope</span>
+        </div>
+        <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
+          <span class="text-slate-500 block text-[10px]">LIBTORCH HANDLE</span>
+          <span id="status-handle" class="text-amber-300 font-semibold">torch.DisposeScope</span>
+        </div>
+        <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
+          <span class="text-slate-500 block text-[10px]">SHAPE / SIGNATURE</span>
+          <span id="status-shape" class="text-emerald-300 font-semibold">IDisposable Scope</span>
+        </div>
+        <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
+          <span class="text-slate-500 block text-[10px]">DEVICE &amp; MEMORY</span>
+          <span id="status-device" class="text-cyan-300 font-semibold">Native C++ Heap Guard</span>
+        </div>
+      </div>
+
+      <!-- Component Filter & Quick-Select Chips Bar -->
+      <div id="component-filters-bar" class="p-3.5 bg-ide-panel border-t border-slate-800 flex flex-col gap-2.5">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">
+            Filter Architecture Components:
+          </span>
+          <div id="category-filters" class="flex flex-wrap gap-1.5">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <div id="part-chips-container" class="flex flex-wrap gap-1.5 pt-1">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= RIGHT COLUMN (45% / 5 cols): DYNAMIC PEDAGOGY PANEL ================= -->
+    <aside class="lg:col-span-5 flex flex-col bg-ide-panel border border-slate-800 rounded-2xl overflow-hidden shadow-2xl min-h-[620px]">
+
+      <!-- ================= MODE 1: VISUAL ANATOMY INSPECTOR ================= -->
+      <div id="panel-explore" class="flex-1 flex flex-col">
+        <!-- Inspector Header -->
+        <div id="inspector-header" class="p-4 sm:p-5 border-b border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900">
+          <div id="inspector-meta" class="flex items-center justify-between gap-2 mb-2">
+            <span id="insp-category" class="text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold">
+              Memory &amp; Device
+            </span>
+            <span id="insp-badge-num" class="text-xs font-mono text-slate-400">
+              Component #1 of 10
+            </span>
+          </div>
+          <div class="flex items-start justify-between gap-2">
+            <h2 id="insp-title" class="text-lg sm:text-xl font-bold text-white tracking-tight">
+              ① DisposeScope (Deterministic Native Memory)
+            </h2>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button onclick="stepPart(-1)" title="Previous Component" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                &larr;
+              </button>
+              <button onclick="stepPart(1)" title="Next Component" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+                &rarr;
+              </button>
+            </div>
+          </div>
+          <div class="mt-1.5 flex items-center gap-2 font-mono text-xs text-cyan-300 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800">
+            <span class="text-slate-500">Type:</span>
+            <code id="insp-obj-type" class="truncate">TorchSharp.DisposeScope : IDisposable</code>
+          </div>
+        </div>
+
+        <!-- Inspector Body -->
+        <div id="inspector-scroll" class="p-4 sm:p-5 space-y-4 flex-1 overflow-y-auto">
+          <div id="inspector-notes" class="space-y-4">
+            <!-- Visual Intuition Card -->
+            <div class="bg-ide-card border border-slate-800 rounded-xl p-4">
+              <h3 class="text-xs font-mono uppercase tracking-wider text-indigo-300 font-semibold mb-1.5 flex items-center gap-1.5">
+                <span>👁️</span> What You See &amp; Why It Matters
+              </h3>
+              <p id="insp-intuition" class="text-sm text-slate-200 leading-relaxed">
+                <!-- Populated by JS -->
+              </p>
+            </div>
+
+            <!-- API Access Path & Key Properties -->
+            <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3.5">
+              <div class="text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+                Where It Lives / C# API Path
+              </div>
+              <code id="insp-api-path" class="text-xs font-mono text-emerald-300 break-all">
+                using static TorchSharp.torch; → using (var scope = NewDisposeScope()) { ... }
+              </code>
+            </div>
+          </div>
+
+          <!-- Side-by-Side Idiomatic C# vs Python PyTorch Equivalent -->
+          <div id="insp-code-dock" class="space-y-3">
+            <div id="insp-code-tabs" class="hidden items-center gap-1.5">
+              <button id="code-tab-csharp" type="button" onclick="setInspectorCodeTab('csharp')" class="code-tab is-active">
+                TorchSharp C#
+              </button>
+              <button id="code-tab-python" type="button" onclick="setInspectorCodeTab('python')" class="code-tab">
+                Python PyTorch
+              </button>
+            </div>
+
+            <div id="insp-code-csharp" class="inspector-code-card is-active bg-slate-950 border border-indigo-500/30 rounded-xl overflow-hidden">
+              <div class="px-3.5 py-2 bg-indigo-950/40 border-b border-indigo-500/20 flex items-center justify-between">
+                <span class="text-xs font-mono font-semibold text-indigo-300">
+                  Idiomatic TorchSharp (C#)
+                </span>
+                <button id="copy-csharp-btn" onclick="copyInspectorCode()" class="text-[11px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-500/30 transition">
+                  Copy C#
+                </button>
+              </div>
+              <pre id="insp-csharp-code" class="p-3.5 text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed"></pre>
+            </div>
+
+            <div id="insp-code-python" class="inspector-code-card bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+              <div class="px-3.5 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                <span class="text-xs font-mono font-semibold text-amber-300">
+                  PyTorch (Python) Comparison &amp; Gotcha
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">Mental Model Bridge</span>
+              </div>
+              <pre id="insp-python-code" class="p-3.5 text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= MODE 2: "NAME THAT PART" TERMINOLOGY QUIZ ================= -->
+      <div id="panel-quiz" class="hidden flex-1 flex flex-col">
+        <div class="p-4 sm:p-5 border-b border-slate-800 bg-gradient-to-r from-slate-900 via-amber-950/25 to-slate-900">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">
+              Mode 2 • Active Recall Drill
+            </span>
+            <button onclick="resetQuiz()" class="text-xs font-mono text-slate-400 hover:text-white underline">
+              Restart Quiz
+            </button>
+          </div>
+          <h2 class="text-lg font-bold text-white">
+            Name That TorchSharp Component
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Identify the pulsing <span class="text-amber-300 font-mono font-semibold">?</span> component on the diagram (or click it directly on the SVG).
+          </p>
+
+          <!-- Score / Streak / Progress Bar -->
+          <div class="grid grid-cols-3 gap-2 mt-3.5">
+            <div class="bg-slate-950/90 border border-slate-800 rounded-lg px-3 py-2 text-center">
+              <div class="text-[10px] font-mono text-slate-400 uppercase">Score</div>
+              <div id="quiz-score" class="text-base font-mono font-bold text-emerald-400">0 / 0</div>
+            </div>
+            <div class="bg-slate-950/90 border border-slate-800 rounded-lg px-3 py-2 text-center">
+              <div class="text-[10px] font-mono text-slate-400 uppercase">Streak</div>
+              <div id="quiz-streak" class="text-base font-mono font-bold text-amber-400">0 🔥</div>
+            </div>
+            <div class="bg-slate-950/90 border border-slate-800 rounded-lg px-3 py-2 text-center">
+              <div class="text-[10px] font-mono text-slate-400 uppercase">Challenge</div>
+              <div id="quiz-progress" class="text-base font-mono font-bold text-indigo-300">1 / 10</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4 overflow-y-auto">
+          <div class="space-y-4">
+            <!-- Question Prompt Box -->
+            <div class="bg-ide-card border border-amber-500/30 rounded-xl p-4 shadow-inner">
+              <div class="text-[11px] font-mono uppercase text-amber-300 font-semibold mb-1">
+                Target Component Clue:
+              </div>
+              <p id="quiz-question-text" class="text-sm text-white leading-relaxed font-medium">
+                <!-- Populated by JS -->
+              </p>
+            </div>
+
+            <!-- 4 Multiple Choice Option Buttons -->
+            <div id="quiz-options" class="space-y-2.5">
+              <!-- Populated by JS -->
+            </div>
+
+            <!-- Instant Feedback Card -->
+            <div id="quiz-feedback" class="hidden rounded-xl p-4 border text-xs leading-relaxed">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Next Question Button -->
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+            <span class="text-[11px] font-mono text-slate-400">
+              Tip: You can also click the matching block on the SVG!
+            </span>
+            <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition shadow-lg shadow-indigo-600/30">
+              Next Challenge →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= MODE 3: CODE-TO-OUTPUT X-RAY ================= -->
+      <div id="panel-xray" class="hidden flex-1 flex flex-col">
+        <!-- X-Ray Header & Snippet Tabs -->
+        <div class="p-4 border-b border-slate-800 bg-slate-900/90 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-semibold block">
+                Mode 3 • Interactive Code-to-Architecture X-Ray
+              </span>
+              <h2 class="text-base font-bold text-white">
+                Step-by-Step C# TorchSharp Execution
+              </h2>
+            </div>
+
+            <!-- Progressive "Build Step-by-Step" Toggle -->
+            <label class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950 border border-emerald-500/40 cursor-pointer select-none">
+              <input id="build-step-toggle" type="checkbox" checked onchange="toggleBuildStepMode(this.checked)" class="rounded text-emerald-500 focus:ring-0 bg-slate-900 border-slate-700" />
+              <span class="text-xs font-mono font-semibold text-emerald-300">
+                Build Step-by-Step
+              </span>
+            </label>
+          </div>
+
+          <!-- 5 Recipe Tabs -->
+          <div id="xray-tabs" class="flex gap-1.5 overflow-x-auto pb-1">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Step Controls & Code Listing -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <!-- Line Stepper Controls Bar -->
+          <div class="px-4 py-2 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-2">
+            <span id="xray-step-indicator" class="text-xs font-mono text-slate-400">
+              Line 1 of 9
+            </span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="stepXrayLine(-1)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono transition">
+                ◀ Prev Line
+              </button>
+              <button onclick="stepXrayLine(1)" class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-mono font-semibold transition">
+                Next Line ▶
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Code Lines List -->
+          <div id="xray-code-container" class="bg-[#090d16] font-mono text-xs overflow-y-auto max-h-[270px] divide-y divide-slate-900/70 border-b border-slate-800">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Active Line Explanation Card -->
+          <div class="p-4 bg-ide-card flex-1 overflow-y-auto space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-mono uppercase tracking-wider text-indigo-300 font-semibold">
+                🔍 Line Execution &amp; Native LibTorch Impact
+              </span>
+              <div id="xray-linked-badges" class="flex flex-wrap gap-1">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+            <div id="xray-line-code-preview" class="font-mono text-xs text-amber-300 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 overflow-x-auto">
+              <!-- Populated by JS -->
+            </div>
+            <p id="xray-explanation" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+              <!-- Populated by JS -->
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- ================= APPLICATION JAVASCRIPT ================= -->
+  <script>
+    // ============================================================================
+    // 1. COMPREHENSIVE TORCHSHARP VISUAL ANATOMY DATA (10 CORE COMPONENTS)
+    // ============================================================================
+    const TORCHSHARP_PARTS = [
+      {
+        id: 'dispose-scope',
+        num: '①',
+        shortLabel: '① DisposeScope',
+        name: 'DisposeScope (Deterministic Native Memory)',
+        category: 'Memory & Device',
+        objectType: 'TorchSharp.DisposeScope : IDisposable',
+        handleStatus: 'torch.NewDisposeScope()',
+        shapeInfo: 'Tracks 6 Native Tensors',
+        deviceInfo: 'Unmanaged C++ Heap Guard',
+        apiPath: 'using static TorchSharp.torch; → using (var scope = NewDisposeScope()) { ... }',
+        intuition: 'Unlike Python where reference counting frees tensors immediately, .NET’s Garbage Collector only sees tiny managed C# wrapper objects (~24 bytes) and is unaware of multi-gigabyte native C++ LibTorch allocations on CPU or CUDA VRAM. Wrapping forward/training passes in torch.NewDisposeScope() automatically tracks and deterministically frees every intermediate tensor when the using block exits.',
+        csharpCode: `using static TorchSharp.torch;
+
+// Disposes all intermediate C++ tensors created inside the block
+using (var scope = NewDisposeScope())
+{
+    Tensor a = rand(new long[] { 1024, 1024 }, device: device);
+    Tensor b = ones(new long[] { 1024, 1024 }, device: device);
+    Tensor c = matmul(a, b); // Automatically freed at '}'
+    
+    // Use .DetachFromDisposeScope() to keep a tensor alive outside
+    return c.DetachFromDisposeScope();
+}`,
+        pythonCode: `# Python PyTorch uses CPython reference counting:
+a = torch.rand(1024, 1024, device=device)
+b = torch.ones(1024, 1024, device=device)
+c = torch.matmul(a, b)
+# ⚠️ GOTCHA IN C#: Without NewDisposeScope() or 'using var',
+# C# training loops will rapidly exhaust RAM/VRAM and crash!`,
+        quizClue: 'Wraps tensor operations in a lexical C# "using" block to deterministically free unmanaged C++ LibTorch heap/VRAM allocations before the .NET Garbage Collector runs.'
+      },
+      {
+        id: 'device-target',
+        num: '②',
+        shortLabel: '② Target Device',
+        name: 'Device Routing (DeviceType.CUDA / CPU)',
+        category: 'Memory & Device',
+        objectType: 'TorchSharp.torch.Device (DeviceType.CUDA | DeviceType.CPU)',
+        handleStatus: 'c10::Device (Native)',
+        shapeInfo: 'CPU RAM ↔ GPU VRAM',
+        deviceInfo: 'TorchSharp-cuda-windows/linux',
+        apiPath: 'torch.cuda.is_available() / tensor.to(device) / model.to(device)',
+        intuition: 'TorchSharp separates managed C# wrappers from native execution backends (bundled via NuGet meta-packages like TorchSharp-cpu or TorchSharp-cuda-windows). Both model parameters and input tensors must reside on the exact same Device—calling .to(device) copies tensor buffers between host system RAM and NVIDIA CUDA VRAM.',
+        csharpCode: `using static TorchSharp.torch;
+
+// 1. Check native LibTorch CUDA availability at runtime
+var device = cuda.is_available() ? CUDA : CPU;
+Console.WriteLine($"Running on: {device.type}");
+
+// 2. Move model weights and input tensors to target device
+var model = new MultilayerPerceptron(10, 32, 2).to(device);
+using var x = rand(new long[] { 16, 10 }, device: device);`,
+        pythonCode: `# PyTorch Python equivalent:
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = MultilayerPerceptron(10, 32, 2).to(device)
+x = torch.rand(16, 10, device=device)
+# Note: In C#, install 'TorchSharp-cuda-windows' or 'TorchSharp-cuda-linux'
+# NuGet package so native CUDA LibTorch DLLs/SOs are present.`,
+        quizClue: 'Routes tensors and neural network weights between .NET Host RAM and NVIDIA GPU VRAM using .to(device) after checking cuda.is_available().'
+      },
+      {
+        id: 'input-tensor',
+        num: '③',
+        shortLabel: '③ Input Tensor',
+        name: 'Input Tensor & .NET Array Bridge',
+        category: 'Tensors & Data',
+        objectType: 'TorchSharp.torch.Tensor',
+        handleStatus: 'at::Tensor* (Float32)',
+        shapeInfo: 'Shape: [16, 10] | Stride: [10, 1]',
+        deviceInfo: 'ScalarType.Float32',
+        apiPath: 'torch.from_array(float[]) / torch.rand() / tensor.data<float>().ToArray()',
+        intuition: 'A torch.Tensor is an N-dimensional array backed by contiguous unmanaged memory. In C#, you bridge standard .NET arrays (float[], long[]) into LibTorch via from_array(), reshape dimensions with .reshape() or .view(), and extract results back to managed C# arrays via .cpu().data<float>().ToArray().',
+        csharpCode: `// 1. Bridge a .NET float[] array into a 2D LibTorch Tensor
+float[] rawData = { 0.42f, -1.18f, 0.95f, -0.31f, 2.04f, 0.17f };
+using Tensor fromNet = from_array(rawData, device: device).reshape(2, 3);
+
+// 2. Or allocate directly on target device
+using Tensor batchX = rand(new long[] { 16, 10 }, dtype: ScalarType.Float32, device: device);
+
+// 3. Copy back to CPU and extract as managed C# float[]
+float[] managedArray = batchX.cpu().data<float>().ToArray();`,
+        pythonCode: `# PyTorch Python equivalent:
+from_np = torch.tensor(raw_data, device=device).reshape(2, 3)
+batch_x = torch.rand(16, 10, dtype=torch.float32, device=device)
+managed_array = batch_x.cpu().numpy()
+# ⚠️ GOTCHA: You must call .cpu() before .data<T>() if the tensor
+# currently lives on a CUDA GPU!`,
+        quizClue: 'Represents the multi-dimensional input matrix [16, 10] with ScalarType.Float32 and bridges managed C# float[] arrays via from_array() and .data<float>().'
+      },
+      {
+        id: 'custom-module',
+        num: '④',
+        shortLabel: '④ Custom nn.Module',
+        name: 'Custom Neural Network (nn.Module<Tensor, Tensor>)',
+        category: 'Model & Layers',
+        objectType: 'TorchSharp.torch.nn.Module<Tensor, Tensor>',
+        handleStatus: 'torch::nn::Module',
+        shapeInfo: '[16, 10] → [16, 2]',
+        deviceInfo: 'Strongly-Typed Forward()',
+        apiPath: 'public class MyNet : nn.Module<Tensor, Tensor> { public override Tensor forward(Tensor x) }',
+        intuition: 'In TorchSharp, custom neural networks inherit from the generic nn.Module<TInput, TOutput> base class (such as nn.Module<Tensor, Tensor>). This gives you compile-time C# type safety on the override forward(Tensor input) method while preserving PyTorch’s composable layer hierarchy.',
+        csharpCode: `public class MultilayerPerceptron : nn.Module<Tensor, Tensor>
+{
+    private readonly Modules.Linear _fc1;
+    private readonly Modules.Linear _fc2;
+    private readonly Modules.Dropout _dropout;
+
+    public MultilayerPerceptron(int inDim, int hidDim, int outDim) : base("MLP")
+    {
+        _fc1 = nn.Linear(inDim, hidDim);
+        _fc2 = nn.Linear(hidDim, outDim);
+        _dropout = nn.Dropout(0.2);
+        RegisterComponents(); // Mandatory in C#!
+    }
+
+    public override Tensor forward(Tensor input) => ...;
+}`,
+        pythonCode: `# PyTorch Python uses untyped dynamic forward():
+class MultilayerPerceptron(nn.Module):
+    def __init__(self, in_dim, hid_dim, out_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(in_dim, hid_dim)
+        self.fc2 = nn.Linear(hid_dim, out_dim)
+        self.dropout = nn.Dropout(0.2)`,
+        quizClue: 'The strongly-typed base class nn.Module<Tensor, Tensor> that encapsulates a neural architecture and defines override Tensor forward(Tensor input).'
+      },
+      {
+        id: 'linear-layers',
+        num: '⑤',
+        shortLabel: '⑤ Sub-Layers & Ops',
+        name: 'Sub-Layers & Functional Activations (Linear, ReLU, Dropout)',
+        category: 'Model & Layers',
+        objectType: 'TorchSharp.Modules.Linear / nn.functional.relu / Modules.Dropout',
+        handleStatus: 'Weight [32,10] + Bias [32]',
+        shapeInfo: '[16,10] → [16,32] → [16,2]',
+        deviceInfo: 'Trainable Parameters',
+        apiPath: 'nn.Linear(in, out) / nn.functional.relu(x) / nn.Dropout(p)',
+        intuition: 'Inside forward(), input tensors pass through stateful layers (Modules.Linear which holds trainable weight and bias tensors) and stateless functional operations (nn.functional.relu). Using "using var" on intermediate layer outputs (h1, act, dropped) immediately frees temporary activation tensors while returning the final output tensor.',
+        csharpCode: `public override Tensor forward(Tensor input)
+{
+    // Intermediate activations use 'using var' for instant cleanup
+    using var h1 = _fc1.forward(input);          // [16, 10] -> [16, 32]
+    using var act = nn.functional.relu(h1);      // max(0, x) elementwise
+    using var dropped = _dropout.forward(act);   // zeroes 20% in train() mode
+    
+    // Final tensor is returned (NOT disposed inside forward)
+    return _fc2.forward(dropped);                // [16, 32] -> [16, 2]
+}`,
+        pythonCode: `def forward(self, x):
+    h1 = self.fc1(x)
+    act = F.relu(h1)
+    dropped = self.dropout(act)
+    return self.fc2(dropped)
+# Note: Modern TorchSharp also supports calling _fc1.call(input)
+# or _fc1.forward(input).`,
+        quizClue: 'Executes affine matrix projections (_fc1, _fc2), stateless non-linear activations (nn.functional.relu), and stochastic regularization (_dropout) inside forward().'
+      },
+      {
+        id: 'register-components',
+        num: '⑥',
+        shortLabel: '⑥ RegisterComponents()',
+        name: 'RegisterComponents() Reflection Binder',
+        category: 'Model & Layers',
+        objectType: 'protected void nn.Module.RegisterComponents()',
+        handleStatus: 'Submodule & Parameter Binder',
+        shapeInfo: 'Registers _fc1, _fc2, _dropout',
+        deviceInfo: 'Populates .parameters()',
+        apiPath: 'base("ModuleName") → RegisterComponents(); (called at end of constructor)',
+        intuition: 'The #1 gotcha for PyTorch developers moving to TorchSharp! Python automatically intercepts self.fc1 = nn.Linear(...) via __setattr__. C# does not intercept field assignments—so you MUST call RegisterComponents() at the end of your nn.Module constructor. It uses reflection to bind all private/public layer fields to native LibTorch so model.parameters(), .to(device), and model.save() can discover them.',
+        csharpCode: `public MiniTransformer(int embed, int heads) : base("MiniTransformer")
+{
+    _attn = nn.MultiheadAttention(embed, heads);
+    _ff = nn.Linear(embed, embed);
+
+    // ⚠️ CRITICAL: Without RegisterComponents(), model.parameters()
+    // is EMPTY, .to(CUDA) leaves layers on CPU, and weights won't train!
+    RegisterComponents();
+}`,
+        pythonCode: `# In Python, nn.Module overrides __setattr__ automatically:
+self.attn = nn.MultiheadAttention(embed, heads)
+self.ff = nn.Linear(embed, embed)
+# No RegisterComponents() exists in Python because __setattr__
+# dynamically registers submodules on assignment.`,
+        quizClue: 'Mandatory constructor method in C# custom modules that uses reflection to bind private layer fields (_fc1, _fc2) to model.parameters(), .to(device), and state_dict.'
+      },
+      {
+        id: 'logits-output',
+        num: '⑦',
+        shortLabel: '⑦ Logits & Softmax',
+        name: 'Output Logits, Softmax & Argmax Prediction',
+        category: 'Tensors & Data',
+        objectType: 'Tensor (Logits [16, 2] → Probabilities → Int64 Class Index)',
+        handleStatus: 'at::Tensor* (Output)',
+        shapeInfo: 'Logits [16, 2] → Argmax [16]',
+        deviceInfo: 'item<long>() Scalar Extract',
+        apiPath: 'nn.functional.softmax(logits, dim: -1) / probs.argmax(dim: -1).item<long>()',
+        intuition: 'The final Linear layer outputs raw, unnormalized scores called logits (e.g., [-0.84, +2.31]). During inference, nn.functional.softmax(logits, dim: -1) converts logits into probabilities summing to 1.0 ([0.04, 0.96]), and .argmax(dim: -1) selects the winning class index, extracted to C# via .item<long>().',
+        csharpCode: `using var logits = model.forward(sampleInput);           // Shape: [1, 2]
+using var probs = nn.functional.softmax(logits, dim: -1); // [0.04f, 0.96f]
+using var predTensor = probs.argmax(dim: -1);             // Tensor([1L])
+
+// Extract scalar value from 0D/1-element Tensor into C# long
+long predictedClass = predTensor.item<long>();
+Console.WriteLine($"Predicted Class: {predictedClass}");`,
+        pythonCode: `logits = model(sample_input)
+probs = F.softmax(logits, dim=-1)
+predicted_class = probs.argmax(dim=-1).item()
+# In C#, .item<T>() is generic and requires matching the tensor's
+# ScalarType (e.g., .item<long>() for Int64 argmax, .item<float>() for Float32).`,
+        quizClue: 'Transforms raw network scores [-0.84, 2.31] into normalized class probabilities [0.04, 0.96] and extracts the winning class index into C# via .argmax(dim: -1).item<long>().'
+      },
+      {
+        id: 'loss-function',
+        num: '⑧',
+        shortLabel: '⑧ Loss Criterion',
+        name: 'Loss Criterion (nn.CrossEntropyLoss)',
+        category: 'Training & Autograd',
+        objectType: 'TorchSharp.Modules.CrossEntropyLoss',
+        handleStatus: 'Loss Node (GradFn Root)',
+        shapeInfo: 'Logits [16,2] + Target [16] → []',
+        deviceInfo: 'Scalar Float32 Loss',
+        apiPath: 'var criterion = nn.CrossEntropyLoss(); using var loss = criterion.forward(logits, batchY);',
+        intuition: 'The loss criterion measures how far the network’s predictions are from ground-truth labels (batchY, which must be ScalarType.Int64 class indices for CrossEntropyLoss). Calling criterion.forward(predictions, batchY) returns a 0-dimensional scalar Tensor that serves as the root node for backpropagation.',
+        csharpCode: `var criterion = nn.CrossEntropyLoss();
+
+// batchY must be ScalarType.Int64 for CrossEntropyLoss
+using Tensor batchY = randint(0, 2, new long[] { 16 }, dtype: ScalarType.Int64, device: device);
+using Tensor predictions = model.forward(batchX);
+
+// Compute scalar loss tensor and read float value for logging
+using Tensor loss = criterion.forward(predictions, batchY);
+Console.WriteLine($"Loss: {loss.item<float>():F4}");`,
+        pythonCode: `criterion = nn.CrossEntropyLoss()
+loss = criterion(predictions, batch_y)
+print(f"Loss: {loss.item():.4f}")
+# Note: CrossEntropyLoss internally applies LogSoftmax + NLLLoss,
+# so pass raw logits (do NOT apply softmax before CrossEntropyLoss).`,
+        quizClue: 'Compares raw network logits [16, 2] against ground-truth Int64 target labels [16] to produce the differentiable scalar error tensor (0.2145f).'
+      },
+      {
+        id: 'autograd-backward',
+        num: '⑨',
+        shortLabel: '⑨ Autograd Backward',
+        name: 'Autograd Engine & Reverse Pass (loss.backward())',
+        category: 'Training & Autograd',
+        objectType: 'TorchSharp.torch.Tensor.backward()',
+        handleStatus: 'C++ Autograd Engine Tape',
+        shapeInfo: 'Populates param.grad Tensors',
+        deviceInfo: 'requires_grad: true',
+        apiPath: 'loss.backward(); → computes ∂Loss/∂W for all registered parameters',
+        intuition: 'During the forward pass, LibTorch records every tensor operation in a dynamic computation graph (DAG). Calling loss.backward() triggers the native C++ autograd engine to traverse this graph in reverse, applying the chain rule to compute gradients (∇L/∇W) and storing them inside each parameter’s .grad tensor.',
+        csharpCode: `// 1. Clear stale gradients from previous iteration
+optimizer.zero_grad();
+
+// 2. Forward pass records operations on the autograd tape
+using var predictions = model.forward(batchX);
+using var loss = criterion.forward(predictions, batchY);
+
+// 3. Reverse-mode differentiation populates _fc1.weight.grad & _fc2.weight.grad
+loss.backward();`,
+        pythonCode: `optimizer.zero_grad()
+predictions = model(batch_x)
+loss = criterion(predictions, batch_y)
+loss.backward()
+# Identical semantics! Because gradients accumulate (+=) by default in
+# LibTorch, forgetting optimizer.zero_grad() corrupts step directions.`,
+        quizClue: 'Traverses the computation graph in reverse from the scalar loss node, computing partial derivatives (∂L/∂W) for every parameter where requires_grad is true.'
+      },
+      {
+        id: 'optimizer-step',
+        num: '⑩',
+        shortLabel: '⑩ Optimizer & Eval',
+        name: 'Optimizer Step, Inference Guard (no_grad) & Serialization',
+        category: 'Training & Autograd',
+        objectType: 'TorchSharp.Modules.Adam / torch.no_grad() / model.save()',
+        handleStatus: 'Weight Update & Persistence',
+        shapeInfo: 'W ← W - lr · Adam(∇W)',
+        deviceInfo: 'train() vs eval() + no_grad()',
+        apiPath: 'optim.Adam(model.parameters(), lr) / optimizer.step() / using (no_grad()) / model.save()',
+        intuition: 'During training, optimizer.step() updates every registered parameter using the gradients computed by backward(). During validation or production inference, calling model.eval() disables Dropout/BatchNorm updates, and wrapping forward calls in using (no_grad()) disables autograd graph recording—slashing memory usage and speeding up latency. Trained weights are persisted via model.save("weights.dat").',
+        csharpCode: `// TRAINING UPDATE:
+var optimizer = optim.Adam(model.parameters(), lr: 0.001);
+optimizer.step(); // Updates weights using .grad tensors
+
+// INFERENCE & WEIGHT SERIALIZATION:
+model.eval(); // Disables Dropout & freezes BatchNorm
+using (no_grad())
+using (var scope = NewDisposeScope())
+{
+    using var outLogits = model.forward(testInput);
+}
+model.save("model_weights.dat");`,
+        pythonCode: `optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer.step()
+
+model.eval()
+with torch.no_grad():
+    out_logits = model(test_input)
+torch.save(model.state_dict(), "model_weights.pt")`,
+        quizClue: 'Applies parameter updates via optim.Adam.step() during training, or disables gradient tape tracking via using (no_grad()) and model.eval() during inference and weight saving.'
+      }
+    ];
+
+    // ============================================================================
+    // 2. MODE 3: STEP-BY-STEP C# CODE-TO-OUTPUT X-RAY SNIPPETS (5 RECIPES)
+    // ============================================================================
+    const XRAY_SNIPPETS = [
+      {
+        id: 'tensors-memory',
+        title: '1. Tensors & DisposeScope',
+        lines: [
+          {
+            code: 'var device = cuda.is_available() ? DeviceType.CUDA : DeviceType.CPU;',
+            html: '<span class="tok-kw">var</span> device = cuda.<span class="tok-fn">is_available</span>() ? <span class="tok-type">DeviceType</span>.CUDA : <span class="tok-type">DeviceType</span>.CPU;',
+            targetParts: ['device-target'],
+            revealParts: ['device-target'],
+            explanation: 'Queries the native LibTorch runtime to check if an NVIDIA CUDA GPU and driver are available. Routes subsequent allocations to GPU VRAM or Host CPU RAM.'
+          },
+          {
+            code: 'using (var scope = torch.NewDisposeScope())',
+            html: '<span class="tok-kw">using</span> (<span class="tok-kw">var</span> scope = torch.<span class="tok-fn">NewDisposeScope</span>())',
+            targetParts: ['dispose-scope'],
+            revealParts: ['device-target', 'dispose-scope'],
+            explanation: 'Opens a deterministic DisposeScope boundary. Every native C++ tensor allocated inside this lexical block is registered in the scope tracker and automatically freed at the closing brace.'
+          },
+          {
+            code: 'float[] rawData = { 0.42f, -1.18f, 0.95f, -0.31f, 2.04f, 0.17f };',
+            html: '<span class="tok-kw">float</span>[] rawData = { <span class="tok-num">0.42f</span>, <span class="tok-num">-1.18f</span>, <span class="tok-num">0.95f</span>, <span class="tok-num">-0.31f</span>, <span class="tok-num">2.04f</span>, <span class="tok-num">0.17f</span> };',
+            targetParts: ['input-tensor'],
+            revealParts: ['device-target', 'dispose-scope', 'input-tensor'],
+            explanation: 'Allocates a standard managed .NET float[] array on the CLR heap before bridging it into unmanaged LibTorch memory.'
+          },
+          {
+            code: 'Tensor fromNet = from_array(rawData, device: device).reshape(2, 3);',
+            html: '<span class="tok-type">Tensor</span> fromNet = <span class="tok-fn">from_array</span>(rawData, device: device).<span class="tok-fn">reshape</span>(<span class="tok-num">2</span>, <span class="tok-num">3</span>);',
+            targetParts: ['input-tensor', 'device-target'],
+            revealParts: ['device-target', 'dispose-scope', 'input-tensor'],
+            explanation: 'Copies the .NET array into a native LibTorch Tensor on the target device and reshapes its view metadata to a 2×3 matrix without duplicating underlying storage.'
+          },
+          {
+            code: 'Tensor batchX = rand(new long[] { 16, 10 }, ScalarType.Float32, device);',
+            html: '<span class="tok-type">Tensor</span> batchX = <span class="tok-fn">rand</span>(<span class="tok-kw">new</span> <span class="tok-kw">long</span>[] { <span class="tok-num">16</span>, <span class="tok-num">10</span> }, <span class="tok-type">ScalarType</span>.Float32, device);',
+            targetParts: ['input-tensor', 'dispose-scope'],
+            revealParts: ['device-target', 'dispose-scope', 'input-tensor'],
+            explanation: 'Allocates a 16×10 uniform random Float32 input tensor directly on the target device and registers its native handle with the active DisposeScope.'
+          },
+          {
+            code: 'Tensor weights = ones(new long[] { 10, 2 }, device: device);',
+            html: '<span class="tok-type">Tensor</span> weights = <span class="tok-fn">ones</span>(<span class="tok-kw">new</span> <span class="tok-kw">long</span>[] { <span class="tok-num">10</span>, <span class="tok-num">2</span> }, device: device);',
+            targetParts: ['linear-layers', 'dispose-scope'],
+            revealParts: ['device-target', 'dispose-scope', 'input-tensor', 'linear-layers'],
+            explanation: 'Creates a 10×2 projection matrix filled with 1.0f on the same device so matrix multiplication dimensions align ([16, 10] × [10, 2]).'
+          },
+          {
+            code: 'Tensor logits = matmul(batchX, weights); // Shape: [16, 2]',
+            html: '<span class="tok-type">Tensor</span> logits = <span class="tok-fn">matmul</span>(batchX, weights); <span class="tok-cmt">// Shape: [16, 2]</span>',
+            targetParts: ['linear-layers', 'logits-output'],
+            revealParts: ['device-target', 'dispose-scope', 'input-tensor', 'linear-layers', 'logits-output'],
+            explanation: 'Executes native BLAS/cuBLAS matrix multiplication (batchX × weights), producing a [16, 2] output tensor tracked by DisposeScope.'
+          },
+          {
+            code: 'float[] hostOutput = logits.cpu().data<float>().ToArray();',
+            html: '<span class="tok-kw">float</span>[] hostOutput = logits.<span class="tok-fn">cpu</span>().<span class="tok-fn">data</span>&lt;<span class="tok-kw">float</span>&gt;().<span class="tok-fn">ToArray</span>();',
+            targetParts: ['logits-output', 'device-target', 'input-tensor'],
+            revealParts: ['device-target', 'dispose-scope', 'input-tensor', 'linear-layers', 'logits-output'],
+            explanation: 'Moves the tensor buffer to host CPU memory (.cpu()), obtains a typed span over the native buffer (.data<float>()), and copies it back into a managed C# float[].'
+          }
+        ]
+      },
+      {
+        id: 'custom-module',
+        title: '2. Custom nn.Module',
+        lines: [
+          {
+            code: 'public class MultilayerPerceptron : nn.Module<Tensor, Tensor>',
+            html: '<span class="tok-kw">public class</span> <span class="tok-type">MultilayerPerceptron</span> : nn.<span class="tok-type">Module</span>&lt;<span class="tok-type">Tensor</span>, <span class="tok-type">Tensor</span>&gt;',
+            targetParts: ['custom-module'],
+            revealParts: ['custom-module'],
+            explanation: 'Defines a strongly-typed neural network module that accepts a single Tensor input and returns a Tensor output.'
+          },
+          {
+            code: 'public MultilayerPerceptron(int inDim, int hidDim, int numClasses) : base("MLP")',
+            html: '<span class="tok-kw">public</span> <span class="tok-fn">MultilayerPerceptron</span>(<span class="tok-kw">int</span> inDim, <span class="tok-kw">int</span> hidDim, <span class="tok-kw">int</span> numClasses) : <span class="tok-kw">base</span>(<span class="tok-str">"MLP"</span>)',
+            targetParts: ['custom-module'],
+            revealParts: ['custom-module'],
+            explanation: 'Passes the module identifier ("MLP") to the underlying native torch::nn::Module base constructor.'
+          },
+          {
+            code: '_fc1 = nn.Linear(inDim, hidDim); _fc2 = nn.Linear(hidDim, numClasses);',
+            html: '_fc1 = nn.<span class="tok-fn">Linear</span>(inDim, hidDim); _fc2 = nn.<span class="tok-fn">Linear</span>(hidDim, numClasses);',
+            targetParts: ['linear-layers'],
+            revealParts: ['custom-module', 'linear-layers'],
+            explanation: 'Instantiates two fully-connected linear layers with trainable weight matrices ([32, 10] and [2, 32]) and bias vectors.'
+          },
+          {
+            code: '_dropout = nn.Dropout(0.2);',
+            html: '_dropout = nn.<span class="tok-fn">Dropout</span>(<span class="tok-num">0.2</span>);',
+            targetParts: ['linear-layers'],
+            revealParts: ['custom-module', 'linear-layers'],
+            explanation: 'Adds a Dropout regularization module that randomly zeroes 20% of hidden activations during model.train() but acts as a no-op during model.eval().'
+          },
+          {
+            code: 'RegisterComponents(); // Binds C# fields to native LibTorch parameters',
+            html: '<span class="tok-fn">RegisterComponents</span>(); <span class="tok-cmt">// Binds C# fields to native LibTorch parameters</span>',
+            targetParts: ['register-components', 'linear-layers'],
+            revealParts: ['custom-module', 'linear-layers', 'register-components'],
+            explanation: 'CRITICAL STEP: Uses reflection to inspect the C# class fields (_fc1, _fc2, _dropout) and register their native parameters with LibTorch so optimizers and .to(device) can find them.'
+          },
+          {
+            code: 'public override Tensor forward(Tensor input)',
+            html: '<span class="tok-kw">public override</span> <span class="tok-type">Tensor</span> <span class="tok-fn">forward</span>(<span class="tok-type">Tensor</span> input)',
+            targetParts: ['custom-module', 'input-tensor'],
+            revealParts: ['input-tensor', 'custom-module', 'linear-layers', 'register-components'],
+            explanation: 'Overrides the forward computation graph method. Receives the [16, 10] input tensor.'
+          },
+          {
+            code: 'using var h1 = _fc1.forward(input); using var act = nn.functional.relu(h1);',
+            html: '<span class="tok-kw">using var</span> h1 = _fc1.<span class="tok-fn">forward</span>(input); <span class="tok-kw">using var</span> act = nn.functional.<span class="tok-fn">relu</span>(h1);',
+            targetParts: ['linear-layers', 'dispose-scope'],
+            revealParts: ['dispose-scope', 'input-tensor', 'custom-module', 'linear-layers', 'register-components'],
+            explanation: 'Projects [16, 10] → [16, 32] via _fc1 and applies ReLU activation. Declaring h1 and act with "using var" disposes temporary activation wrappers at the end of forward().'
+          },
+          {
+            code: 'using var dropped = _dropout.forward(act); return _fc2.forward(dropped);',
+            html: '<span class="tok-kw">using var</span> dropped = _dropout.<span class="tok-fn">forward</span>(act); <span class="tok-kw">return</span> _fc2.<span class="tok-fn">forward</span>(dropped);',
+            targetParts: ['linear-layers', 'logits-output'],
+            revealParts: ['dispose-scope', 'input-tensor', 'custom-module', 'linear-layers', 'register-components', 'logits-output'],
+            explanation: 'Applies dropout to the hidden representation and returns the final [16, 2] raw logits tensor from _fc2 without disposing the returned tensor.'
+          }
+        ]
+      },
+      {
+        id: 'training-loop',
+        title: '3. Training Loop & Autograd',
+        lines: [
+          {
+            code: 'var model = new MultilayerPerceptron(10, 32, 2).to(device);',
+            html: '<span class="tok-kw">var</span> model = <span class="tok-kw">new</span> <span class="tok-type">MultilayerPerceptron</span>(<span class="tok-num">10</span>, <span class="tok-num">32</span>, <span class="tok-num">2</span>).<span class="tok-fn">to</span>(device);',
+            targetParts: ['custom-module', 'register-components', 'device-target'],
+            revealParts: ['device-target', 'custom-module', 'linear-layers', 'register-components'],
+            explanation: 'Instantiates the MLP (which calls RegisterComponents) and transfers all registered weight/bias tensors to the target CPU/CUDA device.'
+          },
+          {
+            code: 'var criterion = nn.CrossEntropyLoss();',
+            html: '<span class="tok-kw">var</span> criterion = nn.<span class="tok-fn">CrossEntropyLoss</span>();',
+            targetParts: ['loss-function'],
+            revealParts: ['device-target', 'custom-module', 'linear-layers', 'register-components', 'loss-function'],
+            explanation: 'Creates the CrossEntropyLoss criterion (combines LogSoftmax and Negative Log-Likelihood loss for multi-class classification).'
+          },
+          {
+            code: 'var optimizer = optim.Adam(model.parameters(), lr: 0.001);',
+            html: '<span class="tok-kw">var</span> optimizer = optim.<span class="tok-fn">Adam</span>(model.<span class="tok-fn">parameters</span>(), lr: <span class="tok-num">0.001</span>);',
+            targetParts: ['optimizer-step', 'register-components'],
+            revealParts: ['device-target', 'custom-module', 'linear-layers', 'register-components', 'loss-function', 'optimizer-step'],
+            explanation: 'Links the Adam optimizer to all trainable weights exposed by model.parameters() (populated via RegisterComponents).'
+          },
+          {
+            code: 'model.train(); using (var epochScope = NewDisposeScope())',
+            html: 'model.<span class="tok-fn">train</span>(); <span class="tok-kw">using</span> (<span class="tok-kw">var</span> epochScope = <span class="tok-fn">NewDisposeScope</span>())',
+            targetParts: ['optimizer-step', 'dispose-scope'],
+            revealParts: ['dispose-scope', 'device-target', 'custom-module', 'linear-layers', 'register-components', 'loss-function', 'optimizer-step'],
+            explanation: 'Enables training mode (activating Dropout layers) and opens a DisposeScope for the current mini-batch iteration.'
+          },
+          {
+            code: 'optimizer.zero_grad();',
+            html: 'optimizer.<span class="tok-fn">zero_grad</span>();',
+            targetParts: ['optimizer-step', 'autograd-backward'],
+            revealParts: ['dispose-scope', 'device-target', 'input-tensor', 'custom-module', 'linear-layers', 'register-components', 'loss-function', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Zeros out existing gradient buffers (.grad) on all model parameters so gradients from the previous batch do not accumulate.'
+          },
+          {
+            code: 'using var predictions = model.forward(batchX);',
+            html: '<span class="tok-kw">using var</span> predictions = model.<span class="tok-fn">forward</span>(batchX);',
+            targetParts: ['input-tensor', 'custom-module', 'linear-layers', 'logits-output'],
+            revealParts: ['dispose-scope', 'device-target', 'input-tensor', 'custom-module', 'linear-layers', 'register-components', 'logits-output', 'loss-function', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Runs the forward pass through _fc1, ReLU, Dropout, and _fc2 while recording operations on the autograd tape.'
+          },
+          {
+            code: 'using var loss = criterion.forward(predictions, batchY);',
+            html: '<span class="tok-kw">using var</span> loss = criterion.<span class="tok-fn">forward</span>(predictions, batchY);',
+            targetParts: ['logits-output', 'loss-function'],
+            revealParts: ['dispose-scope', 'device-target', 'input-tensor', 'custom-module', 'linear-layers', 'register-components', 'logits-output', 'loss-function', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Computes the scalar CrossEntropyLoss comparing [16, 2] predicted logits against the [16] Int64 ground-truth labels.'
+          },
+          {
+            code: 'loss.backward();',
+            html: 'loss.<span class="tok-fn">backward</span>();',
+            targetParts: ['autograd-backward', 'linear-layers'],
+            revealParts: ['dispose-scope', 'device-target', 'input-tensor', 'custom-module', 'linear-layers', 'register-components', 'logits-output', 'loss-function', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Executes reverse-mode automatic differentiation, propagating ∂L/∂W backward into _fc2.weight.grad and _fc1.weight.grad.'
+          },
+          {
+            code: 'optimizer.step(); Console.WriteLine($"Loss: {loss.item<float>():F4}");',
+            html: 'optimizer.<span class="tok-fn">step</span>(); <span class="tok-type">Console</span>.<span class="tok-fn">WriteLine</span>(<span class="tok-str">$"Loss: {loss.item&lt;float&gt;():F4}"</span>);',
+            targetParts: ['optimizer-step', 'loss-function'],
+            revealParts: ['dispose-scope', 'device-target', 'input-tensor', 'custom-module', 'linear-layers', 'register-components', 'logits-output', 'loss-function', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Updates all model weights along the Adam gradient step and extracts the scalar float loss for console telemetry.'
+          }
+        ]
+      },
+      {
+        id: 'mini-transformer',
+        title: '4. MiniTransformer Block',
+        lines: [
+          {
+            code: 'public class MiniTransformer : nn.Module<Tensor, Tensor>',
+            html: '<span class="tok-kw">public class</span> <span class="tok-type">MiniTransformer</span> : nn.<span class="tok-type">Module</span>&lt;<span class="tok-type">Tensor</span>, <span class="tok-type">Tensor</span>&gt;',
+            targetParts: ['custom-module'],
+            revealParts: ['custom-module'],
+            explanation: 'Defines a custom C#-native Transformer block inheriting from nn.Module<Tensor, Tensor>.'
+          },
+          {
+            code: '_attn = nn.MultiheadAttention(embedDim, numHeads);',
+            html: '_attn = nn.<span class="tok-fn">MultiheadAttention</span>(embedDim, numHeads);',
+            targetParts: ['linear-layers'],
+            revealParts: ['custom-module', 'linear-layers'],
+            explanation: 'Initializes a native MultiheadAttention submodule for self-attention across sequence embeddings.'
+          },
+          {
+            code: '_ff = nn.Linear(embedDim, embedDim); RegisterComponents();',
+            html: '_ff = nn.<span class="tok-fn">Linear</span>(embedDim, embedDim); <span class="tok-fn">RegisterComponents</span>();',
+            targetParts: ['linear-layers', 'register-components'],
+            revealParts: ['custom-module', 'linear-layers', 'register-components'],
+            explanation: 'Initializes the position-wise feed-forward Linear projection and calls RegisterComponents() to bind both _attn and _ff.'
+          },
+          {
+            code: 'using var attnOut = _attn.forward(src, src, src).output;',
+            html: '<span class="tok-kw">using var</span> attnOut = _attn.<span class="tok-fn">forward</span>(src, src, src).output;',
+            targetParts: ['input-tensor', 'linear-layers'],
+            revealParts: ['input-tensor', 'custom-module', 'linear-layers', 'register-components'],
+            explanation: 'Passes src as Query, Key, and Value into MultiheadAttention and extracts the .output tensor.'
+          },
+          {
+            code: 'using var out1 = attnOut + src; // First Residual Connection',
+            html: '<span class="tok-kw">using var</span> out1 = attnOut + src; <span class="tok-cmt">// First Residual Connection</span>',
+            targetParts: ['linear-layers', 'autograd-backward'],
+            revealParts: ['input-tensor', 'custom-module', 'linear-layers', 'register-components', 'autograd-backward'],
+            explanation: 'Computes the residual skip connection (attnOut + src) using overloaded C# tensor addition, preserving gradient flow during backward().'
+          },
+          {
+            code: 'return _ff.forward(out1) + out1; // Feed-Forward + Residual',
+            html: '<span class="tok-kw">return</span> _ff.<span class="tok-fn">forward</span>(out1) + out1; <span class="tok-cmt">// Feed-Forward + Residual</span>',
+            targetParts: ['linear-layers', 'logits-output'],
+            revealParts: ['input-tensor', 'custom-module', 'linear-layers', 'register-components', 'logits-output', 'autograd-backward'],
+            explanation: 'Applies the feed-forward projection and adds the second residual skip connection to produce the final transformer block output.'
+          }
+        ]
+      },
+      {
+        id: 'inference-save',
+        title: '5. Inference & Serialization',
+        lines: [
+          {
+            code: 'model.eval(); // Disable Dropout & freeze BatchNorm running stats',
+            html: 'model.<span class="tok-fn">eval</span>(); <span class="tok-cmt">// Disable Dropout &amp; freeze BatchNorm running stats</span>',
+            targetParts: ['optimizer-step', 'linear-layers'],
+            revealParts: ['custom-module', 'linear-layers', 'optimizer-step'],
+            explanation: 'Switches the module hierarchy to evaluation mode so Dropout layers pass activations through unchanged and BatchNorm uses running statistics.'
+          },
+          {
+            code: 'using (torch.no_grad())',
+            html: '<span class="tok-kw">using</span> (torch.<span class="tok-fn">no_grad</span>())',
+            targetParts: ['optimizer-step', 'autograd-backward'],
+            revealParts: ['custom-module', 'linear-layers', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Disables the native Autograd tape inside the block so forward operations do not allocate gradient history buffers, reducing latency and memory.'
+          },
+          {
+            code: 'using (var infScope = torch.NewDisposeScope())',
+            html: '<span class="tok-kw">using</span> (<span class="tok-kw">var</span> infScope = torch.<span class="tok-fn">NewDisposeScope</span>())',
+            targetParts: ['dispose-scope'],
+            revealParts: ['dispose-scope', 'device-target', 'custom-module', 'linear-layers', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Creates a DisposeScope for the prediction request so all inference tensors are immediately freed before returning the HTTP/API response.'
+          },
+          {
+            code: 'Tensor logits = model.forward(sampleInput);',
+            html: '<span class="tok-type">Tensor</span> logits = model.<span class="tok-fn">forward</span>(sampleInput);',
+            targetParts: ['input-tensor', 'custom-module', 'logits-output'],
+            revealParts: ['dispose-scope', 'device-target', 'input-tensor', 'custom-module', 'linear-layers', 'logits-output', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Computes the forward pass for a single input tensor [1, 10] to obtain raw [1, 2] class logits.'
+          },
+          {
+            code: 'Tensor probs = nn.functional.softmax(logits, dim: -1);',
+            html: '<span class="tok-type">Tensor</span> probs = nn.functional.<span class="tok-fn">softmax</span>(logits, dim: <span class="tok-num">-1</span>);',
+            targetParts: ['logits-output'],
+            revealParts: ['dispose-scope', 'device-target', 'input-tensor', 'custom-module', 'linear-layers', 'logits-output', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Normalizes raw logits along the last dimension into a valid probability distribution [0.04, 0.96].'
+          },
+          {
+            code: 'long classIdx = probs.argmax(dim: -1).item<long>();',
+            html: '<span class="tok-kw">long</span> classIdx = probs.<span class="tok-fn">argmax</span>(dim: <span class="tok-num">-1</span>).<span class="tok-fn">item</span>&lt;<span class="tok-kw">long</span>&gt;();',
+            targetParts: ['logits-output'],
+            revealParts: ['dispose-scope', 'device-target', 'input-tensor', 'custom-module', 'linear-layers', 'logits-output', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Finds the index with maximum probability and extracts the scalar Int64 value into a native C# long.'
+          },
+          {
+            code: 'model.save("model_weights.dat"); // Or model.load("model_weights.dat")',
+            html: 'model.<span class="tok-fn">save</span>(<span class="tok-str">"model_weights.dat"</span>); <span class="tok-cmt">// Or model.load("model_weights.dat")</span>',
+            targetParts: ['optimizer-step', 'register-components'],
+            revealParts: ['dispose-scope', 'device-target', 'input-tensor', 'custom-module', 'linear-layers', 'register-components', 'logits-output', 'autograd-backward', 'optimizer-step'],
+            explanation: 'Serializes all registered model parameters and buffers in TorchSharp binary format to disk (which can later be restored into a matching C# architecture via model.load()).'
+          }
+        ]
+      }
+    ];
+
+    // ============================================================================
+    // 3. APPLICATION STATE
+    // ============================================================================
+    let currentMode = 'explore'; // 'explore' | 'quiz' | 'xray'
+    let activePartId = 'dispose-scope';
+    let activeCategory = 'All';
+    let focusMode = false;
+    let activeCodeTab = 'csharp';
+
+    // Mode 2 Quiz State
+    let quizOrder = [];
+    let quizIndex = 0;
+    let quizScore = 0;
+    let quizAttempts = 0;
+    let quizStreak = 0;
+    let quizAnsweredCurrent = false;
+
+    // Mode 3 X-Ray State
+    let activeSnippetIdx = 0;
+    let activeLineIdx = 0;
+    let buildStepByStep = true;
+
+    const CATEGORIES = ['All', 'Memory & Device', 'Tensors & Data', 'Model & Layers', 'Training & Autograd'];
+
+    // ============================================================================
+    // 4. INITIALIZATION & EVENT BINDING
+    // ============================================================================
+    function initVisualizer() {
+      renderCategoryFilters();
+      renderPartChips();
+      bindSvgInteractions();
+      renderXrayTabs();
+      selectPart('dispose-scope');
+      initQuizOrder();
+      const hashPart = partIdFromHash();
+      if (hashPart) setFocusView(true, hashPart);
+    }
+
+    function bindSvgInteractions() {
+      const svgParts = document.querySelectorAll('.svg-part');
+      svgParts.forEach(group => {
+        const partId = group.getAttribute('data-part');
+
+        group.addEventListener('mouseenter', () => {
+          updateStatusBar(partId);
+        });
+
+        group.addEventListener('mouseleave', () => {
+          updateStatusBar(activePartId);
+        });
+
+        group.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (currentMode === 'quiz') {
+            handleQuizAnswer(partId);
+          } else if (currentMode === 'xray') {
+            // In X-Ray mode, clicking a part jumps to the first line in the current snippet that references it, or selects it
+            const snippet = XRAY_SNIPPETS[activeSnippetIdx];
+            const matchingLineIdx = snippet.lines.findIndex(l => l.targetParts.includes(partId));
+            if (matchingLineIdx !== -1) {
+              selectXrayLine(matchingLineIdx);
+            } else {
+              highlightSvgParts([partId]);
+              updateStatusBar(partId);
+            }
+          } else {
+            selectPart(partId);
+          }
+        });
+      });
+    }
+
+    // ============================================================================
+    // 5. MODE SWITCHING LOGIC
+    // ============================================================================
+    function setMode(mode) {
+      currentMode = mode;
+
+      // Update Mode Buttons
+      const modeMap = { explore: 'mode-btn-1', quiz: 'mode-btn-2', xray: 'mode-btn-3' };
+      Object.entries(modeMap).forEach(([key, btnId]) => {
+        const btn = document.getElementById(btnId);
+        if (key === mode) {
+          btn.className = 'mode-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap bg-indigo-600 text-white shadow-md shadow-indigo-600/25';
+        } else {
+          btn.className = 'mode-btn flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap text-slate-400 hover:text-slate-200';
+        }
+      });
+
+      // Toggle Right-Column Panels
+      document.getElementById('panel-explore').classList.toggle('hidden', mode !== 'explore');
+      document.getElementById('panel-quiz').classList.toggle('hidden', mode !== 'quiz');
+      document.getElementById('panel-xray').classList.toggle('hidden', mode !== 'xray');
+
+      // Update SVG Badge Labels (Show '?' in Quiz mode, restore labels in Explore/X-Ray)
+      updateSvgBadgeLabels(mode === 'quiz');
+
+      // Clear special SVG classes
+      document.querySelectorAll('.svg-part').forEach(el => {
+        el.classList.remove('quiz-target', 'dimmed-part', 'revealed-part', 'active-part');
+      });
+
+      const hintEl = document.getElementById('canvas-mode-hint');
+      if (mode === 'explore') {
+        hintEl.textContent = 'Click or hover any numbered block ①–⑩ to inspect its C# & LibTorch anatomy';
+        selectPart(activePartId);
+      } else if (mode === 'quiz') {
+        hintEl.textContent = 'Quiz Mode: Identify the pulsing ? component via multiple-choice or by clicking the SVG';
+        loadQuizQuestion();
+      } else if (mode === 'xray') {
+        hintEl.textContent = 'X-Ray Mode: Step through C# lines (or use ↑/↓ keys) to watch code build the architecture';
+        renderXraySnippet();
+      }
+    }
+
+    function updateSvgBadgeLabels(maskForQuiz) {
+      TORCHSHARP_PARTS.forEach(part => {
+        const group = document.querySelector(`.svg-part[data-part="${part.id}"]`);
+        if (!group) return;
+        const badgeText = group.querySelector('.badge-label');
+        if (badgeText) {
+          badgeText.textContent = maskForQuiz ? `${part.num} ?` : part.shortLabel;
+        }
+      });
+    }
+
+    // ============================================================================
+    // 6. MODE 1: VISUAL ANATOMY EXPLORER & FILTER CHIPS
+    // ============================================================================
+    function selectPart(partId) {
+      activePartId = partId;
+      const part = TORCHSHARP_PARTS.find(p => p.id === partId) || TORCHSHARP_PARTS[0];
+      const partIdx = TORCHSHARP_PARTS.indexOf(part) + 1;
+
+      // Highlight on SVG
+      highlightSvgParts([partId]);
+      updateStatusBar(partId);
+      renderPartChips();
+
+      // Populate Inspector Panel
+      document.getElementById('insp-category').textContent = part.category;
+      document.getElementById('insp-badge-num').textContent = `Component #${partIdx} of ${TORCHSHARP_PARTS.length}`;
+      document.getElementById('insp-title').textContent = `${part.num} ${part.name}`;
+      document.getElementById('insp-obj-type').textContent = part.objectType;
+      document.getElementById('insp-intuition').textContent = part.intuition;
+      document.getElementById('insp-api-path').textContent = part.apiPath;
+      document.getElementById('insp-csharp-code').textContent = part.csharpCode;
+      document.getElementById('insp-python-code').textContent = part.pythonCode;
+
+      if (focusMode) {
+        updateFocusViewBox();
+        updateFocusBar();
+        history.replaceState(null, '', `#${part.id}`);
+        const notes = document.getElementById('inspector-notes');
+        if (notes) notes.scrollTop = 0;
+      }
+    }
+
+    function stepPart(delta) {
+      const idx = TORCHSHARP_PARTS.findIndex(p => p.id === activePartId);
+      const next = TORCHSHARP_PARTS[(idx + delta + TORCHSHARP_PARTS.length) % TORCHSHARP_PARTS.length];
+      selectPart(next.id);
+    }
+
+    function partIdFromHash() {
+      const hash = decodeURIComponent((window.location.hash || '').replace(/^#/, ''));
+      return TORCHSHARP_PARTS.some(p => p.id === hash) ? hash : null;
+    }
+
+    function updateFocusBar() {
+      const part = TORCHSHARP_PARTS.find(p => p.id === activePartId);
+      const label = document.getElementById('focus-nav-current');
+      if (label && part) {
+        const idx = TORCHSHARP_PARTS.indexOf(part) + 1;
+        label.textContent = `Component ${idx} of ${TORCHSHARP_PARTS.length} · ${part.name}`;
+      }
+    }
+
+    function updateViewToggle() {
+      const consolidatedBtn = document.getElementById('view-btn-consolidated');
+      const focusBtn = document.getElementById('view-btn-focus');
+      if (!consolidatedBtn || !focusBtn) return;
+      consolidatedBtn.classList.toggle('is-active', !focusMode);
+      focusBtn.classList.toggle('is-active', focusMode);
+      consolidatedBtn.setAttribute('aria-pressed', String(!focusMode));
+      focusBtn.setAttribute('aria-pressed', String(focusMode));
+    }
+
+    function updateFocusViewBox() {
+      const svg = document.getElementById('torchsharp-svg');
+      if (!svg) return;
+      if (!focusMode) {
+        svg.setAttribute('viewBox', '0 0 920 600');
+        return;
+      }
+      const group = svg.querySelector(`.svg-part[data-part="${activePartId}"]`);
+      if (!group) return;
+
+      const focusBox = (group.dataset.focusBox || '').trim().split(/\s+/).map(Number);
+      const box = focusBox.length === 4 && focusBox.every(Number.isFinite)
+        ? { x: focusBox[0], y: focusBox[1], width: focusBox[2], height: focusBox[3] }
+        : group.getBBox();
+      const padding = 30;
+      const minWidth = 400;
+      const minHeight = 267;
+      const aspect = 1.5;
+
+      let focusW = Math.max(box.width + padding * 2, minWidth);
+      let focusH = Math.max(box.height + padding * 2, minHeight);
+      if (focusW / focusH > aspect) {
+        focusH = focusW / aspect;
+      } else {
+        focusW = focusH * aspect;
+      }
+      focusW = Math.min(focusW, 920);
+      focusH = Math.min(focusH, 600);
+
+      const centerX = box.x + box.width / 2;
+      const centerY = box.y + box.height / 2;
+      const x = Math.min(Math.max(centerX - focusW / 2, 0), 920 - focusW);
+      const y = Math.min(Math.max(centerY - focusH / 2, 0), 600 - focusH);
+      svg.setAttribute('viewBox', `${x.toFixed(1)} ${y.toFixed(1)} ${focusW.toFixed(1)} ${focusH.toFixed(1)}`);
+    }
+
+    function setFocusView(enabled, partId) {
+      if (enabled && !focusMode) {
+        focusMode = true;
+        document.body.classList.add('focus-mode');
+        if (currentMode !== 'explore') setMode('explore');
+        selectPart(partId || activePartId);
+        updateViewToggle();
+      } else if (!enabled && focusMode) {
+        focusMode = false;
+        document.body.classList.remove('focus-mode');
+        updateFocusViewBox();
+        updateViewToggle();
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    }
+
+    function setInspectorCodeTab(tab) {
+      activeCodeTab = tab;
+      const isCsharp = tab === 'csharp';
+      document.getElementById('code-tab-csharp').classList.toggle('is-active', isCsharp);
+      document.getElementById('code-tab-python').classList.toggle('is-active', !isCsharp);
+      document.getElementById('insp-code-csharp').classList.toggle('is-active', isCsharp);
+      document.getElementById('insp-code-python').classList.toggle('is-active', !isCsharp);
+    }
+
+    function highlightSvgParts(partIds) {
+      document.querySelectorAll('.svg-part').forEach(el => {
+        const id = el.getAttribute('data-part');
+        if (partIds.includes(id)) {
+          el.classList.add('active-part');
+        } else {
+          el.classList.remove('active-part');
+        }
+      });
+    }
+
+    function updateStatusBar(partId) {
+      const part = TORCHSHARP_PARTS.find(p => p.id === partId);
+      if (!part) return;
+      document.getElementById('status-part-id').textContent = `${part.num} ${part.id}`;
+      document.getElementById('status-handle').textContent = part.handleStatus;
+      document.getElementById('status-shape').textContent = part.shapeInfo;
+      document.getElementById('status-device').textContent = part.deviceInfo;
+    }
+
+    function renderCategoryFilters() {
+      const container = document.getElementById('category-filters');
+      container.innerHTML = CATEGORIES.map(cat => {
+        const isActive = cat === activeCategory;
+        return `<button onclick="setCategoryFilter('${cat}')" class="px-2.5 py-1 rounded-md text-[11px] font-mono transition ${
+          isActive
+            ? 'bg-indigo-600 text-white font-semibold'
+            : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+        }">${cat}</button>`;
+      }).join('');
+    }
+
+    function setCategoryFilter(category) {
+      activeCategory = category;
+      renderCategoryFilters();
+      renderPartChips();
+    }
+
+    function renderPartChips() {
+      const container = document.getElementById('part-chips-container');
+      const filtered = activeCategory === 'All'
+        ? TORCHSHARP_PARTS
+        : TORCHSHARP_PARTS.filter(p => p.category === activeCategory);
+
+      container.innerHTML = filtered.map(part => {
+        const isSelected = part.id === activePartId && currentMode === 'explore';
+        return `<button onclick="handleChipClick('${part.id}')" class="px-2.5 py-1.5 rounded-lg text-xs font-mono transition flex items-center gap-1.5 border ${
+          isSelected
+            ? 'bg-indigo-600/25 border-indigo-400 text-white font-semibold shadow-sm'
+            : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white'
+        }">
+          <span class="text-indigo-400 font-bold">${part.num}</span>
+          <span>${part.id}</span>
+        </button>`;
+      }).join('');
+    }
+
+    function handleChipClick(partId) {
+      if (currentMode === 'quiz') {
+        handleQuizAnswer(partId);
+      } else if (currentMode === 'xray') {
+        setMode('explore');
+        selectPart(partId);
+      } else {
+        selectPart(partId);
+      }
+    }
+
+    function copyInspectorCode() {
+      const part = TORCHSHARP_PARTS.find(p => p.id === activePartId);
+      if (!part) return;
+      const textarea = document.createElement('textarea');
+      textarea.value = part.csharpCode;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      const btn = document.getElementById('copy-csharp-btn');
+      btn.textContent = 'Copied! ✓';
+      setTimeout(() => {
+        btn.textContent = 'Copy C#';
+      }, 1500);
+    }
+
+    // ============================================================================
+    // 7. MODE 2: "NAME THAT PART" TERMINOLOGY QUIZ
+    // ============================================================================
+    function initQuizOrder() {
+      quizOrder = [...TORCHSHARP_PARTS].sort(() => Math.random() - 0.5);
+      quizIndex = 0;
+      quizScore = 0;
+      quizAttempts = 0;
+      quizStreak = 0;
+      quizAnsweredCurrent = false;
+    }
+
+    function resetQuiz() {
+      initQuizOrder();
+      updateSvgBadgeLabels(true);
+      loadQuizQuestion();
+    }
+
+    function loadQuizQuestion() {
+      quizAnsweredCurrent = false;
+      const targetPart = quizOrder[quizIndex];
+
+      // Update Scoreboard
+      document.getElementById('quiz-score').textContent = `${quizScore} / ${quizAttempts}`;
+      document.getElementById('quiz-streak').textContent = `${quizStreak} 🔥`;
+      document.getElementById('quiz-progress').textContent = `${quizIndex + 1} / ${quizOrder.length}`;
+
+      // Spotlight Target on SVG
+      document.querySelectorAll('.svg-part').forEach(el => {
+        const id = el.getAttribute('data-part');
+        el.classList.remove('active-part', 'dimmed-part', 'revealed-part');
+        if (id === targetPart.id) {
+          el.classList.add('quiz-target');
+        } else {
+          el.classList.remove('quiz-target');
+        }
+      });
+
+      // Set Question Text
+      document.getElementById('quiz-question-text').textContent =
+        `Component ${targetPart.num}: "${targetPart.quizClue}"`;
+
+      // Build 4 Multiple Choice Options (1 correct + 3 distractors)
+      const distractors = TORCHSHARP_PARTS
+        .filter(p => p.id !== targetPart.id)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+      const options = [targetPart, ...distractors].sort(() => Math.random() - 0.5);
+
+      const optionsContainer = document.getElementById('quiz-options');
+      optionsContainer.innerHTML = options.map(opt => `
+        <button data-opt-id="${opt.id}" onclick="handleQuizAnswer('${opt.id}')"
+          class="quiz-opt-btn w-full text-left p-3 rounded-xl border border-slate-800 bg-slate-950/80 hover:bg-slate-900 hover:border-slate-700 transition flex items-center justify-between gap-2">
+          <div>
+            <div class="font-mono text-xs font-bold text-white">${opt.name}</div>
+            <div class="font-mono text-[11px] text-slate-400 truncate mt-0.5">${opt.objectType}</div>
+          </div>
+          <span class="text-xs font-mono text-slate-500 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">${opt.id}</span>
+        </button>
+      `).join('');
+
+      // Hide Feedback Card
+      const feedbackEl = document.getElementById('quiz-feedback');
+      feedbackEl.classList.add('hidden');
+    }
+
+    function handleQuizAnswer(selectedId) {
+      if (quizAnsweredCurrent) return;
+      quizAnsweredCurrent = true;
+      quizAttempts++;
+
+      const targetPart = quizOrder[quizIndex];
+      const isCorrect = selectedId === targetPart.id;
+
+      if (isCorrect) {
+        quizScore++;
+        quizStreak++;
+      } else {
+        quizStreak = 0;
+      }
+
+      // Reveal the true label on the SVG badge for this component
+      const targetGroup = document.querySelector(`.svg-part[data-part="${targetPart.id}"]`);
+      if (targetGroup) {
+        const badgeText = targetGroup.querySelector('.badge-label');
+        if (badgeText) badgeText.textContent = targetPart.shortLabel;
+      }
+
+      // Style option buttons
+      document.querySelectorAll('.quiz-opt-btn').forEach(btn => {
+        const optId = btn.getAttribute('data-opt-id');
+        if (optId === targetPart.id) {
+          btn.className = 'quiz-opt-btn w-full text-left p-3 rounded-xl border-2 border-emerald-500 bg-emerald-950/40 flex items-center justify-between gap-2';
+        } else if (optId === selectedId && !isCorrect) {
+          btn.className = 'quiz-opt-btn w-full text-left p-3 rounded-xl border-2 border-rose-500 bg-rose-950/40 flex items-center justify-between gap-2';
+        } else {
+          btn.className = 'quiz-opt-btn w-full text-left p-3 rounded-xl border border-slate-800 bg-slate-950/40 opacity-50 flex items-center justify-between gap-2';
+        }
+      });
+
+      // Show Explanation Feedback
+      const feedbackEl = document.getElementById('quiz-feedback');
+      feedbackEl.classList.remove('hidden');
+      if (isCorrect) {
+        feedbackEl.className = 'rounded-xl p-3.5 border border-emerald-500/40 bg-emerald-950/30 text-emerald-200 text-xs leading-relaxed';
+        feedbackEl.innerHTML = `<strong class="text-emerald-300 font-mono block mb-1">✓ Correct! ${targetPart.num} ${targetPart.name}</strong>${targetPart.intuition}`;
+      } else {
+        const chosenPart = TORCHSHARP_PARTS.find(p => p.id === selectedId);
+        feedbackEl.className = 'rounded-xl p-3.5 border border-rose-500/40 bg-rose-950/30 text-rose-200 text-xs leading-relaxed';
+        feedbackEl.innerHTML = `<strong class="text-rose-300 font-mono block mb-1">✗ Not quite — You picked "${chosenPart ? chosenPart.name : selectedId}".</strong>The highlighted component is <strong class="text-amber-300 font-mono">${targetPart.num} ${targetPart.name}</strong>: ${targetPart.intuition}`;
+      }
+
+      // Update scoreboard
+      document.getElementById('quiz-score').textContent = `${quizScore} / ${quizAttempts}`;
+      document.getElementById('quiz-streak').textContent = `${quizStreak} 🔥`;
+    }
+
+    function nextQuizQuestion() {
+      quizIndex = (quizIndex + 1) % quizOrder.length;
+      if (quizIndex === 0) {
+        updateSvgBadgeLabels(true);
+      }
+      loadQuizQuestion();
+    }
+
+    // ============================================================================
+    // 8. MODE 3: STEP-BY-STEP C# CODE-TO-OUTPUT X-RAY
+    // ============================================================================
+    function renderXrayTabs() {
+      const tabsContainer = document.getElementById('xray-tabs');
+      tabsContainer.innerHTML = XRAY_SNIPPETS.map((snippet, idx) => {
+        const isActive = idx === activeSnippetIdx;
+        return `<button onclick="selectXraySnippet(${idx})" class="px-3 py-1.5 rounded-lg text-xs font-mono whitespace-nowrap transition border ${
+          isActive
+            ? 'bg-emerald-600/25 border-emerald-400 text-emerald-200 font-semibold'
+            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
+        }">${snippet.title}</button>`;
+      }).join('');
+    }
+
+    function selectXraySnippet(snippetIdx) {
+      activeSnippetIdx = snippetIdx;
+      activeLineIdx = 0;
+      renderXrayTabs();
+      renderXraySnippet();
+    }
+
+    function renderXraySnippet() {
+      const snippet = XRAY_SNIPPETS[activeSnippetIdx];
+      const codeContainer = document.getElementById('xray-code-container');
+
+      codeContainer.innerHTML = snippet.lines.map((lineObj, idx) => {
+        const isCurrent = idx === activeLineIdx;
+        return `<div onclick="selectXrayLine(${idx})" class="code-line px-3.5 py-2 flex items-start gap-3 ${
+          isCurrent ? 'active-line' : ''
+        }">
+          <span class="text-slate-600 select-none w-5 text-right shrink-0">${idx + 1}</span>
+          <div class="flex-1 overflow-x-auto whitespace-pre text-slate-200">${lineObj.html}</div>
+        </div>`;
+      }).join('');
+
+      applyXrayLineState();
+    }
+
+    function selectXrayLine(lineIdx) {
+      activeLineIdx = lineIdx;
+      renderXraySnippet();
+    }
+
+    function stepXrayLine(delta) {
+      const snippet = XRAY_SNIPPETS[activeSnippetIdx];
+      activeLineIdx = (activeLineIdx + delta + snippet.lines.length) % snippet.lines.length;
+      renderXraySnippet();
+    }
+
+    function toggleBuildStepMode(enabled) {
+      buildStepByStep = enabled;
+      applyXrayLineState();
+    }
+
+    function applyXrayLineState() {
+      const snippet = XRAY_SNIPPETS[activeSnippetIdx];
+      const lineObj = snippet.lines[activeLineIdx];
+
+      // Update Step Indicator & Explanation Card
+      document.getElementById('xray-step-indicator').textContent =
+        `Line ${activeLineIdx + 1} of ${snippet.lines.length} • ${snippet.title}`;
+      document.getElementById('xray-line-code-preview').innerHTML = lineObj.html;
+      document.getElementById('xray-explanation').textContent = lineObj.explanation;
+
+      // Render linked component badges
+      const badgesContainer = document.getElementById('xray-linked-badges');
+      badgesContainer.innerHTML = lineObj.targetParts.map(pid => {
+        const p = TORCHSHARP_PARTS.find(item => item.id === pid);
+        return p
+          ? `<span class="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-indigo-200 font-mono text-[10px]">${p.num} ${p.id}</span>`
+          : '';
+      }).join('');
+
+      // Apply SVG Highlighting and Progressive Build Opacity
+      document.querySelectorAll('.svg-part').forEach(el => {
+        const partId = el.getAttribute('data-part');
+        const isTarget = lineObj.targetParts.includes(partId);
+        const isRevealed = lineObj.revealParts.includes(partId);
+
+        el.classList.toggle('active-part', isTarget);
+
+        if (buildStepByStep) {
+          el.classList.toggle('revealed-part', isRevealed || isTarget);
+          el.classList.toggle('dimmed-part', !(isRevealed || isTarget));
+        } else {
+          el.classList.remove('dimmed-part', 'revealed-part');
+        }
+      });
+
+      if (lineObj.targetParts.length > 0) {
+        updateStatusBar(lineObj.targetParts[0]);
+      }
+    }
+
+    // Keyboard Navigation: Esc exits focus, arrows move between focused components
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && focusMode) {
+        e.preventDefault();
+        setFocusView(false);
+        return;
+      }
+      if (focusMode && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+        e.preventDefault();
+        stepPart(e.key === 'ArrowRight' ? 1 : -1);
+        return;
+      }
+      if (currentMode === 'xray') {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          stepXrayLine(1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          stepXrayLine(-1);
+        }
+      }
+    });
+
+    // Boot Application on Load
+    window.onload = initVisualizer;
+  </script>
+</body>
+</html>

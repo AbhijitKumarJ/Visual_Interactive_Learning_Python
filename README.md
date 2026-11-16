@@ -38,6 +38,7 @@ include interactive diagrams, live code samples, and "Try this" suggestions.
 | **Scikit-learn** | Core API & Pipeline · Decision Boundaries & Ensembles · Cross-Validation Splitters · Hyperparameter Search · Unsupervised & Features · Estimator Mind-Map · Check Yourself |
 | **Polars** | Arrow & Rust Core · Contexts & Expressions · GroupBy & Windows · Lazy DAG & Streaming · Pandas Translator · Mastery Quiz · Cheat Sheet |
 | **LiteRT** | Package Graph · Architecture Pipeline · Code & Buffer Debugger · Quantization Lab · CLI Sandbox · Migration Diff · Diagnostic Quiz |
+| **PyTorch** | Tensors & Memory · Autograd DAG · Dataset & DataLoader · nn.Module Builder · Training & state_dict · torch.compile & AMP · Diagnostic Quiz |
 
 ### Field guides
 
@@ -51,6 +52,15 @@ each piece is called and where it lives in the library's object model.
 
 The field guides open at their first lesson. Use the navigation inside the
 page to move between lessons, or open the guide's own menu to jump anywhere.
+
+### Standalone explorers
+
+| Explorer | What's inside |
+| --- | --- |
+| **ML.NET** | Microsoft.ML architecture and pipeline visualizer: explore catalogs and components, take a 9-question quiz, and step through a C# training pipeline X-Ray. Switch between the consolidated blueprint and a focused reading view that enlarges one section and keeps its C# code in view |
+| **TorchSharp** | Visual architecture and code X-Ray of the .NET PyTorch binding: inspect the 10 core types, trace tensor lifetimes, and step through real C# training code. Switch between the consolidated blueprint and a focused reading view that enlarges one component and keeps its C# or Python comparison in view |
+| **Hugging Face Hub** | Visual artifact and workflow explorer for `huggingface_hub` and the `hf` CLI, covering repos, auth, cache layout, uploads, downloads, and spaces. Switch between the consolidated blueprint and a focused reading view that enlarges one component and keeps its Python or CLI example in view |
+| **Hugging Face Datasets** | Interactive architecture and API explorer for the `datasets` library: Arrow storage, load/build pipelines, transforms, streaming, and a component quiz |
 
 ## Using the viewer
 
@@ -81,8 +91,7 @@ page to move between lessons, or open the guide's own menu to jump anywhere.
 
 - **A lesson area is blank** — hard-refresh the page (Ctrl+Shift+R on
   Windows/Linux, Cmd+Shift+R on macOS). Then confirm the whole hosted folder
-  was uploaded, including `assets/`, `matplotlib_lessons/`, and
-  `seaborn_lessons/`.
+  was uploaded, including `assets/` and `guides/`.
 - **Icons or fonts look wrong** — the network may be blocking the public font
   and icon CDNs. The lessons still work; only decorations are affected.
 - **A LiteRT demo does not start** — it may need to download its
@@ -96,4 +105,3 @@ page to move between lessons, or open the guide's own menu to jump anywhere.
 *Built with React and Vite. Lesson content is for learning and illustration;
 always verify details against the official library documentation when writing
 production code.*
-

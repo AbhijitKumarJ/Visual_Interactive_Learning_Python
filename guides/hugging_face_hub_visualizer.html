@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>huggingface_hub v2.4.0 & hf CLI — Visual Artifact & Workflow Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            hf: {
+              gold: '#FFD21E',
+              amber: '#FF9D00',
+              cyan: '#38BDF8',
+              emerald: '#34D399',
+              violet: '#A78BFA',
+              rose: '#FB7185',
+              slate950: '#090D16',
+              slate900: '#0F172A',
+              slate850: '#131C31',
+              slate800: '#1E293B'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>*{box-sizing:border-box}body{color:#f1f5f9;background-color:#090d16;font-family:Inter,system-ui,sans-serif;overflow-x:hidden}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:9999px}::-webkit-scrollbar-thumb:hover{background:#475569}.svg-part{cursor:pointer;transition:opacity .3s cubic-bezier(.16,1,.3,1),filter .25s,transform .2s}.svg-part .part-box{transition:stroke .25s,stroke-width .25s,fill .25s}.svg-part:hover .part-box{filter:drop-shadow(0 0 10px #ffd21e4d);stroke:#ffd21e!important;stroke-width:2.5px!important}.svg-part.active-part .part-box{filter:drop-shadow(0 0 14px #ffd21e73);stroke:#ffd21e!important;stroke-width:3px!important}.svg-part.dimmed-part{opacity:.18}.svg-part.dimmed-part:hover{opacity:.65}@keyframes quizPulse{0%,to{stroke:#ffd21e;stroke-width:3px;filter:drop-shadow(0 0 16px #ffd21ebf)}50%{stroke:#38bdf8;stroke-width:4px;filter:drop-shadow(0 0 22px #38bdf8e6)}}.svg-part.quiz-spotlight .part-box{animation:1.6s ease-in-out infinite quizPulse}@keyframes dashFlow{to{stroke-dashoffset:-28px}}.flow-line{stroke-dasharray:8 6;animation:1.2s linear infinite dashFlow}.flow-line-slow{stroke-dasharray:6 6;animation:2s linear infinite dashFlow}.callout-badge{transform-box:fill-box;transform-origin:50%;transition:transform .2s}.svg-part:hover .callout-badge,.svg-part.active-part .callout-badge{transform:scale(1.14)}.code-line{transition:background-color .15s,border-color .15s}.code-line.active-code-line{background:linear-gradient(90deg,#ffd21e29 0%,#38bdf814 100%);border-left-color:#ffd21e!important}.view-toggle-btn{color:#94a3b8;border:1px solid #0000;border-radius:.5rem;padding:.4rem .65rem;font-size:.72rem;font-weight:600;line-height:1rem;transition:color .15s,background-color .15s,border-color .15s}.view-toggle-btn:hover{color:#f8fafc}.view-toggle-btn.is-active{color:#ffd21e;background:#ffd21e24;border-color:#ffd21e73}.code-tab{color:#94a3b8;border:1px solid #0000;border-radius:.45rem;padding:.35rem .65rem;font-family:JetBrains Mono,monospace;font-size:.7rem;transition:color .15s,background-color .15s,border-color .15s}.code-tab:hover{color:#f8fafc}.code-tab.is-active{color:#fde047;background:#ffd21e24;border-color:#ffd21e73}body.focus-mode{height:100vh;overflow:hidden}body.focus-mode>header,body.focus-mode #artifact-header,body.focus-mode #status-bar,body.focus-mode #component-filters-bar{display:none}body.focus-mode #focus-bar{display:flex}body.focus-mode .flow-line,body.focus-mode .flow-line-slow,body.focus-mode .zone-backdrop,body.focus-mode .zone-label{opacity:0!important}body.focus-mode .svg-part:not(.active-part){pointer-events:none;opacity:0!important;filter:none!important}body.focus-mode .svg-part.active-part .part-box{filter:drop-shadow(0 0 22px #ffd21e80)}body.focus-mode main{flex:1;grid-template-columns:minmax(0,.9fr) minmax(420px,1.1fr);align-items:stretch;gap:.5rem;max-width:none;min-height:0;padding:.5rem}body.focus-mode #workspace-left,body.focus-mode #workspace-right{min-height:0}body.focus-mode #workspace-left{grid-column:1;gap:0}body.focus-mode #workspace-right{grid-column:2}body.focus-mode #canvas-card{min-height:0;box-shadow:none;background:0 0;border:none;flex:1;gap:0;padding:0}body.focus-mode #canvas-shell{border-radius:.75rem;flex:1;min-height:0}body.focus-mode #hub-artifact-svg{width:100%;height:100%;max-height:none}body.focus-mode #panel-anatomy{gap:0;min-height:0;padding:0;overflow:hidden}body.focus-mode #anatomy-header{flex:none;padding:.75rem 1.25rem}body.focus-mode #anatomy-meta-row{display:none}body.focus-mode #inspector-title{font-size:1.1rem;line-height:1.3}body.focus-mode #anatomy-scroll{flex-direction:column;flex:1;gap:.875rem;min-height:0;padding:1rem 1.25rem;display:flex;overflow:hidden}body.focus-mode #anatomy-notes{flex:auto;min-height:0;padding-right:.25rem;overflow-y:auto}body.focus-mode #anatomy-code-dock{flex-direction:column;flex:none;min-height:0;max-height:48%;display:flex}body.focus-mode #anatomy-code-tabs{flex:none;display:flex}body.focus-mode #anatomy-code-header{display:none}body.focus-mode #anatomy-code-list{flex-direction:column;flex:auto;min-height:0;display:flex}body.focus-mode .anatomy-code-card{display:none}body.focus-mode .anatomy-code-card.is-active{flex-direction:column;flex:auto;min-height:0;display:flex}body.focus-mode .anatomy-code-card pre{flex:auto;min-height:0;overflow-y:auto}body.focus-mode #inspector-visual-role{font-size:.85rem;line-height:1.6}@media (width<=1023px){body.focus-mode{height:auto;overflow:auto}body.focus-mode main{grid-template-columns:1fr}body.focus-mode #workspace-left,body.focus-mode #workspace-right{grid-column:1/-1}body.focus-mode #workspace-left{min-height:70vh}body.focus-mode #canvas-card{flex:none}body.focus-mode #hub-artifact-svg{height:auto;max-height:70vh}body.focus-mode #anatomy-scroll,body.focus-mode #anatomy-notes{overflow:visible}body.focus-mode #anatomy-code-dock{max-height:none}body.focus-mode .anatomy-code-card.is-active{display:flex}}</style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#090D16] text-slate-100 selection:bg-amber-400 selection:text-slate-950">
+
+  <!-- TOP HEADER -->
+  <header class="border-b border-slate-800/90 bg-[#0B1120]/95 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-[1600px] mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand & Package Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FFD21E] to-[#FF9D00] flex items-center justify-center shadow-md shadow-amber-500/20 text-slate-950 font-bold text-lg select-none">
+          🤗
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="font-bold text-sm sm:text-base tracking-tight text-white">
+              <span class="font-mono text-[#FFD21E]">huggingface_hub</span> v2.4.0 &amp; <span class="font-mono text-sky-400">hf</span> CLI — Visual Artifact &amp; Workflow Explorer
+            </h1>
+            <span class="hidden xl:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono font-medium bg-slate-800/90 text-amber-300 border border-amber-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              10 Core Components • 5 X-Ray Workflows
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">
+            Interactive architecture of Hub Repositories, <code class="text-sky-300 font-mono">hf_xet</code> CAS chunking, <code class="text-emerald-300 font-mono">HfApi</code> commits, <code class="text-violet-300 font-mono">HfFileSystem</code> &amp; local symlink cache
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- 3-Mode Segmented Switcher -->
+        <nav aria-label="Learning Modes" class="flex items-center bg-slate-900/95 p-1 rounded-xl border border-slate-800 shadow-inner">
+          <button id="mode-btn-1" onclick="setMode('anatomy')" class="mode-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 bg-[#FFD21E] text-slate-950 shadow">
+            <span>1. Visual Anatomy</span>
+          </button>
+          <button id="mode-btn-2" onclick="setMode('quiz')" class="mode-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 text-slate-300 hover:text-white">
+            <span>2. Name That Part</span>
+          </button>
+          <button id="mode-btn-3" onclick="setMode('xray')" class="mode-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 text-slate-300 hover:text-white">
+            <span>3. Code-to-Output X-Ray</span>
+          </button>
+        </nav>
+
+        <div class="flex items-center bg-slate-900/95 p-1 rounded-xl border border-slate-800 shadow-inner" role="group" aria-label="Reading view">
+          <button id="view-btn-consolidated" type="button" onclick="setFocusView(false)" aria-pressed="true" class="view-toggle-btn is-active" title="Show all components together">
+            Consolidated
+          </button>
+          <button id="view-btn-focus" type="button" onclick="setFocusView(true)" aria-pressed="false" class="view-toggle-btn" title="Read one component at a time in a larger isolated view">
+            Focused
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- COMPACT FOCUSED-READING BAR -->
+  <div id="focus-bar" class="hidden items-center justify-between gap-3 px-4 sm:px-6 py-2 border-b border-amber-500/25 bg-[#090D16]/95 backdrop-blur-md">
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="text-[11px] font-mono uppercase tracking-wider text-amber-300 font-bold shrink-0">Focused view</span>
+      <span id="focus-nav-current" class="text-xs text-slate-400 font-mono truncate">Component 1 of 10</span>
+    </div>
+    <button type="button" onclick="setFocusView(false)" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-300 hover:text-white hover:border-amber-500/50 transition">
+      Exit focus <span class="text-slate-500">(Esc)</span>
+    </button>
+  </div>
+
+  <!-- MAIN SPLIT-SCREEN WORKSPACE -->
+  <main class="max-w-[1600px] w-full mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 sm:p-4">
+
+    <!-- LEFT PANE (55% / 7 cols on 12-col grid): INTERACTIVE ARTIFACT SVG + STATUS BAR + CHIPS -->
+    <section id="workspace-left" class="lg:col-span-7 flex flex-col gap-3">
+      <!-- Artifact Header Bar -->
+      <div id="canvas-card" class="bg-[#0F172A] border border-slate-800 rounded-2xl p-3 flex flex-col gap-2.5 shadow-xl">
+        <div id="artifact-header" class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#FFD21E]"></span>
+            <h2 class="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-200">
+              Interactive Hub Workspace &amp; Local Cache Architecture
+            </h2>
+          </div>
+          <!-- Legend Pills -->
+          <div class="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-500/30">
+              <span class="w-2 h-2 rounded-full bg-sky-400"></span>Download / Read
+            </span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>Upload / Commit
+            </span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/30">
+              <span class="w-2 h-2 rounded-full bg-violet-400"></span>Symlink / fsspec
+            </span>
+          </div>
+        </div>
+
+        <!-- INTERACTIVE SVG DIAGRAM -->
+        <div id="canvas-shell" class="relative w-full bg-[#090D16] rounded-xl border border-slate-800/90 overflow-hidden select-none">
+          <svg id="hub-artifact-svg" viewBox="0 0 1000 640" class="w-full h-auto block">
+            <defs>
+              <!-- Subtle Grid Pattern -->
+              <pattern id="bg-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#1E293B" stroke-width="0.6" stroke-dasharray="2 2" />
+              </pattern>
+              <!-- Arrow Markers -->
+              <marker id="arrow-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#38BDF8" />
+              </marker>
+              <marker id="arrow-emerald" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#34D399" />
+              </marker>
+              <marker id="arrow-violet" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#A78BFA" />
+              </marker>
+              <marker id="arrow-amber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#FFD21E" />
+              </marker>
+            </defs>
+
+            <!-- Background Canvas -->
+            <rect x="-500" y="-500" width="2000" height="1640" fill="url(#bg-grid)" />
+
+            <!-- Zone Backdrops -->
+            <rect class="zone-backdrop" x="10" y="90" width="980" height="296" rx="12" fill="#0F172A" fill-opacity="0.45" stroke="#1E293B" stroke-dasharray="4 4" />
+            <text class="zone-label" x="978" y="106" text-anchor="end" fill="#64748B" font-size="10" font-family="JetBrains Mono" font-weight="600">REMOTE HUB &amp; TRANSFER PIPELINE LAYER</text>
+
+            <rect class="zone-backdrop" x="10" y="398" width="980" height="232" rx="12" fill="#0F172A" fill-opacity="0.55" stroke="#1E293B" stroke-dasharray="4 4" />
+            <text class="zone-label" x="978" y="414" text-anchor="end" fill="#64748B" font-size="10" font-family="JetBrains Mono" font-weight="600">LOCAL DISK: CACHE HIERARCHY &amp; WORKSPACE LAYER</text>
+
+            <!-- ========================================================= -->
+            <!-- DATA FLOW CONNECTORS BETWEEN PARTS                        -->
+            <!-- ========================================================= -->
+            <!-- Repo Tree (#3) -> Pattern Filter (#4) -->
+            <path d="M 271 215 L 288 215" stroke="#38BDF8" stroke-width="2.2" class="flow-line" marker-end="url(#arrow-cyan)" />
+            <!-- Pattern Filter (#4) -> Xet Engine (#5) -->
+            <path d="M 461 180 L 478 180" stroke="#38BDF8" stroke-width="2.2" class="flow-line" marker-end="url(#arrow-cyan)" />
+            <!-- Xet Engine (#5) -> Cache Blobs (#9) (Download chunks) -->
+            <path d="M 555 253 L 555 408" stroke="#38BDF8" stroke-width="2.5" class="flow-line" marker-end="url(#arrow-cyan)" />
+            <!-- Xet Engine (#5) -> Local Dir (#10) (Direct materialization) -->
+            <path d="M 650 253 L 780 408" stroke="#38BDF8" stroke-width="2" class="flow-line-slow" marker-end="url(#arrow-cyan)" />
+            <!-- Cache Refs/Snapshots (#8) -> Cache Blobs (#9) (Symlink pointers) -->
+            <path d="M 361 522 L 378 522" stroke="#A78BFA" stroke-width="2.4" class="flow-line" marker-end="url(#arrow-violet)" />
+            <path d="M 361 564 L 378 564" stroke="#A78BFA" stroke-width="2.4" class="flow-line" marker-end="url(#arrow-violet)" />
+            <!-- Local Dir (#10) -> Commit & Upload Queue (#6) -->
+            <path d="M 730 430 L 665 378" stroke="#34D399" stroke-width="2.2" class="flow-line" marker-end="url(#arrow-emerald)" />
+            <!-- Commit Queue (#6) -> Remote Repo (#3) -->
+            <path d="M 476 345 L 200 345 L 200 378" stroke="#34D399" stroke-width="2.2" fill="none" class="flow-line" marker-end="url(#arrow-emerald)" />
+            <!-- Remote Repo (#3) -> HfFileSystem (#7) -->
+            <path d="M 271 118 C 460 76, 560 76, 720 118" stroke="#A78BFA" stroke-width="2" fill="none" class="flow-line-slow" marker-end="url(#arrow-violet)" />
+
+            <!-- ========================================================= -->
+            <!-- PART 1: UNIFIED hf:// URI & REPO NAMESPACE BAR            -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="hf-uri" onclick="selectPart('hf-uri')" onmouseenter="hoverPart('hf-uri')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="16" y="14" width="652" height="66" rx="10" fill="#111827" stroke="#334155" stroke-width="1.8" />
+              <text x="54" y="31" fill="#FFD21E" font-size="11" font-weight="700" font-family="Inter">UNIFIED HF:// URI &amp; REPOSITORY NAMESPACE</text>
+              <text x="654" y="31" text-anchor="end" fill="#94A3B8" font-size="10" font-family="JetBrains Mono">hf://[&lt;type&gt;/]&lt;repo_id&gt;[@&lt;revision&gt;][/&lt;path&gt;]</text>
+
+              <!-- Segmented URI Bar -->
+              <!-- Scheme -->
+              <rect x="28" y="39" width="54" height="24" rx="5" fill="#FFD21E" fill-opacity="0.18" stroke="#FFD21E" stroke-width="1.2" />
+              <text x="55" y="55" text-anchor="middle" fill="#FFD21E" font-size="12" font-family="JetBrains Mono" font-weight="700">hf://</text>
+              <text x="55" y="73" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="Inter">Scheme</text>
+
+              <!-- Repo Type -->
+              <rect x="86" y="39" width="76" height="24" rx="5" fill="#38BDF8" fill-opacity="0.16" stroke="#38BDF8" stroke-width="1.2" />
+              <text x="124" y="55" text-anchor="middle" fill="#38BDF8" font-size="12" font-family="JetBrains Mono" font-weight="600">models/</text>
+              <text x="124" y="73" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="Inter">repo_type</text>
+
+              <!-- Repo ID -->
+              <rect x="166" y="39" width="234" height="24" rx="5" fill="#F8FAFC" fill-opacity="0.1" stroke="#64748B" stroke-width="1.2" />
+              <text x="283" y="55" text-anchor="middle" fill="#F8FAFC" font-size="12" font-family="JetBrains Mono" font-weight="600">meta-llama/Llama-3.2-1B</text>
+              <text x="283" y="73" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="Inter">repo_id (namespace/name)</text>
+
+              <!-- Revision -->
+              <rect x="404" y="39" width="74" height="24" rx="5" fill="#A78BFA" fill-opacity="0.18" stroke="#A78BFA" stroke-width="1.2" />
+              <text x="441" y="55" text-anchor="middle" fill="#C4B5FD" font-size="12" font-family="JetBrains Mono" font-weight="600">@main</text>
+              <text x="441" y="73" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="Inter">revision</text>
+
+              <!-- File Path -->
+              <rect x="482" y="39" width="172" height="24" rx="5" fill="#34D399" fill-opacity="0.16" stroke="#34D399" stroke-width="1.2" />
+              <text x="568" y="55" text-anchor="middle" fill="#6EE7B7" font-size="12" font-family="JetBrains Mono" font-weight="600">/config.json</text>
+              <text x="568" y="73" text-anchor="middle" fill="#94A3B8" font-size="8.5" font-family="Inter">filename / path_in_repo</text>
+
+              <!-- Callout Badge #1 -->
+              <g class="callout-badge">
+                <circle cx="34" cy="27" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="34" y="31" text-anchor="middle" fill="#090D16" font-size="11" font-weight="800" font-family="JetBrains Mono">1</text>
+              </g>
+            </g>
+
+            <!-- ========================================================= -->
+            <!-- PART 2: AUTHENTICATION & TOKEN GUARD                      -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="auth-token" onclick="selectPart('auth-token')" onmouseenter="hoverPart('auth-token')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="682" y="14" width="302" height="66" rx="10" fill="#111827" stroke="#334155" stroke-width="1.8" />
+              <text x="720" y="31" fill="#FFD21E" font-size="11" font-weight="700" font-family="Inter">AUTH &amp; TOKEN GUARD</text>
+              <text x="972" y="31" text-anchor="end" fill="#34D399" font-size="10" font-family="JetBrains Mono">Bearer hf_***</text>
+
+              <!-- Token Box & Scopes -->
+              <rect x="694" y="38" width="166" height="22" rx="4" fill="#1E293B" stroke="#475569" />
+              <text x="702" y="53" fill="#F8FAFC" font-size="10.5" font-family="JetBrains Mono">HF_TOKEN / token file</text>
+
+              <!-- Scope Pills -->
+              <rect x="866" y="38" width="34" height="22" rx="4" fill="#065F46" stroke="#34D399" stroke-width="1" />
+              <text x="883" y="53" text-anchor="middle" fill="#A7F3D0" font-size="9.5" font-family="JetBrains Mono">read</text>
+
+              <rect x="904" y="38" width="38" height="22" rx="4" fill="#78350F" stroke="#F59E0B" stroke-width="1" />
+              <text x="923" y="53" text-anchor="middle" fill="#FDE68A" font-size="9.5" font-family="JetBrains Mono">write</text>
+
+              <rect x="946" y="38" width="28" height="22" rx="4" fill="#312E81" stroke="#818CF8" stroke-width="1" />
+              <text x="960" y="53" text-anchor="middle" fill="#C7D2FE" font-size="9.5" font-family="JetBrains Mono">fg</text>
+
+              <text x="696" y="73" fill="#94A3B8" font-size="9" font-family="JetBrains Mono">hf auth login | ~/.cache/huggingface/token</text>
+
+              <!-- Callout Badge #2 -->
+              <g class="callout-badge">
+                <circle cx="700" cy="27" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="700" y="31" text-anchor="middle" fill="#090D16" font-size="11" font-weight="800" font-family="JetBrains Mono">2</text>
+              </g>
+            </g>
+
+            <!-- ========================================================= -->
+            <!-- PART 3: REMOTE HUB GIT TREE & REVISION SNAPSHOT           -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="remote-repo-tree" onclick="selectPart('remote-repo-tree')" onmouseenter="hoverPart('remote-repo-tree')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="16" y="102" width="255" height="274" rx="10" fill="#111827" stroke="#334155" stroke-width="1.8" />
+              <text x="52" y="122" fill="#38BDF8" font-size="11" font-weight="700" font-family="Inter">REMOTE HUB GIT TREE</text>
+              <text x="52" y="136" fill="#94A3B8" font-size="9.5" font-family="JetBrains Mono">rev: main (894a9adde21d)</text>
+
+              <!-- Git Branch/Tag Strip -->
+              <rect x="28" y="145" width="231" height="22" rx="4" fill="#1E293B" />
+              <text x="36" y="160" fill="#CBD5E1" font-size="9.5" font-family="JetBrains Mono">refs/heads/main • tag: v1.0 • pr/3</text>
+
+              <!-- File 1: README.md -->
+              <rect x="28" y="175" width="231" height="40" rx="6" fill="#0F172A" stroke="#334155" />
+              <text x="38" y="192" fill="#F8FAFC" font-size="11" font-family="JetBrains Mono" font-weight="600">📄 README.md</text>
+              <text x="38" y="206" fill="#94A3B8" font-size="9.5" font-family="Inter">Model Card &amp; YAML Metadata (Git)</text>
+
+              <!-- File 2: config.json -->
+              <rect x="28" y="222" width="231" height="40" rx="6" fill="#0F172A" stroke="#38BDF8" stroke-opacity="0.6" />
+              <text x="38" y="239" fill="#38BDF8" font-size="11" font-family="JetBrains Mono" font-weight="600">⚙️ config.json</text>
+              <text x="250" y="239" text-anchor="end" fill="#64748B" font-size="9.5" font-family="JetBrains Mono">1.2 KB</text>
+              <text x="38" y="253" fill="#94A3B8" font-size="9.5" font-family="Inter">Git-tracked JSON • ETag: 42ecfd9</text>
+
+              <!-- File 3: model.safetensors -->
+              <rect x="28" y="269" width="231" height="44" rx="6" fill="#0F172A" stroke="#FFD21E" stroke-opacity="0.7" />
+              <text x="38" y="286" fill="#FFD21E" font-size="11" font-family="JetBrains Mono" font-weight="600">🧊 model.safetensors</text>
+              <text x="250" y="286" text-anchor="end" fill="#FBBF24" font-size="9.5" font-family="JetBrains Mono">2.4 GB</text>
+              <text x="38" y="302" fill="#94A3B8" font-size="9.5" font-family="Inter">Xet CAS Pointer • SHA256: 13a6158</text>
+
+              <!-- File 4: original/consolidated.00.pth -->
+              <rect x="28" y="320" width="231" height="44" rx="6" fill="#0F172A" stroke="#FB7185" stroke-opacity="0.5" />
+              <text x="38" y="337" fill="#FDA4AF" font-size="10.5" font-family="JetBrains Mono">📁 original/consolidated.pth</text>
+              <text x="38" y="353" fill="#94A3B8" font-size="9.5" font-family="Inter">2.4 GB • Legacy PyTorch Weights</text>
+
+              <!-- Callout Badge #3 -->
+              <g class="callout-badge">
+                <circle cx="34" cy="120" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="34" y="124" text-anchor="middle" fill="#090D16" font-size="11" font-weight="800" font-family="JetBrains Mono">3</text>
+              </g>
+            </g>
+
+            <!-- ========================================================= -->
+            <!-- PART 4: GLOB PATTERN FILTER GATE                          -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="pattern-filter" onclick="selectPart('pattern-filter')" onmouseenter="hoverPart('pattern-filter')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="286" y="102" width="175" height="274" rx="10" fill="#111827" stroke="#334155" stroke-width="1.8" />
+              <text x="320" y="122" fill="#FFD21E" font-size="11" font-weight="700" font-family="Inter">PATTERN FILTER GATE</text>
+              <text x="320" y="136" fill="#94A3B8" font-size="9" font-family="JetBrains Mono">fnmatch glob sieve</text>
+
+              <!-- Allow Box -->
+              <rect x="296" y="148" width="155" height="108" rx="7" fill="#064E3B" fill-opacity="0.3" stroke="#34D399" stroke-width="1.3" />
+              <text x="304" y="165" fill="#34D399" font-size="10" font-family="JetBrains Mono" font-weight="700">allow_patterns / --include</text>
+              <text x="304" y="182" fill="#E2E8F0" font-size="10" font-family="JetBrains Mono">["*.safetensors",</text>
+              <text x="304" y="196" fill="#E2E8F0" font-size="10" font-family="JetBrains Mono"> "*.json"]</text>
+              <text x="304" y="218" fill="#6EE7B7" font-size="10" font-family="JetBrains Mono">✓ config.json</text>
+              <text x="304" y="234" fill="#6EE7B7" font-size="10" font-family="JetBrains Mono">✓ model.safetensors</text>
+
+              <!-- Ignore Box -->
+              <rect x="296" y="268" width="155" height="94" rx="7" fill="#4C0519" fill-opacity="0.35" stroke="#FB7185" stroke-width="1.3" />
+              <text x="304" y="285" fill="#FB7185" font-size="10" font-family="JetBrains Mono" font-weight="700">ignore_patterns / --exclude</text>
+              <text x="304" y="303" fill="#E2E8F0" font-size="10" font-family="JetBrains Mono">["original/*"]</text>
+              <text x="304" y="326" fill="#FDA4AF" font-size="10" font-family="JetBrains Mono">✕ original/*.pth</text>
+              <text x="304" y="344" fill="#94A3B8" font-size="9" font-family="Inter">Saves 2.4 GB transfer!</text>
+
+              <!-- Callout Badge #4 -->
+              <g class="callout-badge">
+                <circle cx="303" cy="120" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="303" y="124" text-anchor="middle" fill="#090D16" font-size="11" font-weight="800" font-family="JetBrains Mono">4</text>
+              </g>
+            </g>
+
+            <!-- ========================================================= -->
+            <!-- PART 5: hf_xet CHUNK DEDUPLICATION & CAS ENGINE           -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="xet-engine" onclick="selectPart('xet-engine')" onmouseenter="hoverPart('xet-engine')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="476" y="102" width="230" height="152" rx="10" fill="#111827" stroke="#38BDF8" stroke-width="1.8" />
+              <text x="512" y="122" fill="#38BDF8" font-size="11" font-weight="700" font-family="Inter">hf_xet CAS TRANSFER ENGINE</text>
+              <text x="512" y="136" fill="#94A3B8" font-size="9" font-family="JetBrains Mono">Rust xet-core • 64KB Chunks</text>
+
+              <!-- Xorb Chunk Blocks -->
+              <rect x="488" y="146" width="64" height="36" rx="5" fill="#0284C7" fill-opacity="0.25" stroke="#38BDF8" />
+              <text x="520" y="162" text-anchor="middle" fill="#7DD3FC" font-size="9.5" font-family="JetBrains Mono" font-weight="700">Xorb #1</text>
+              <text x="520" y="175" text-anchor="middle" fill="#BAE6FD" font-size="8.5" font-family="JetBrains Mono">64KB CAS</text>
+
+              <rect x="559" y="146" width="64" height="36" rx="5" fill="#0284C7" fill-opacity="0.25" stroke="#38BDF8" />
+              <text x="591" y="162" text-anchor="middle" fill="#7DD3FC" font-size="9.5" font-family="JetBrains Mono" font-weight="700">Xorb #2</text>
+              <text x="591" y="175" text-anchor="middle" fill="#34D399" font-size="8.5" font-family="JetBrains Mono">DEDUP HIT</text>
+
+              <rect x="630" y="146" width="64" height="36" rx="5" fill="#0284C7" fill-opacity="0.25" stroke="#38BDF8" />
+              <text x="662" y="162" text-anchor="middle" fill="#7DD3FC" font-size="9.5" font-family="JetBrains Mono" font-weight="700">Xorb #N</text>
+              <text x="662" y="175" text-anchor="middle" fill="#BAE6FD" font-size="8.5" font-family="JetBrains Mono">Range GET</text>
+
+              <!-- High perf banner -->
+              <rect x="488" y="190" width="206" height="52" rx="6" fill="#0F172A" stroke="#334155" />
+              <text x="496" y="207" fill="#FFD21E" font-size="9.5" font-family="JetBrains Mono">HF_XET_HIGH_PERFORMANCE=1</text>
+              <text x="496" y="222" fill="#CBD5E1" font-size="9.5" font-family="Inter">• ETag / SHA-256 verification</text>
+              <text x="496" y="235" fill="#CBD5E1" font-size="9.5" font-family="Inter">• Replaces legacy hf_transfer</text>
+
+              <!-- Callout Badge #5 -->
+              <g class="callout-badge">
+                <circle cx="494" cy="120" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="494" y="124" text-anchor="middle" fill="#090D16" font-size="11" font-weight="800" font-family="JetBrains Mono">5</text>
+              </g>
+            </g>
+
+            <!-- ========================================================= -->
+            <!-- PART 6: ATOMIC COMMIT & ASYNC UPLOAD QUEUE                -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="commit-scheduler" onclick="selectPart('commit-scheduler')" onmouseenter="hoverPart('commit-scheduler')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="476" y="264" width="230" height="112" rx="10" fill="#111827" stroke="#34D399" stroke-width="1.8" />
+              <text x="512" y="283" fill="#34D399" font-size="11" font-weight="700" font-family="Inter">ATOMIC COMMIT &amp; UPLOAD</text>
+              <text x="512" y="296" fill="#94A3B8" font-size="9" font-family="JetBrains Mono">HfApi • create_commit • Future</text>
+
+              <!-- Operation Pills -->
+              <rect x="488" y="304" width="64" height="24" rx="4" fill="#064E3B" stroke="#34D399" />
+              <text x="520" y="320" text-anchor="middle" fill="#A7F3D0" font-size="9.5" font-family="JetBrains Mono">+ Add</text>
+
+              <rect x="559" y="304" width="64" height="24" rx="4" fill="#4C0519" stroke="#FB7185" />
+              <text x="591" y="320" text-anchor="middle" fill="#FECDD3" font-size="9.5" font-family="JetBrains Mono">- Delete</text>
+
+              <rect x="630" y="304" width="64" height="24" rx="4" fill="#1E3A8A" stroke="#60A5FA" />
+              <text x="662" y="320" text-anchor="middle" fill="#BFDBFE" font-size="9.5" font-family="JetBrains Mono">⇄ Copy</text>
+
+              <text x="488" y="346" fill="#E2E8F0" font-size="9.5" font-family="JetBrains Mono">run_as_future=True | create_pr</text>
+              <text x="488" y="362" fill="#94A3B8" font-size="9" font-family="JetBrains Mono">hf upload | hf buckets sync</text>
+
+              <!-- Callout Badge #6 -->
+              <g class="callout-badge">
+                <circle cx="494" cy="281" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="494" y="285" text-anchor="middle" fill="#090D16" font-size="11" font-weight="800" font-family="JetBrains Mono">6</text>
+              </g>
+            </g>
+
+            <!-- ========================================================= -->
+            <!-- PART 7: HfFileSystem (fsspec) VIRTUAL STREAM              -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="hf-filesystem" onclick="selectPart('hf-filesystem')" onmouseenter="hoverPart('hf-filesystem')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="720" y="102" width="264" height="274" rx="10" fill="#111827" stroke="#A78BFA" stroke-width="1.8" />
+              <text x="756" y="122" fill="#A78BFA" font-size="11" font-weight="700" font-family="Inter">HfFileSystem (fsspec STREAM)</text>
+              <text x="756" y="136" fill="#94A3B8" font-size="9.5" font-family="JetBrains Mono">Zero-Disk In-Memory Navigation</text>
+
+              <rect x="732" y="148" width="240" height="48" rx="6" fill="#0F172A" stroke="#4C1D95" />
+              <text x="742" y="166" fill="#DDD6FE" font-size="10.5" font-family="JetBrains Mono" font-weight="600">fs.ls("datasets/glue/mrpc")</text>
+              <text x="742" y="184" fill="#94A3B8" font-size="9.5" font-family="Inter">Lists remote tree without cloning</text>
+
+              <rect x="732" y="204" width="240" height="58" rx="6" fill="#0F172A" stroke="#A78BFA" stroke-opacity="0.6" />
+              <text x="742" y="222" fill="#C4B5FD" font-size="10.5" font-family="JetBrains Mono" font-weight="600">fs.open(".../config.json", "r")</text>
+              <text x="742" y="238" fill="#38BDF8" font-size="9.5" font-family="JetBrains Mono">HTTP Range: bytes=0-1240</text>
+              <text x="742" y="253" fill="#94A3B8" font-size="9.5" font-family="Inter">Streams directly to RAM / Pandas</text>
+
+              <rect x="732" y="270" width="240" height="54" rx="6" fill="#0F172A" stroke="#34D399" stroke-opacity="0.6" />
+              <text x="742" y="288" fill="#6EE7B7" font-size="10.5" font-family="JetBrains Mono" font-weight="600">fs.cp("hf://src", "hf://dst")</text>
+              <text x="742" y="305" fill="#94A3B8" font-size="9.5" font-family="Inter">Zero-download server-side copy</text>
+
+              <!-- Consumers Footer -->
+              <rect x="732" y="332" width="240" height="30" rx="5" fill="#1E1B4B" />
+              <text x="852" y="351" text-anchor="middle" fill="#E0E7FF" font-size="10" font-family="JetBrains Mono">🦆 DuckDB • 🐼 Pandas • Polars</text>
+
+              <!-- Callout Badge #7 -->
+              <g class="callout-badge">
+                <circle cx="738" cy="120" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="738" y="124" text-anchor="middle" fill="#090D16" font-size="11" font-weight="800" font-family="JetBrains Mono">7</text>
+              </g>
+            </g>
+
+            <!-- ========================================================= -->
+            <!-- PART 8: LOCAL CACHE refs/ & snapshots/<sha>/ SYMLINK TREE -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="cache-refs-snapshots" onclick="selectPart('cache-refs-snapshots')" onmouseenter="hoverPart('cache-refs-snapshots')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="16" y="420" width="345" height="200" rx="10" fill="#111827" stroke="#A78BFA" stroke-width="1.8" />
+              <text x="52" y="440" fill="#A78BFA" font-size="11" font-weight="700" font-family="Inter">CACHE REFS &amp; SNAPSHOT SYMLINKS</text>
+              <text x="52" y="454" fill="#94A3B8" font-size="9.5" font-family="JetBrains Mono">~/.cache/huggingface/hub/models--meta-llama--...</text>
+
+              <!-- refs/main box -->
+              <rect x="28" y="464" width="321" height="32" rx="6" fill="#0F172A" stroke="#475569" />
+              <text x="38" y="484" fill="#FFD21E" font-size="10.5" font-family="JetBrains Mono">📂 refs/main</text>
+              <text x="338" y="484" text-anchor="end" fill="#E2E8F0" font-size="10" font-family="JetBrains Mono">→ 894a9adde21d9a3e</text>
+
+              <!-- snapshots/<commit> tree -->
+              <rect x="28" y="504" width="321" height="104" rx="6" fill="#0F172A" stroke="#A78BFA" stroke-opacity="0.7" />
+              <text x="38" y="522" fill="#C4B5FD" font-size="10.5" font-family="JetBrains Mono" font-weight="700">📂 snapshots/894a9adde21d9a3e/</text>
+
+              <!-- Symlink 1 -->
+              <rect x="40" y="531" width="298" height="30" rx="4" fill="#1E1B4B" />
+              <text x="48" y="550" fill="#38BDF8" font-size="10" font-family="JetBrains Mono">🔗 config.json</text>
+              <text x="330" y="550" text-anchor="end" fill="#A78BFA" font-size="9.5" font-family="JetBrains Mono">../../blobs/42ecfd93</text>
+
+              <!-- Symlink 2 -->
+              <rect x="40" y="567" width="298" height="30" rx="4" fill="#1E1B4B" />
+              <text x="48" y="586" fill="#FFD21E" font-size="10" font-family="JetBrains Mono">🔗 model.safetensors</text>
+              <text x="330" y="586" text-anchor="end" fill="#A78BFA" font-size="9.5" font-family="JetBrains Mono">../../blobs/13a6158b</text>
+
+              <!-- Callout Badge #8 -->
+              <g class="callout-badge">
+                <circle cx="34" cy="438" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="34" y="442" text-anchor="middle" fill="#090D16" font-size="11" font-weight="800" font-family="JetBrains Mono">8</text>
+              </g>
+            </g>
+
+            <!-- ========================================================= -->
+            <!-- PART 9: IMMUTABLE blobs/<sha256> CONTENT STORE            -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="cache-blobs" onclick="selectPart('cache-blobs')" onmouseenter="hoverPart('cache-blobs')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="376" y="420" width="330" height="200" rx="10" fill="#111827" stroke="#38BDF8" stroke-width="1.8" />
+              <text x="412" y="440" fill="#38BDF8" font-size="11" font-weight="700" font-family="Inter">IMMUTABLE BLOBS/&lt;SHA256&gt; STORE</text>
+              <text x="412" y="454" fill="#94A3B8" font-size="9.5" font-family="JetBrains Mono">Deduplicated Physical Content-Addressed Store</text>
+
+              <!-- Blob 1 -->
+              <rect x="388" y="468" width="306" height="46" rx="6" fill="#0F172A" stroke="#38BDF8" stroke-opacity="0.6" />
+              <text x="398" y="486" fill="#7DD3FC" font-size="10.5" font-family="JetBrains Mono" font-weight="600">🔒 blobs/42ecfd93ede47bdd333d...</text>
+              <text x="398" y="503" fill="#94A3B8" font-size="9.5" font-family="Inter">Physical bytes for config.json (1.2 KB)</text>
+
+              <!-- Blob 2 -->
+              <rect x="388" y="522" width="306" height="48" rx="6" fill="#0F172A" stroke="#FFD21E" stroke-opacity="0.7" />
+              <text x="398" y="540" fill="#FDE047" font-size="10.5" font-family="JetBrains Mono" font-weight="600">🔒 blobs/13a6158b8910c42ff01a...</text>
+              <text x="398" y="557" fill="#94A3B8" font-size="9.5" font-family="Inter">Physical bytes for model.safetensors (2.4 GB)</text>
+
+              <!-- CLI Cache maintenance bar -->
+              <rect x="388" y="578" width="306" height="30" rx="5" fill="#1E293B" />
+              <text x="541" y="597" text-anchor="middle" fill="#CBD5E1" font-size="10" font-family="JetBrains Mono">hf cache ls | hf cache prune | hf cache verify</text>
+
+              <!-- Callout Badge #9 -->
+              <g class="callout-badge">
+                <circle cx="394" cy="438" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="394" y="442" text-anchor="middle" fill="#090D16" font-size="11" font-weight="800" font-family="JetBrains Mono">9</text>
+              </g>
+            </g>
+
+            <!-- ========================================================= -->
+            <!-- PART 10: DIRECT LOCAL DIRECTORY (local_dir)               -->
+            <!-- ========================================================= -->
+            <g class="svg-part" data-part="local-dir" onclick="selectPart('local-dir')" onmouseenter="hoverPart('local-dir')" onmouseleave="unhoverPart()">
+              <rect class="part-box" x="720" y="420" width="264" height="200" rx="10" fill="#111827" stroke="#34D399" stroke-width="1.8" />
+              <text x="756" y="440" fill="#34D399" font-size="11" font-weight="700" font-family="Inter">DIRECT LOCAL DIRECTORY</text>
+              <text x="756" y="454" fill="#94A3B8" font-size="9.5" font-family="JetBrains Mono">local_dir="./llama-local"</text>
+
+              <!-- Materialized files -->
+              <rect x="732" y="466" width="240" height="72" rx="6" fill="#0F172A" stroke="#34D399" stroke-opacity="0.6" />
+              <text x="742" y="484" fill="#6EE7B7" font-size="10.5" font-family="JetBrains Mono" font-weight="600">📁 ./llama-local/ (No Symlinks)</text>
+              <text x="748" y="502" fill="#E2E8F0" font-size="10" font-family="JetBrains Mono">├── config.json</text>
+              <text x="748" y="518" fill="#E2E8F0" font-size="10" font-family="JetBrains Mono">├── model.safetensors</text>
+              <text x="748" y="532" fill="#64748B" font-size="9" font-family="JetBrains Mono">└── .cache/huggingface/</text>
+
+              <!-- Outbound Staging Folder -->
+              <rect x="732" y="546" width="240" height="62" rx="6" fill="#0F172A" stroke="#FFD21E" stroke-opacity="0.6" />
+              <text x="742" y="564" fill="#FFD21E" font-size="10.5" font-family="JetBrains Mono" font-weight="600">📤 folder_path="./output_dir"</text>
+              <text x="742" y="580" fill="#CBD5E1" font-size="9.5" font-family="Inter">Local checkpoints staged for</text>
+              <text x="742" y="594" fill="#34D399" font-size="9.5" font-family="JetBrains Mono">upload_folder() / buckets sync</text>
+
+              <!-- Callout Badge #10 -->
+              <g class="callout-badge">
+                <circle cx="738" cy="438" r="11" fill="#FFD21E" stroke="#090D16" stroke-width="2" />
+                <text class="badge-text" x="738" y="442" text-anchor="middle" fill="#090D16" font-size="10" font-weight="800" font-family="JetBrains Mono">10</text>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <!-- INTERACTIVE DOMAIN STATUS BAR (Beneath SVG) -->
+        <div id="status-bar" class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-[#090D16] p-2.5 rounded-xl border border-slate-800/90 text-xs">
+          <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/80">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">URI Scheme</div>
+            <div id="status-uri" class="font-mono text-amber-300 truncate mt-0.5">hf://models/meta-llama/...</div>
+          </div>
+          <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/80">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">API / CLI Entrypoint</div>
+            <div id="status-entrypoint" class="font-mono text-sky-300 truncate mt-0.5">hf_hub_download() | hf download</div>
+          </div>
+          <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/80">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Storage / Cache Path</div>
+            <div id="status-path" class="font-mono text-violet-300 truncate mt-0.5">~/.cache/huggingface/hub</div>
+          </div>
+          <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800/80">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Environment Variable</div>
+            <div id="status-env" class="font-mono text-emerald-300 truncate mt-0.5">HF_HOME / HF_HUB_CACHE</div>
+          </div>
+        </div>
+
+        <!-- CATEGORY FILTER & QUICK-SELECT CHIPS -->
+        <div id="component-filters-bar" class="flex flex-col gap-2 pt-1">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Filter by Architectural Layer:</span>
+            <div id="category-filter-bar" class="flex flex-wrap gap-1.5">
+              <button onclick="filterCategory('all')" data-cat="all" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-400/20 text-amber-300 border border-amber-400/40 transition">All Parts (10)</button>
+              <button onclick="filterCategory('Remote Hub & Auth')" data-cat="Remote Hub & Auth" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/90 text-slate-300 border border-slate-700 hover:text-white transition">Remote Hub &amp; Auth</button>
+              <button onclick="filterCategory('Transfer & Filters')" data-cat="Transfer & Filters" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/90 text-slate-300 border border-slate-700 hover:text-white transition">Transfer &amp; Filters</button>
+              <button onclick="filterCategory('Commits & Virtual FS')" data-cat="Commits & Virtual FS" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/90 text-slate-300 border border-slate-700 hover:text-white transition">Commits &amp; Virtual FS</button>
+              <button onclick="filterCategory('Local Cache & Disk')" data-cat="Local Cache & Disk" class="cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/90 text-slate-300 border border-slate-700 hover:text-white transition">Local Cache &amp; Disk</button>
+            </div>
+          </div>
+
+          <!-- 10 Quick-Select Component Pills -->
+          <div id="part-pills-container" class="flex flex-wrap gap-1.5 pt-1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANE (45% / 5 cols on 12-col grid): SYNCHRONIZED INSPECTOR / QUIZ / X-RAY -->
+    <section id="workspace-right" class="lg:col-span-5 flex flex-col">
+
+      <!-- =============================================================== -->
+      <!-- MODE 1 PANEL: VISUAL ANATOMY INSPECTOR                          -->
+      <!-- =============================================================== -->
+      <div id="panel-anatomy" class="bg-[#0F172A] border border-slate-800 rounded-2xl p-4 flex flex-col gap-4 shadow-xl h-full">
+        <!-- Top Navigation & Component Header -->
+        <div id="anatomy-header" class="flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+          <div class="flex items-start gap-3 min-w-0">
+            <div id="inspector-badge" class="w-9 h-9 rounded-xl bg-[#FFD21E] text-slate-950 font-mono font-extrabold text-base flex items-center justify-center shrink-0 shadow">
+              1
+            </div>
+            <div class="min-w-0">
+              <div id="anatomy-meta-row" class="flex items-center gap-2 flex-wrap">
+                <span id="inspector-category" class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  Remote Hub &amp; Auth
+                </span>
+              </div>
+              <h3 id="inspector-title" class="text-base sm:text-lg font-bold text-white mt-1">
+                Unified hf:// URI &amp; Repo Namespace Bar
+              </h3>
+            </div>
+          </div>
+
+          <!-- Prev / Next Component Buttons -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="stepPart(-1)" title="Previous Component" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition text-xs font-mono">
+              ◀ Prev
+            </button>
+            <button onclick="stepPart(1)" title="Next Component" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition text-xs font-mono">
+              Next ▶
+            </button>
+          </div>
+        </div>
+
+        <div id="anatomy-scroll" class="flex flex-col gap-4 flex-1 min-h-0">
+          <div id="anatomy-notes" class="flex flex-col gap-3">
+            <!-- 1. What You See / What It Does -->
+            <div class="bg-[#090D16] border border-slate-800/90 rounded-xl p-3.5">
+              <div class="text-[11px] font-semibold uppercase tracking-wider text-amber-400 mb-1 flex items-center gap-1.5">
+                <span>👁️ What You See / What It Does (Visual Intuition)</span>
+              </div>
+              <p id="inspector-visual-role" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <!-- 2. Official Package Term & Where It Lives -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="bg-[#090D16] border border-slate-800/90 rounded-xl p-3">
+                <div class="text-[10px] font-semibold uppercase tracking-wider text-sky-400 mb-1">
+                  Official Package Term &amp; Type
+                </div>
+                <code id="inspector-official-term" class="text-xs font-mono text-white break-words block"></code>
+              </div>
+              <div class="bg-[#090D16] border border-slate-800/90 rounded-xl p-3">
+                <div class="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-1">
+                  Where It Lives / Access Path
+                </div>
+                <code id="inspector-access-path" class="text-xs font-mono text-slate-200 break-words block"></code>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Side-by-Side Idiomatic Syntax Comparison -->
+          <div id="anatomy-code-dock" class="flex flex-col gap-3 flex-1 min-h-0">
+            <div id="anatomy-code-header" class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                Side-by-Side Idiomatic Syntax Comparison
+              </span>
+              <span id="copy-toast" class="text-xs font-mono text-emerald-400 opacity-0 transition-opacity">Copied to clipboard!</span>
+            </div>
+
+            <div id="anatomy-code-tabs" class="hidden items-center gap-1.5">
+              <button id="anatomy-tab-python" type="button" onclick="setAnatomyCodeTab('python')" class="code-tab is-active">
+                Python SDK
+              </button>
+              <button id="anatomy-tab-cli" type="button" onclick="setAnatomyCodeTab('cli')" class="code-tab">
+                CLI (hf)
+              </button>
+            </div>
+
+            <div id="anatomy-code-list" class="grid grid-cols-1 gap-3 flex-1 min-h-0">
+              <!-- Column A: Python SDK -->
+              <div id="anatomy-code-python" class="anatomy-code-card is-active bg-[#090D16] border border-sky-500/30 rounded-xl overflow-hidden flex flex-col">
+                <div class="bg-slate-900/90 px-3 py-1.5 border-b border-slate-800 flex items-center justify-between">
+                  <span class="text-xs font-mono font-semibold text-sky-300">🐍 Python SDK (huggingface_hub)</span>
+                  <button onclick="copyCode('inspector-syntax-py')" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                    Copy
+                  </button>
+                </div>
+                <pre class="p-3 text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed"><code id="inspector-syntax-py"></code></pre>
+              </div>
+
+              <!-- Column B: Terminal CLI (hf) / Configurable API -->
+              <div id="anatomy-code-cli" class="anatomy-code-card bg-[#090D16] border border-amber-500/30 rounded-xl overflow-hidden flex flex-col">
+                <div class="bg-slate-900/90 px-3 py-1.5 border-b border-slate-800 flex items-center justify-between">
+                  <span class="text-xs font-mono font-semibold text-amber-300">💻 Terminal CLI (hf) / Configurable API</span>
+                  <button onclick="copyCode('inspector-syntax-cli')" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                    Copy
+                  </button>
+                </div>
+                <pre class="p-3 text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed"><code id="inspector-syntax-cli"></code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =============================================================== -->
+      <!-- MODE 2 PANEL: BEGINNER TERMINOLOGY PRACTICE (NAME THAT PART)    -->
+      <!-- =============================================================== -->
+      <div id="panel-quiz" class="hidden bg-[#0F172A] border border-slate-800 rounded-2xl p-4 flex-col gap-4 shadow-xl h-full">
+        <!-- Quiz Header & Score Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold">Terminology Practice</span>
+            <h3 class="text-base sm:text-lg font-bold text-white">Name That Hub Component</h3>
+          </div>
+          <div class="flex items-center gap-2 font-mono text-xs">
+            <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200">
+              Q: <strong id="quiz-q-num" class="text-amber-400">1</strong>/10
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-emerald-300">
+              Score: <strong id="quiz-score">0</strong>
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-sky-300">
+              Streak: <strong id="quiz-streak">0</strong>🔥
+            </span>
+          </div>
+        </div>
+
+        <!-- Quiz Sub-Mode Switcher -->
+        <div class="flex items-center justify-between gap-2 bg-[#090D16] p-1.5 rounded-xl border border-slate-800">
+          <button id="quiz-submode-mc" onclick="setQuizSubmode('mc')" class="flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold transition bg-amber-400 text-slate-950">
+            Identify Highlighted Part (4 Choices)
+          </button>
+          <button id="quiz-submode-locate" onclick="setQuizSubmode('locate')" class="flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white">
+            Click Part on Diagram by Name
+          </button>
+        </div>
+
+        <!-- Prompt Card -->
+        <div class="bg-[#090D16] border border-amber-500/30 rounded-xl p-3.5">
+          <div id="quiz-prompt-label" class="text-[11px] font-mono uppercase tracking-wider text-amber-300 mb-1">
+            🔍 Spotlit Component Clue (Badges hidden as '?'):
+          </div>
+          <p id="quiz-clue-text" class="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium"></p>
+        </div>
+
+        <!-- 4 Multiple Choice Option Cards -->
+        <div id="quiz-options-grid" class="grid grid-cols-1 gap-2.5"></div>
+
+        <!-- Feedback Banner -->
+        <div id="quiz-feedback-box" class="hidden rounded-xl p-3.5 border text-xs sm:text-sm leading-relaxed"></div>
+
+        <!-- Quiz Footer Actions -->
+        <div class="mt-auto pt-2 flex items-center justify-between gap-2 border-t border-slate-800">
+          <button onclick="resetQuiz()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+            ↻ Restart &amp; Shuffle
+          </button>
+          <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="px-4 py-2 rounded-xl bg-[#FFD21E] hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm transition shadow">
+            Next Challenge →
+          </button>
+        </div>
+      </div>
+
+      <!-- =============================================================== -->
+      <!-- MODE 3 PANEL: PROGRESSIVE CODE-TO-OUTPUT X-RAY                  -->
+      <!-- =============================================================== -->
+      <div id="panel-xray" class="hidden bg-[#0F172A] border border-slate-800 rounded-2xl p-4 flex-col gap-3.5 shadow-xl h-full">
+        <!-- Recipe Selector & Step-by-Step Toggle -->
+        <div class="flex flex-col gap-2.5 border-b border-slate-800 pb-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <label for="recipe-select" class="text-xs font-semibold uppercase tracking-wider text-amber-400">
+              Select Workflow Recipe (5):
+            </label>
+            <label class="inline-flex items-center gap-2 cursor-pointer select-none bg-[#090D16] px-2.5 py-1 rounded-lg border border-slate-800 text-xs text-slate-200">
+              <input id="build-step-toggle" type="checkbox" checked onchange="toggleBuildStepByStep()" class="accent-[#FFD21E] rounded" />
+              <span>Build Step-by-Step</span>
+            </label>
+          </div>
+
+          <select id="recipe-select" onchange="selectRecipe(this.value)" class="w-full bg-[#090D16] border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium text-white focus:outline-none focus:border-amber-400">
+            <option value="0">Recipe 1: Version-Pinned File &amp; Filtered Snapshot Download</option>
+            <option value="1">Recipe 2: Idempotent Repo Creation &amp; Async Folder Upload</option>
+            <option value="2">Recipe 3: Atomic Multi-File Git Commit &amp; Pull Request</option>
+            <option value="3">Recipe 4: Zero-Copy Virtual Filesystem Streaming (HfFileSystem)</option>
+            <option value="4">Recipe 5: Local Cache Inspection &amp; hf CLI Workflow</option>
+          </select>
+        </div>
+
+        <!-- Step Controls Bar -->
+        <div class="flex items-center justify-between gap-2 bg-[#090D16] px-3 py-2 rounded-xl border border-slate-800">
+          <span class="text-xs font-mono text-slate-300">
+            Line <strong id="xray-step-num" class="text-amber-400">1</strong> of <span id="xray-step-total">3</span>
+            <span class="text-slate-500 hidden sm:inline">(Click any line or use ↑/↓)</span>
+          </span>
+          <div class="flex items-center gap-1.5">
+            <button onclick="stepXrayLine(-1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono border border-slate-700 transition">
+              ▲ Prev Line
+            </button>
+            <button onclick="stepXrayLine(1)" class="px-2.5 py-1 rounded-lg bg-[#FFD21E] hover:bg-amber-300 text-slate-950 font-bold text-xs font-mono transition">
+              ▼ Next Line
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Multi-Line Code Block -->
+        <div id="xray-code-container" class="bg-[#090D16] border border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-800/60 font-mono text-xs"></div>
+
+        <!-- Active Line X-Ray Explanation Card -->
+        <div class="bg-[#090D16] border border-amber-500/30 rounded-xl p-3.5 flex flex-col gap-2.5 flex-1">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold">
+              ⚡ Active Line X-Ray &amp; Artifact Impact
+            </span>
+            <div id="xray-target-badges" class="flex flex-wrap gap-1.5"></div>
+          </div>
+
+          <code id="xray-active-statement" class="text-xs font-mono text-sky-300 bg-slate-900/90 p-2 rounded-lg border border-slate-800 block overflow-x-auto"></code>
+
+          <p id="xray-explanation" class="text-xs sm:text-sm text-slate-200 leading-relaxed"></p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    // =========================================================================
+    // 1. COMPLETE DOMAIN METADATA FOR ALL 10 ARCHITECTURAL COMPONENTS
+    // =========================================================================
+    const HUB_PARTS = [
+      {
+        id: 'hf-uri',
+        badgeNum: 1,
+        name: 'Unified hf:// URI & Repo Namespace Bar',
+        category: 'Remote Hub & Auth',
+        statusInfo: {
+          uri: 'hf://models/meta-llama/Llama-3.2-1B@main/config.json',
+          entrypoint: 'hf download hf://... | HfFileSystem',
+          path: 'hf://[<type>/]<repo_id>[@<revision>][/<path>]',
+          envVar: 'HF_ENDPOINT (default: https://huggingface.co)'
+        },
+        visualRole: 'Encodes the target repository type (models, datasets, spaces, buckets), organization/user namespace, Git revision (@main, tag, or 40-char SHA), and file path into a single standardized address bar used across CLI commands and fsspec tools.',
+        officialTerm: 'HF URI Grammar (hf://) & repo_id / repo_type / revision',
+        accessPath: 'Passed to hf download/upload or HfFileSystem("hf://...")',
+        syntaxPrimary: `from huggingface_hub import hf_hub_download, HfFileSystem
+
+# Explicit parameters in Python SDK
+path = hf_hub_download(
+    repo_id="meta-llama/Llama-3.2-1B",
+    filename="config.json",
+    repo_type="model",
+    revision="main"
+)`,
+        syntaxAlternative: `# Unified hf:// URI in CLI (replaces --repo-type & --revision)
+hf download hf://models/meta-llama/Llama-3.2-1B@main/config.json
+
+# Download from a dataset PR revision via hf:// URI
+hf download hf://datasets/google/fleurs@refs/pr/1/fleurs.py`
+      },
+      {
+        id: 'auth-token',
+        badgeNum: 2,
+        name: 'Authentication & Token Guard',
+        category: 'Remote Hub & Auth',
+        statusInfo: {
+          uri: 'https://huggingface.co/oauth/device',
+          entrypoint: 'hf auth login | HfApi(token=...)',
+          path: '~/.cache/huggingface/token',
+          envVar: 'HF_TOKEN / HF_TOKEN_PATH'
+        },
+        visualRole: 'Guards access to gated models (like Llama-3.2), private repositories, and write/commit endpoints. Resolves User Access Tokens (hf_***) with read, write, or fine-grained scopes from environment variables or local disk.',
+        officialTerm: 'User Access Token (HF_TOKEN) & hf auth CLI suite',
+        accessPath: 'os.environ["HF_TOKEN"] or ~/.cache/huggingface/token',
+        syntaxPrimary: `from huggingface_hub import login, whoami, HfApi
+
+# Interactive or scripted login in Python
+login(token="hf_your_access_token", add_to_git_credential=True)
+
+# HfApi automatically inherits HF_TOKEN or ~/.cache/huggingface/token
+api = HfApi()
+user_info = api.whoami()`,
+        syntaxAlternative: `# Interactive OAuth browser login in terminal
+hf auth login
+
+# Headless CI/CD login with Git credential helper
+hf auth login --token "$HF_TOKEN" --add-to-git-credential
+hf auth whoami`
+      },
+      {
+        id: 'remote-repo-tree',
+        badgeNum: 3,
+        name: 'Remote Hub Git Tree & Revision Snapshot',
+        category: 'Remote Hub & Auth',
+        statusInfo: {
+          uri: 'https://huggingface.co/meta-llama/Llama-3.2-1B/tree/main',
+          entrypoint: 'api.list_repo_tree() | hf repos ls',
+          path: 'refs/heads/main @ 894a9adde21d',
+          envVar: 'HF_HUB_ETAG_TIMEOUT (default: 10s)'
+        },
+        visualRole: 'Represents the versioned Git repository hosted on huggingface.co. Small metadata files (README.md, config.json) live directly in Git, while multi-gigabyte tensors (model.safetensors) store cryptographic pointer headers backed by Xet CAS.',
+        officialTerm: 'Hub Repository (model | dataset | space) & Git Revision',
+        accessPath: 'HfApi().list_repo_files(repo_id, revision="main")',
+        syntaxPrimary: `from huggingface_hub import HfApi
+
+api = HfApi()
+# Inspect remote repository files at a specific revision
+files = api.list_repo_files(
+    repo_id="meta-llama/Llama-3.2-1B",
+    revision="main"
+)`,
+        syntaxAlternative: `# List all personal/org repositories with storage usage
+hf repos ls
+
+# List files inside a dataset repo in a tree view
+hf datasets ls HuggingFaceFW/fineweb --tree -h`
+      },
+      {
+        id: 'pattern-filter',
+        badgeNum: 4,
+        name: 'Glob Pattern Filter Gate (allow / ignore)',
+        category: 'Transfer & Filters',
+        statusInfo: {
+          uri: 'fnmatch glob filter pipeline',
+          entrypoint: 'snapshot_download(allow_patterns=..., ignore_patterns=...)',
+          path: 'Filter stage before hf_xet download',
+          envVar: 'HF_HUB_DISABLE_PROGRESS_BARS'
+        },
+        visualRole: 'Acts as a sieve between the remote repository tree and your network interface. Whitelists desired formats (*.safetensors, *.json) while blocking redundant legacy checkpoints (original/*.pth), saving gigabytes of bandwidth.',
+        officialTerm: 'allow_patterns / ignore_patterns (--include / --exclude)',
+        accessPath: 'Parameters on snapshot_download() and upload_folder()',
+        syntaxPrimary: `from huggingface_hub import snapshot_download
+
+# Download only Safetensors & JSON configs; skip legacy .pth
+snapshot_download(
+    repo_id="meta-llama/Llama-3.2-1B",
+    allow_patterns=["*.safetensors", "*.json"],
+    ignore_patterns=["original/*"]
+)`,
+        syntaxAlternative: `# Preview filtered download payload size with --dry-run
+hf download meta-llama/Llama-3.2-1B \\
+  --include "*.safetensors" "*.json" \\
+  --exclude "original/*" \\
+  --dry-run`
+      },
+      {
+        id: 'xet-engine',
+        badgeNum: 5,
+        name: 'hf_xet Chunk Deduplication & CAS Engine',
+        category: 'Transfer & Filters',
+        statusInfo: {
+          uri: 'Xet Content-Addressable Service (CAS)',
+          entrypoint: 'hf_xet (Rust xet-core binding, auto-enabled)',
+          path: '~/.cache/huggingface/xet (chunk cache)',
+          envVar: 'HF_XET_HIGH_PERFORMANCE=1'
+        },
+        visualRole: 'The Rust-powered storage engine that slices large model weights into immutable 64KB content-defined chunks grouped into Xorbs. Deduplicates identical byte blocks across revisions and models, replacing legacy Git-LFS and hf_transfer.',
+        officialTerm: 'hf_xet & Content-Addressable Storage (Xorbs)',
+        accessPath: 'Bundled automatically with pip install -U huggingface_hub',
+        syntaxPrimary: `import os
+# Enable high-performance multi-core saturation BEFORE import
+os.environ["HF_XET_HIGH_PERFORMANCE"] = "1"
+
+from huggingface_hub import hf_hub_download
+# Automatically uses hf_xet chunked CAS transfer
+hf_hub_download(repo_id="Qwen/Qwen3-0.6B", filename="model.safetensors")`,
+        syntaxAlternative: `# Saturate network & CPU cores for massive CLI transfers
+export HF_XET_HIGH_PERFORMANCE=1
+hf download Qwen/Qwen3-0.6B
+
+# Inspect active hf_xet version in environment
+hf env`
+      },
+      {
+        id: 'commit-scheduler',
+        badgeNum: 6,
+        name: 'Atomic Commit & Async Upload Queue',
+        category: 'Commits & Virtual FS',
+        statusInfo: {
+          uri: 'POST /api/models/{repo_id}/commit/{revision}',
+          entrypoint: 'api.create_commit() | api.upload_folder()',
+          path: 'refs/heads/main or refs/pr/<num>',
+          envVar: 'HF_XET_HIGH_PERFORMANCE=1'
+        },
+        visualRole: 'Batches file additions, in-memory byte buffers, deletions, and server-side copies into a single ACID Git commit or Pull Request. Supports non-blocking background threads (run_as_future=True) so GPU training loops never stall.',
+        officialTerm: 'HfApi.create_commit() & CommitOperationAdd / Delete / Copy',
+        accessPath: 'huggingface_hub.HfApi / CommitScheduler',
+        syntaxPrimary: `from huggingface_hub import HfApi, CommitOperationAdd, CommitOperationDelete
+
+api = HfApi()
+ops = [
+    CommitOperationAdd("model.safetensors", "./weights.safetensors"),
+    CommitOperationDelete("old_logs/")
+]
+api.create_commit("username/my-model", operations=ops,
+                  commit_message="Update weights", create_pr=True)`,
+        syntaxAlternative: `# Upload folder to a Pull Request from terminal
+hf upload username/my-model ./checkpoints /weights --create-pr
+
+# Daemon mode: sync training logs every 15 minutes
+hf upload username/my-model ./logs logs/ --every 15`
+      },
+      {
+        id: 'hf-filesystem',
+        badgeNum: 7,
+        name: 'HfFileSystem (fsspec) Virtual Stream',
+        category: 'Commits & Virtual FS',
+        statusInfo: {
+          uri: 'hf://datasets/glue/mrpc/train.parquet',
+          entrypoint: 'HfFileSystem() | fs.open() | fs.ls() | fs.cp()',
+          path: 'Volatile Python RAM (Zero local cache footprint)',
+          envVar: 'HF_TOKEN (for private repo streaming)'
+        },
+        visualRole: 'Mounts the Hugging Face Hub as a virtual POSIX filesystem compliant with Python fsspec. Uses HTTP Range requests to stream slices of remote Parquet, Safetensors, or JSON files directly into memory without caching to disk.',
+        officialTerm: 'HfFileSystem (fsspec.AbstractFileSystem implementation)',
+        accessPath: 'from huggingface_hub import HfFileSystem',
+        syntaxPrimary: `import json
+from huggingface_hub import HfFileSystem
+
+fs = HfFileSystem()
+files = fs.ls("datasets/glue/mrpc", detail=False)
+
+with fs.open("meta-llama/Llama-3.2-1B/config.json", "r") as f:
+    config = json.load(f)`,
+        syntaxAlternative: `# Zero-download server-side copy across Hub repos
+fs.cp(
+    "hf://username/source-model/model.safetensors",
+    "hf://username/target-model/model.safetensors"
+)
+# Also works natively in Pandas: pd.read_parquet("hf://...")`
+      },
+      {
+        id: 'cache-refs-snapshots',
+        badgeNum: 8,
+        name: 'Local Cache refs/ & snapshots/<sha>/ Symlink Tree',
+        category: 'Local Cache & Disk',
+        statusInfo: {
+          uri: 'file://~/.cache/huggingface/hub/models--<org>--<repo>',
+          entrypoint: 'hf_hub_download() return path | scan_cache_dir()',
+          path: '$HF_HUB_CACHE/<type>s--<org>--<repo>/snapshots/<sha>/',
+          envVar: 'HF_HOME / HF_HUB_CACHE / HF_HUB_OFFLINE=1'
+        },
+        visualRole: 'Provides version-aware working trees in your local cache. refs/main records the latest commit SHA, and snapshots/<commit_hash>/ mirrors the repository filenames using lightweight symlinks pointing into the shared blobs/ directory.',
+        officialTerm: 'CachedRepoInfo / CachedRevisionInfo (snapshots & refs)',
+        accessPath: '~/.cache/huggingface/hub/models--<namespace>--<name>/',
+        syntaxPrimary: `from huggingface_hub import hf_hub_download
+
+# Returns path to symlink inside snapshots/<commit_hash>/
+cached_file = hf_hub_download(
+    repo_id="meta-llama/Llama-3.2-1B",
+    filename="config.json"
+)
+# Offline mode: load strictly from local snapshot cache
+# export HF_HUB_OFFLINE=1`,
+        syntaxAlternative: `# Audit cached repositories and revisions sorted by size
+hf cache ls --revisions --sort size:desc
+
+# Remove cached repositories unaccessed for >180 days
+hf cache rm $(hf cache ls --filter "accessed>180d" -q) -y`
+      },
+      {
+        id: 'cache-blobs',
+        badgeNum: 9,
+        name: 'Immutable blobs/<sha256> Content Store',
+        category: 'Local Cache & Disk',
+        statusInfo: {
+          uri: 'SHA-256 Content-Addressed Local Blob',
+          entrypoint: 'hf cache prune | hf cache verify',
+          path: '$HF_HUB_CACHE/<type>s--<org>--<repo>/blobs/<sha256>',
+          envVar: 'HF_HUB_DISABLE_SYMLINKS_WARNING'
+        },
+        visualRole: 'Stores the actual physical bytes of every downloaded file named by its SHA-256 hash. If two branches or revisions share the same config.json or weight file, both snapshots symlink to the same physical blob—zero duplication on disk.',
+        officialTerm: 'Content-Addressed Blob Store (blobs/<sha256>)',
+        accessPath: 'Managed automatically by hf_hub_download & hf cache CLI',
+        syntaxPrimary: `from huggingface_hub import scan_cache_dir
+
+cache_info = scan_cache_dir()
+print(f"Total cache size: {cache_info.size_on_disk_str}")
+
+# Programmatically prune detached blobs
+delete_strategy = cache_info.delete_revisions("894a9adde21d...")
+delete_strategy.execute()`,
+        syntaxAlternative: `# Sweep orphaned blobs not referenced by any snapshot
+hf cache prune -y
+
+# Verify local blob SHA-256 checksums against remote Hub
+hf cache verify meta-llama/Llama-3.2-1B`
+      },
+      {
+        id: 'local-dir',
+        badgeNum: 10,
+        name: 'Direct Local Directory (local_dir="./llama-local")',
+        category: 'Local Cache & Disk',
+        statusInfo: {
+          uri: 'file://./llama-local & file://./output_dir',
+          entrypoint: 'snapshot_download(local_dir=...) | hf download --local-dir',
+          path: './llama-local/ (standalone project folder)',
+          envVar: 'Local filesystem workspace'
+        },
+        visualRole: 'Bypasses symlink indirection by materializing real physical files directly into a project folder (./llama-local). Ideal for Docker builds, air-gapped deployments, or staging local training checkpoints (./output_dir) for upload.',
+        officialTerm: 'local_dir Materialization & Local Upload Staging',
+        accessPath: 'local_dir="./path" in downloaders; folder_path in uploaders',
+        syntaxPrimary: `from huggingface_hub import snapshot_download
+
+# Materialize files directly into ./llama-local without symlinks
+local_path = snapshot_download(
+    repo_id="meta-llama/Llama-3.2-1B",
+    local_dir="./llama-local"
+)`,
+        syntaxAlternative: `# CLI direct-to-folder download (script-friendly with --quiet)
+hf download meta-llama/Llama-3.2-1B --local-dir ./llama-local --quiet
+
+# Sync local checkpoint directory to mutable S3-like Hub Bucket
+hf buckets sync ./output_dir hf://buckets/user/my-bucket/ckpts`
+      }
+    ];
+
+    // =========================================================================
+    // 2. FIVE MULTI-LINE RECIPES FOR MODE 3 (CODE-TO-OUTPUT X-RAY)
+    // =========================================================================
+    const XRAY_RECIPES = [
+      {
+        title: 'Recipe 1: Version-Pinned File & Filtered Snapshot Download',
+        lines: [
+          {
+            code: 'from huggingface_hub import hf_hub_download, snapshot_download',
+            targetParts: ['hf-uri', 'xet-engine'],
+            revealParts: ['hf-uri', 'auth-token', 'xet-engine'],
+            explanation: 'Imports the core high-level download primitives. At import time, huggingface_hub reads environment variables (like HF_HOME, HF_TOKEN, and HF_XET_HIGH_PERFORMANCE) and initializes the Rust hf_xet transfer engine.'
+          },
+          {
+            code: 'config_path = hf_hub_download(repo_id="meta-llama/Llama-3.2-1B", filename="config.json", revision="main")',
+            targetParts: ['hf-uri', 'remote-repo-tree', 'cache-refs-snapshots', 'cache-blobs'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'xet-engine', 'cache-refs-snapshots', 'cache-blobs'],
+            explanation: 'Resolves revision="main" to commit SHA 894a9ad..., checks the remote ETag, stores the physical bytes in blobs/42ecfd93..., writes refs/main, and returns the local symlink path inside snapshots/894a9ad.../config.json.'
+          },
+          {
+            code: 'repo_path = snapshot_download(repo_id="meta-llama/Llama-3.2-1B", allow_patterns=["*.safetensors", "*.json"], ignore_patterns=["original/*"], local_dir="./llama-local")',
+            targetParts: ['pattern-filter', 'xet-engine', 'local-dir'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'pattern-filter', 'xet-engine', 'cache-refs-snapshots', 'cache-blobs', 'local-dir'],
+            explanation: 'Passes the repository tree through the Glob Pattern Filter Gate (blocking 2.4 GB original/*.pth), streams matched *.safetensors chunks in parallel via hf_xet, and materializes standalone files directly into ./llama-local.'
+          }
+        ]
+      },
+      {
+        title: 'Recipe 2: Idempotent Repo Creation & Async Folder Upload',
+        lines: [
+          {
+            code: 'from huggingface_hub import HfApi\napi = HfApi()',
+            targetParts: ['auth-token'],
+            revealParts: ['hf-uri', 'auth-token'],
+            explanation: 'Instantiates the authenticated HfApi REST client. It automatically loads your User Access Token from HF_TOKEN or ~/.cache/huggingface/token established via hf auth login.'
+          },
+          {
+            code: 'repo_url = api.create_repo(repo_id="username/custom-bert", repo_type="model", exist_ok=True)',
+            targetParts: ['hf-uri', 'auth-token', 'remote-repo-tree'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree'],
+            explanation: 'Provisions the target model namespace on the Hub. Passing exist_ok=True makes the call idempotent so distributed training scripts or restarts never crash with HTTP 409 Conflict.'
+          },
+          {
+            code: 'future = api.upload_folder(folder_path="./output_dir", repo_id="username/custom-bert", commit_message="Push training artifacts", run_as_future=True)',
+            targetParts: ['local-dir', 'commit-scheduler', 'xet-engine'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'xet-engine', 'commit-scheduler', 'local-dir'],
+            explanation: 'Scans ./output_dir (respecting root .gitignore), chunks weights in a single read pass via hf_xet, and schedules the upload on a background thread—returning a concurrent.futures.Future immediately.'
+          },
+          {
+            code: 'upload_url = future.result()',
+            targetParts: ['commit-scheduler', 'remote-repo-tree'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'xet-engine', 'commit-scheduler', 'local-dir'],
+            explanation: 'Blocks only when synchronization is required (e.g., end of epoch), awaiting completion of all adaptive batch commits and returning the final remote CommitInfo URL.'
+          }
+        ]
+      },
+      {
+        title: 'Recipe 3: Atomic Multi-File Git Commit & Pull Request',
+        lines: [
+          {
+            code: 'from huggingface_hub import HfApi, CommitOperationAdd, CommitOperationDelete, CommitOperationCopy\napi = HfApi()',
+            targetParts: ['auth-token', 'commit-scheduler'],
+            revealParts: ['hf-uri', 'auth-token', 'commit-scheduler'],
+            explanation: 'Imports the transactional CommitOperation dataclasses alongside HfApi so heterogeneous repository changes can be staged in memory before touching the network.'
+          },
+          {
+            code: 'ops = [\n  CommitOperationAdd(path_in_repo="model.safetensors", path_or_fileobj="./weights.safetensors"),\n  CommitOperationDelete(path_in_repo="old_logs/"),\n  CommitOperationCopy(src_path_in_repo="config.json", path_in_repo="config_backup.json")\n]',
+            targetParts: ['local-dir', 'commit-scheduler', 'xet-engine'],
+            revealParts: ['hf-uri', 'auth-token', 'xet-engine', 'commit-scheduler', 'local-dir'],
+            explanation: 'Stages three distinct operations: adding a local weight file from disk, pruning the entire old_logs/ directory tree, and duplicating config.json server-side without re-uploading bytes.'
+          },
+          {
+            code: 'commit_info = api.create_commit(repo_id="username/custom-bert", operations=ops, commit_message="Atomic update", create_pr=True)',
+            targetParts: ['commit-scheduler', 'remote-repo-tree'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'xet-engine', 'commit-scheduler', 'local-dir'],
+            explanation: 'Executes all staged operations in a single ACID Git transaction. Because create_pr=True is set, it pushes to a new Pull Request branch (refs/pr/N) instead of mutating main directly.'
+          }
+        ]
+      },
+      {
+        title: 'Recipe 4: Zero-Copy Virtual Filesystem Streaming (HfFileSystem)',
+        lines: [
+          {
+            code: 'import json\nfrom huggingface_hub import HfFileSystem\nfs = HfFileSystem()',
+            targetParts: ['auth-token', 'hf-filesystem'],
+            revealParts: ['hf-uri', 'auth-token', 'hf-filesystem'],
+            explanation: 'Mounts the Hugging Face Hub as an fsspec-compliant virtual filesystem, inheriting local authentication tokens automatically.'
+          },
+          {
+            code: 'files = fs.ls("datasets/glue/mrpc", detail=False)',
+            targetParts: ['hf-uri', 'remote-repo-tree', 'hf-filesystem'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'hf-filesystem'],
+            explanation: 'Queries the remote dataset directory structure over HTTP in milliseconds and returns POSIX file paths without cloning or writing anything to ~/.cache/huggingface/hub.'
+          },
+          {
+            code: 'with fs.open("meta-llama/Llama-3.2-1B/config.json", "r") as f:\n    cfg = json.load(f)',
+            targetParts: ['remote-repo-tree', 'hf-filesystem'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'hf-filesystem'],
+            explanation: 'Streams the remote config.json bytes directly into volatile Python memory via HTTP Range requests and parses the JSON dictionary with zero local disk footprint.'
+          },
+          {
+            code: 'fs.cp("hf://username/source-model/model.safetensors", "hf://username/target-model/model.safetensors")',
+            targetParts: ['hf-uri', 'hf-filesystem', 'remote-repo-tree'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'hf-filesystem'],
+            explanation: 'Performs a zero-download server-side copy between two repositories on the Hub by re-linking the underlying Xet CAS pointers directly on Hugging Face servers.'
+          }
+        ]
+      },
+      {
+        title: 'Recipe 5: Local Cache Inspection & hf CLI Workflow',
+        lines: [
+          {
+            code: 'from huggingface_hub import scan_cache_dir\ncache_info = scan_cache_dir()',
+            targetParts: ['cache-refs-snapshots', 'cache-blobs'],
+            revealParts: ['cache-refs-snapshots', 'cache-blobs'],
+            explanation: 'Scans ~/.cache/huggingface/hub/ across all cached models, datasets, and Spaces, calculating exact blob disk usage and mapping snapshots to shared SHA-256 blobs.'
+          },
+          {
+            code: '# CLI: hf auth login --token $HF_TOKEN',
+            targetParts: ['auth-token'],
+            revealParts: ['auth-token', 'cache-refs-snapshots', 'cache-blobs'],
+            explanation: 'Authenticates the terminal session non-interactively and stores the bearer token in ~/.cache/huggingface/token with 0600 permissions.'
+          },
+          {
+            code: '# CLI: hf download meta-llama/Llama-3.2-1B --include "*.safetensors" --dry-run',
+            targetParts: ['hf-uri', 'remote-repo-tree', 'pattern-filter', 'xet-engine'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'pattern-filter', 'xet-engine', 'cache-refs-snapshots', 'cache-blobs'],
+            explanation: 'Resolves the remote Git tree, applies the --include glob filter, cross-checks local cache blobs, and prints a dry-run byte table without downloading payload chunks.'
+          },
+          {
+            code: '# CLI: hf cache ls && hf cache prune',
+            targetParts: ['cache-refs-snapshots', 'cache-blobs'],
+            revealParts: ['hf-uri', 'auth-token', 'remote-repo-tree', 'pattern-filter', 'xet-engine', 'cache-refs-snapshots', 'cache-blobs'],
+            explanation: 'Lists all cached repositories sorted by disk footprint and garbage-collects detached revisions and unreferenced SHA-256 blobs safely.'
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 3. APPLICATION STATE & INITIALIZATION
+    // =========================================================================
+    let currentMode = 'anatomy'; // 'anatomy' | 'quiz' | 'xray'
+    let activePartId = 'hf-uri';
+    let activeCategory = 'all';
+    let focusMode = false;
+    let activeCodeTab = 'python';
+
+    // Quiz State
+    let quizSubmode = 'mc'; // 'mc' | 'locate'
+    let quizOrder = [];
+    let quizIndex = 0;
+    let quizScore = 0;
+    let quizStreak = 0;
+    let quizAnswered = false;
+
+    // X-Ray State
+    let activeRecipeIdx = 0;
+    let activeLineIdx = 0;
+    let buildStepByStep = true;
+
+    function getPartById(id) {
+      return HUB_PARTS.find(p => p.id === id) || HUB_PARTS[0];
+    }
+
+    // =========================================================================
+    // 4. RENDER QUICK-SELECT PILLS & SYNCHRONIZE SVG + INSPECTOR
+    // =========================================================================
+    function renderPartPills() {
+      const container = document.getElementById('part-pills-container');
+      container.innerHTML = '';
+      HUB_PARTS.forEach(part => {
+        if (activeCategory !== 'all' && part.category !== activeCategory) return;
+        const isSelected = part.id === activePartId;
+        const btn = document.createElement('button');
+        btn.onclick = () => selectPart(part.id);
+        btn.onmouseenter = () => hoverPart(part.id);
+        btn.onmouseleave = () => unhoverPart();
+        btn.className = `px-2.5 py-1 rounded-lg text-xs font-mono transition flex items-center gap-1.5 border ${
+          isSelected
+            ? 'bg-[#FFD21E] text-slate-950 font-bold border-amber-300 shadow'
+            : 'bg-slate-900/90 text-slate-300 border-slate-800 hover:border-slate-600 hover:text-white'
+        }`;
+        const badgeLabel = currentMode === 'quiz' ? '?' : part.badgeNum;
+        btn.innerHTML = `<span class="w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold ${
+          isSelected ? 'bg-slate-950 text-[#FFD21E]' : 'bg-slate-800 text-amber-400'
+        }">${badgeLabel}</span><span>${part.name.split('(')[0].trim()}</span>`;
+        container.appendChild(btn);
+      });
+    }
+
+    function filterCategory(cat) {
+      activeCategory = cat;
+      document.querySelectorAll('.cat-chip').forEach(btn => {
+        const isMatch = btn.getAttribute('data-cat') === cat;
+        btn.className = isMatch
+          ? 'cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-400/20 text-amber-300 border border-amber-400/40 transition'
+          : 'cat-chip px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/90 text-slate-300 border border-slate-700 hover:text-white transition';
+      });
+      renderPartPills();
+      syncSvgVisualState();
+    }
+
+    function updateStatusBar(part) {
+      document.getElementById('status-uri').textContent = part.statusInfo.uri;
+      document.getElementById('status-entrypoint').textContent = part.statusInfo.entrypoint;
+      document.getElementById('status-path').textContent = part.statusInfo.path;
+      document.getElementById('status-env').textContent = part.statusInfo.envVar;
+    }
+
+    function hoverPart(partId) {
+      const part = getPartById(partId);
+      updateStatusBar(part);
+    }
+
+    function unhoverPart() {
+      const part = getPartById(activePartId);
+      updateStatusBar(part);
+    }
+
+    function selectPart(partId) {
+      if (currentMode === 'quiz') {
+        // In Quiz mode, clicking an SVG part submits an answer if in 'locate' submode (or even in 'mc' submode!)
+        handleQuizSubmission(partId);
+        return;
+      }
+
+      activePartId = partId;
+      const part = getPartById(partId);
+      updateStatusBar(part);
+      updateAnatomyInspector(part);
+      renderPartPills();
+      syncSvgVisualState();
+
+      if (focusMode) {
+        updateFocusViewBox();
+        updateFocusBar();
+        history.replaceState(null, '', `#${part.id}`);
+        const notes = document.getElementById('anatomy-notes');
+        if (notes) notes.scrollTop = 0;
+      }
+    }
+
+    function stepPart(delta) {
+      const idx = HUB_PARTS.findIndex(p => p.id === activePartId);
+      const nextIdx = (idx + delta + HUB_PARTS.length) % HUB_PARTS.length;
+      selectPart(HUB_PARTS[nextIdx].id);
+    }
+
+    function partIdFromHash() {
+      const hash = decodeURIComponent((window.location.hash || '').replace(/^#/, ''));
+      return HUB_PARTS.some(p => p.id === hash) ? hash : null;
+    }
+
+    function updateFocusBar() {
+      const part = getPartById(activePartId);
+      const label = document.getElementById('focus-nav-current');
+      if (label && part) {
+        const idx = HUB_PARTS.findIndex(p => p.id === part.id) + 1;
+        label.textContent = `Component ${idx} of ${HUB_PARTS.length} · ${part.name}`;
+      }
+    }
+
+    function updateViewToggle() {
+      const consolidatedBtn = document.getElementById('view-btn-consolidated');
+      const focusBtn = document.getElementById('view-btn-focus');
+      if (!consolidatedBtn || !focusBtn) return;
+      consolidatedBtn.classList.toggle('is-active', !focusMode);
+      focusBtn.classList.toggle('is-active', focusMode);
+      consolidatedBtn.setAttribute('aria-pressed', String(!focusMode));
+      focusBtn.setAttribute('aria-pressed', String(focusMode));
+    }
+
+    function updateFocusViewBox() {
+      const svg = document.getElementById('hub-artifact-svg');
+      if (!svg) return;
+      if (!focusMode) {
+        svg.setAttribute('viewBox', '0 0 1000 640');
+        return;
+      }
+      const group = svg.querySelector(`.svg-part[data-part="${activePartId}"]`);
+      if (!group) return;
+
+      const focusBox = (group.dataset.focusBox || '').trim().split(/\s+/).map(Number);
+      const box = focusBox.length === 4 && focusBox.every(Number.isFinite)
+        ? { x: focusBox[0], y: focusBox[1], width: focusBox[2], height: focusBox[3] }
+        : group.getBBox();
+      const padding = 30;
+      const minWidth = 440;
+      const minHeight = 280;
+      const aspect = 1.5;
+
+      let focusW = Math.max(box.width + padding * 2, minWidth);
+      let focusH = Math.max(box.height + padding * 2, minHeight);
+      if (focusW / focusH > aspect) {
+        focusH = focusW / aspect;
+      } else {
+        focusW = focusH * aspect;
+      }
+      focusW = Math.min(focusW, 1000);
+      focusH = Math.min(focusH, 640);
+
+      const x = box.x + box.width / 2 - focusW / 2;
+      const y = box.y + box.height / 2 - focusH / 2;
+      svg.setAttribute('viewBox', `${x.toFixed(1)} ${y.toFixed(1)} ${focusW.toFixed(1)} ${focusH.toFixed(1)}`);
+    }
+
+    function setFocusView(enabled, partId) {
+      if (enabled && !focusMode) {
+        focusMode = true;
+        document.body.classList.add('focus-mode');
+        if (currentMode !== 'anatomy') setMode('anatomy');
+        selectPart(partId || activePartId);
+        updateViewToggle();
+      } else if (!enabled && focusMode) {
+        focusMode = false;
+        document.body.classList.remove('focus-mode');
+        updateFocusViewBox();
+        updateViewToggle();
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    }
+
+    function setAnatomyCodeTab(tab) {
+      activeCodeTab = tab;
+      const isPython = tab === 'python';
+      document.getElementById('anatomy-tab-python').classList.toggle('is-active', isPython);
+      document.getElementById('anatomy-tab-cli').classList.toggle('is-active', !isPython);
+      document.getElementById('anatomy-code-python').classList.toggle('is-active', isPython);
+      document.getElementById('anatomy-code-cli').classList.toggle('is-active', !isPython);
+    }
+
+    function updateAnatomyInspector(part) {
+      document.getElementById('inspector-badge').textContent = part.badgeNum;
+      document.getElementById('inspector-category').textContent = part.category;
+      document.getElementById('inspector-title').textContent = part.name;
+      document.getElementById('inspector-visual-role').textContent = part.visualRole;
+      document.getElementById('inspector-official-term').textContent = part.officialTerm;
+      document.getElementById('inspector-access-path').textContent = part.accessPath;
+      document.getElementById('inspector-syntax-py').textContent = part.syntaxPrimary;
+      document.getElementById('inspector-syntax-cli').textContent = part.syntaxAlternative;
+    }
+
+    function syncSvgVisualState() {
+      const svgParts = document.querySelectorAll('.svg-part');
+
+      svgParts.forEach(el => {
+        const pid = el.getAttribute('data-part');
+        const partObj = getPartById(pid);
+        const badgeTextEl = el.querySelector('.badge-text');
+
+        // Reset classes
+        el.classList.remove('active-part', 'dimmed-part', 'quiz-spotlight');
+
+        // Update badge number vs '?' in Quiz Mode
+        if (badgeTextEl) {
+          badgeTextEl.textContent = currentMode === 'quiz' ? '?' : partObj.badgeNum;
+        }
+
+        if (currentMode === 'anatomy') {
+          if (pid === activePartId) {
+            el.classList.add('active-part');
+          } else if (activeCategory !== 'all' && partObj.category !== activeCategory) {
+            el.classList.add('dimmed-part');
+          }
+        } else if (currentMode === 'quiz') {
+          const targetQuizPartId = quizOrder[quizIndex];
+          if (quizSubmode === 'mc') {
+            if (pid === targetQuizPartId) {
+              el.classList.add('quiz-spotlight');
+            } else {
+              el.classList.add('dimmed-part');
+            }
+          } else {
+            // In 'locate' submode, all parts are clickable and bright; highlight once answered
+            if (quizAnswered && pid === targetQuizPartId) {
+              el.classList.add('quiz-spotlight');
+            }
+          }
+        } else if (currentMode === 'xray') {
+          const recipe = XRAY_RECIPES[activeRecipeIdx];
+          const line = recipe.lines[activeLineIdx];
+          const isTarget = line.targetParts.includes(pid);
+          const isRevealed = line.revealParts.includes(pid);
+
+          if (isTarget) {
+            el.classList.add('active-part');
+          } else if (buildStepByStep && !isRevealed) {
+            el.classList.add('dimmed-part');
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 5. MODE SWITCHING LOGIC
+    // =========================================================================
+    function setMode(mode) {
+      currentMode = mode;
+
+      // Update Tab Buttons
+      const tabs = {
+        anatomy: document.getElementById('mode-btn-1'),
+        quiz: document.getElementById('mode-btn-2'),
+        xray: document.getElementById('mode-btn-3')
+      };
+      Object.entries(tabs).forEach(([k, btn]) => {
+        if (k === mode) {
+          btn.className = 'mode-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 bg-[#FFD21E] text-slate-950 shadow';
+        } else {
+          btn.className = 'mode-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 text-slate-300 hover:text-white';
+        }
+      });
+
+      // Toggle Right Panels
+      document.getElementById('panel-anatomy').classList.toggle('hidden', mode !== 'anatomy');
+      document.getElementById('panel-anatomy').classList.toggle('flex', mode === 'anatomy');
+
+      document.getElementById('panel-quiz').classList.toggle('hidden', mode !== 'quiz');
+      document.getElementById('panel-quiz').classList.toggle('flex', mode === 'quiz');
+
+      document.getElementById('panel-xray').classList.toggle('hidden', mode !== 'xray');
+      document.getElementById('panel-xray').classList.toggle('flex', mode === 'xray');
+
+      if (mode === 'quiz') {
+        if (quizOrder.length === 0) initQuiz();
+        else renderQuizQuestion();
+      } else if (mode === 'xray') {
+        renderXrayPanel();
+      } else {
+        updateAnatomyInspector(getPartById(activePartId));
+      }
+
+      renderPartPills();
+      syncSvgVisualState();
+    }
+
+    // =========================================================================
+    // 6. MODE 2: TERMINOLOGY PRACTICE QUIZ ENGINE
+    // =========================================================================
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function initQuiz() {
+      quizOrder = shuffleArray(HUB_PARTS.map(p => p.id));
+      quizIndex = 0;
+      quizScore = 0;
+      quizStreak = 0;
+      quizAnswered = false;
+      renderQuizQuestion();
+    }
+
+    function resetQuiz() {
+      initQuiz();
+      syncSvgVisualState();
+    }
+
+    function setQuizSubmode(submode) {
+      quizSubmode = submode;
+      const mcBtn = document.getElementById('quiz-submode-mc');
+      const locBtn = document.getElementById('quiz-submode-locate');
+      if (submode === 'mc') {
+        mcBtn.className = 'flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold transition bg-amber-400 text-slate-950';
+        locBtn.className = 'flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white';
+      } else {
+        locBtn.className = 'flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold transition bg-amber-400 text-slate-950';
+        mcBtn.className = 'flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white';
+      }
+      renderQuizQuestion();
+      syncSvgVisualState();
+    }
+
+    function renderQuizQuestion() {
+      quizAnswered = false;
+      const targetId = quizOrder[quizIndex];
+      const targetPart = getPartById(targetId);
+
+      document.getElementById('quiz-q-num').textContent = quizIndex + 1;
+      document.getElementById('quiz-score').textContent = quizScore;
+      document.getElementById('quiz-streak').textContent = quizStreak;
+
+      const promptLabel = document.getElementById('quiz-prompt-label');
+      const clueText = document.getElementById('quiz-clue-text');
+
+      if (quizSubmode === 'mc') {
+        promptLabel.textContent = '🔍 Spotlit Component on Diagram (Badges hidden as "?"):';
+        clueText.textContent = `Which huggingface_hub component or API construct controls the pulsing region on the diagram? Clue: "${targetPart.visualRole}"`;
+      } else {
+        promptLabel.textContent = '🎯 Locate on Diagram (Click the matching SVG component or choose below):';
+        clueText.textContent = `Find "${targetPart.name}" — Official Term: ${targetPart.officialTerm}. (${targetPart.visualRole})`;
+      }
+
+      // Build 4 multiple choice options (1 correct + 3 distractors)
+      const distractors = shuffleArray(HUB_PARTS.filter(p => p.id !== targetId)).slice(0, 3);
+      const options = shuffleArray([targetPart, ...distractors]);
+
+      const grid = document.getElementById('quiz-options-grid');
+      grid.innerHTML = '';
+      options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.id = `quiz-opt-${opt.id}`;
+        btn.onclick = () => handleQuizSubmission(opt.id);
+        btn.className = 'w-full text-left p-3 rounded-xl bg-[#090D16] hover:bg-slate-900 border border-slate-800 hover:border-slate-600 transition flex items-start gap-3';
+        btn.innerHTML = `
+          <span class="w-6 h-6 rounded-lg bg-slate-800 text-amber-300 font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">${String.fromCharCode(65 + i)}</span>
+          <div class="min-w-0">
+            <div class="font-bold text-xs sm:text-sm text-white">${opt.name}</div>
+            <div class="font-mono text-[11px] text-sky-300 truncate mt-0.5">${opt.officialTerm}</div>
+          </div>
+        `;
+        grid.appendChild(btn);
+      });
+
+      const fb = document.getElementById('quiz-feedback-box');
+      fb.classList.add('hidden');
+      updateStatusBar(targetPart);
+    }
+
+    function handleQuizSubmission(chosenId) {
+      if (quizAnswered) return;
+      quizAnswered = true;
+
+      const targetId = quizOrder[quizIndex];
+      const targetPart = getPartById(targetId);
+      const chosenPart = getPartById(chosenId);
+      const isCorrect = chosenId === targetId;
+
+      if (isCorrect) {
+        quizScore += 10;
+        quizStreak += 1;
+      } else {
+        quizStreak = 0;
+      }
+
+      document.getElementById('quiz-score').textContent = quizScore;
+      document.getElementById('quiz-streak').textContent = quizStreak;
+
+      // Highlight Option Cards
+      HUB_PARTS.forEach(p => {
+        const optBtn = document.getElementById(`quiz-opt-${p.id}`);
+        if (!optBtn) return;
+        if (p.id === targetId) {
+          optBtn.className = 'w-full text-left p-3 rounded-xl bg-emerald-950/50 border-2 border-emerald-400 flex items-start gap-3';
+        } else if (p.id === chosenId && !isCorrect) {
+          optBtn.className = 'w-full text-left p-3 rounded-xl bg-rose-950/50 border-2 border-rose-400 flex items-start gap-3';
+        } else {
+          optBtn.classList.add('opacity-50');
+        }
+      });
+
+      const fb = document.getElementById('quiz-feedback-box');
+      fb.classList.remove('hidden');
+      if (isCorrect) {
+        fb.className = 'rounded-xl p-3.5 border border-emerald-500/50 bg-emerald-950/30 text-emerald-200 text-xs sm:text-sm leading-relaxed';
+        fb.innerHTML = `<strong class="text-emerald-300">✓ Correct! (#${targetPart.badgeNum} ${targetPart.name})</strong><br/>Official Term: <code class="font-mono text-white">${targetPart.officialTerm}</code> — ${targetPart.visualRole}`;
+      } else {
+        fb.className = 'rounded-xl p-3.5 border border-rose-500/50 bg-rose-950/30 text-rose-200 text-xs sm:text-sm leading-relaxed';
+        fb.innerHTML = `<strong class="text-rose-300">✕ Not quite! You selected "${chosenPart.name}".</strong><br/>The target was <strong class="text-amber-300">#${targetPart.badgeNum} ${targetPart.name}</strong> (<code class="font-mono text-white">${targetPart.officialTerm}</code>).`;
+      }
+
+      syncSvgVisualState();
+    }
+
+    function nextQuizQuestion() {
+      quizIndex = (quizIndex + 1) % quizOrder.length;
+      renderQuizQuestion();
+      syncSvgVisualState();
+    }
+
+    // =========================================================================
+    // 7. MODE 3: PROGRESSIVE CODE-TO-OUTPUT X-RAY ENGINE
+    // =========================================================================
+    function selectRecipe(idxStr) {
+      activeRecipeIdx = parseInt(idxStr, 10) || 0;
+      activeLineIdx = 0;
+      renderXrayPanel();
+      syncSvgVisualState();
+    }
+
+    function toggleBuildStepByStep() {
+      buildStepByStep = document.getElementById('build-step-toggle').checked;
+      syncSvgVisualState();
+    }
+
+    function stepXrayLine(delta) {
+      const recipe = XRAY_RECIPES[activeRecipeIdx];
+      activeLineIdx = (activeLineIdx + delta + recipe.lines.length) % recipe.lines.length;
+      renderXrayPanel();
+      syncSvgVisualState();
+    }
+
+    function selectXrayLine(lineIdx) {
+      activeLineIdx = lineIdx;
+      renderXrayPanel();
+      syncSvgVisualState();
+    }
+
+    function renderXrayPanel() {
+      const recipe = XRAY_RECIPES[activeRecipeIdx];
+      const activeLine = recipe.lines[activeLineIdx];
+
+      document.getElementById('xray-step-num').textContent = activeLineIdx + 1;
+      document.getElementById('xray-step-total').textContent = recipe.lines.length;
+
+      // Render clickable code lines
+      const codeContainer = document.getElementById('xray-code-container');
+      codeContainer.innerHTML = '';
+
+      recipe.lines.forEach((lineObj, idx) => {
+        const isCurrent = idx === activeLineIdx;
+        const row = document.createElement('div');
+        row.onclick = () => selectXrayLine(idx);
+        row.className = `code-line px-3 py-2.5 cursor-pointer border-l-4 flex items-start gap-3 ${
+          isCurrent ? 'active-code-line border-[#FFD21E]' : 'border-transparent hover:bg-slate-900/80'
+        }`;
+
+        const badgesHtml = lineObj.targetParts
+          .map(pid => {
+            const p = getPartById(pid);
+            return `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-amber-300 border border-slate-700">#${p.badgeNum}</span>`;
+          })
+          .join('');
+
+        row.innerHTML = `
+          <span class="text-slate-500 select-none w-4 text-right font-bold">${idx + 1}</span>
+          <pre class="flex-1 text-slate-200 whitespace-pre-wrap break-words leading-relaxed">${escapeHtml(lineObj.code)}</pre>
+          <div class="flex items-center gap-1 shrink-0">${badgesHtml}</div>
+        `;
+        codeContainer.appendChild(row);
+      });
+
+      // Render Active Line X-Ray Details
+      document.getElementById('xray-active-statement').textContent = activeLine.code;
+      document.getElementById('xray-explanation').textContent = activeLine.explanation;
+
+      const badgesContainer = document.getElementById('xray-target-badges');
+      badgesContainer.innerHTML = '';
+      activeLine.targetParts.forEach(pid => {
+        const p = getPartById(pid);
+        const b = document.createElement('button');
+        b.onclick = () => {
+          activePartId = pid;
+          setMode('anatomy');
+        };
+        b.title = 'Click to inspect component in Visual Anatomy mode';
+        b.className = 'px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/40 hover:bg-amber-400 hover:text-slate-950 transition';
+        b.textContent = `#${p.badgeNum} ${p.name.split('(')[0].trim()}`;
+        badgesContainer.appendChild(b);
+      });
+
+      if (activeLine.targetParts.length > 0) {
+        updateStatusBar(getPartById(activeLine.targetParts[0]));
+      }
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // =========================================================================
+    // 8. CLIPBOARD HELPER & KEYBOARD NAVIGATION
+    // =========================================================================
+    function copyCode(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        const toast = document.getElementById('copy-toast');
+        toast.classList.remove('opacity-0');
+        setTimeout(() => toast.classList.add('opacity-0'), 1800);
+      } catch (e) {
+        // Fallback silent catch
+      }
+      document.body.removeChild(textarea);
+    }
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && focusMode) {
+        setFocusView(false);
+        return;
+      }
+      if (currentMode === 'xray') {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          stepXrayLine(1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          stepXrayLine(-1);
+        }
+      } else if (currentMode === 'anatomy') {
+        if (e.key === 'ArrowRight') {
+          stepPart(1);
+        } else if (e.key === 'ArrowLeft') {
+          stepPart(-1);
+        }
+      }
+    });
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      selectPart('hf-uri');
+      initQuiz();
+      const hashPart = partIdFromHash();
+      if (hashPart) setFocusView(true, hashPart);
+    });
+  </script>
+</body>
+</html>

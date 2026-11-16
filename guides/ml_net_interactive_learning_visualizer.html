@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ML.NET Interactive Architecture & Pipeline Visualizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            slate: {
+              850: '#131c31',
+              900: '#0f172a',
+              950: '#070b14',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>*{box-sizing:border-box}body{color:#f1f5f9;background-color:#070b14;font-family:Inter,system-ui,sans-serif;overflow-x:hidden}::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-track{background:#0f172a}::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#475569}.svg-part{cursor:pointer;transform-origin:50%;transform-box:fill-box;transition:opacity .3s cubic-bezier(.4,0,.2,1),filter .3s cubic-bezier(.4,0,.2,1),transform .25s}.svg-part .part-box{transition:stroke .25s,stroke-width .25s,fill .25s}.svg-part:hover .part-box{stroke:#38bdf8!important;stroke-width:2.5px!important}.svg-part:hover{filter:drop-shadow(0 0 10px #38bdf859)}.svg-part.active-part .part-box{stroke:#22d3ee!important;stroke-width:3px!important}.svg-part.active-part{filter:drop-shadow(0 0 16px #22d3ee8c)}.svg-part.dimmed-part{opacity:.32}.svg-part.dimmed-part:hover{opacity:.85}@keyframes quizPulse{0%,to{filter:drop-shadow(0 0 12px #fbbf24bf)}50%{filter:drop-shadow(0 0 24px #f59e0b)}}.svg-part.quiz-target .part-box{stroke-dasharray:6 3;stroke:#fbbf24!important;stroke-width:3.5px!important}.svg-part.quiz-target{animation:1.8s ease-in-out infinite quizPulse}.svg-part.quiz-correct .part-box{stroke:#10b981!important;stroke-width:3.5px!important}.svg-part.quiz-wrong .part-box{stroke:#f43f5e!important;stroke-width:3.5px!important}.svg-part.xray-hidden{opacity:.12;filter:grayscale(90%)}.svg-part.xray-revealed{opacity:.65;filter:none}.svg-part.xray-active .part-box{stroke:#34d399!important;stroke-width:3.2px!important}.svg-part.xray-active{opacity:1!important;filter:drop-shadow(0 0 18px #34d399b3)!important}@keyframes dashFlow{to{stroke-dashoffset:-24px}}.flow-line{stroke-dasharray:6 6;animation:1.2s linear infinite dashFlow}.code-line{cursor:pointer;transition:background-color .15s,border-color .15s}.code-line:hover{background-color:#38bdf81a}.code-line.active-line{background-color:#10b9812e;border-left:3px solid #10b981}.view-toggle-btn{color:#94a3b8;border:1px solid #0000;border-radius:.5rem;padding:.5rem .75rem;font-size:.75rem;font-weight:600;line-height:1rem;transition:color .15s,background-color .15s,border-color .15s}.view-toggle-btn:hover{color:#e2e8f0}.view-toggle-btn.is-active{color:#a5f3fc;background:#22d3ee29;border-color:#22d3ee73}body.focus-mode{height:100vh;overflow:hidden}body.focus-mode>header,body.focus-mode #mode-switcher,body.focus-mode #canvas-header,body.focus-mode #status-bar,body.focus-mode #part-chips-bar,body.focus-mode #svg-banner{display:none}body.focus-mode #focus-bar{display:flex}body.focus-mode #svg-connectors{opacity:0!important}body.focus-mode .svg-part:not(.active-part){pointer-events:none;opacity:0!important;filter:none!important}body.focus-mode .svg-part.active-part{filter:drop-shadow(0 0 22px #22d3ee66)}body.focus-mode main{flex:1;grid-template-columns:minmax(0,.9fr) minmax(420px,1.1fr);align-items:stretch;gap:.5rem;max-width:none;min-height:0;padding:.5rem}body.focus-mode main>section{min-height:0}body.focus-mode main>section:first-child{grid-column:1}body.focus-mode main>section:last-child{grid-column:2}body.focus-mode main>section:first-child>div.relative{flex:1;min-height:0}body.focus-mode #mlnet-svg{width:100%;height:100%;max-height:none}body.focus-mode #panel-mode-1{padding:1.5rem;overflow:hidden}body.focus-mode #m1-notes{flex:auto;min-height:0;padding-right:.25rem;overflow-y:auto}body.focus-mode #panel-mode-1>div:last-child{flex:none;max-height:42%}body.focus-mode #panel-mode-1 pre{overflow-y:auto}body.focus-mode #m1-title{font-size:1.35rem;line-height:1.3}body.focus-mode #m1-intuition{font-size:.9rem;line-height:1.7}body.focus-mode #m1-bullets{font-size:.82rem;line-height:1.65}body.focus-mode #m1-code{font-size:.8rem;line-height:1.6}@media (width<=1023px){body.focus-mode{height:auto;overflow:auto}body.focus-mode main{grid-template-columns:1fr}body.focus-mode main>section:first-child,body.focus-mode main>section:last-child{grid-column:1/-1}body.focus-mode main>section:first-child{min-height:70vh}body.focus-mode main>section:first-child>div.relative{flex:none}body.focus-mode #mlnet-svg{height:auto;max-height:70vh}body.focus-mode #panel-mode-1,body.focus-mode #m1-notes{overflow:visible}body.focus-mode #panel-mode-1>div:last-child{max-height:none}}</style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- TOP NAVIGATION & MODE SWITCHER -->
+  <header class="border-b border-slate-800/90 bg-slate-950/90 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      
+      <!-- Brand & Package Identity -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-400/30 shrink-0">
+          <span class="font-mono font-extrabold text-sm tracking-tighter text-white">ML.NET</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">Microsoft.ML Interactive Visualizer</h1>
+            <span class="px-2 py-0.5 text-[11px] font-mono font-semibold rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">v3.0 / v4.0 + TorchSharp</span>
+          </div>
+          <p class="text-xs text-slate-400">Interactive Architecture Blueprint: <code class="text-cyan-300 font-mono">MLContext</code> &rarr; <code class="text-amber-300 font-mono">IDataView</code> &rarr; <code class="text-purple-300 font-mono">IEstimator</code> &rarr; <code class="text-emerald-300 font-mono">ITransformer</code> &rarr; <code class="text-rose-300 font-mono">PredictionEnginePool</code></p>
+        </div>
+      </div>
+
+      <!-- 3-Mode Learning Switcher + Reading View Toggle -->
+      <div class="flex flex-wrap items-center gap-2 self-start lg:self-auto">
+        <div id="mode-switcher" class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+          <button id="mode-btn-1" onclick="switchMode(1)" class="mode-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+            <span>1. Visual Anatomy</span>
+          </button>
+          <button id="mode-btn-2" onclick="switchMode(2)" class="mode-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 border border-transparent">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span>2. Name That Part</span>
+          </button>
+          <button id="mode-btn-3" onclick="switchMode(3)" class="mode-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 border border-transparent">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>3. Code-to-Output X-Ray</span>
+          </button>
+        </div>
+
+        <div class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800" role="group" aria-label="Reading view">
+          <button id="view-btn-consolidated" type="button" onclick="setFocusView(false)" aria-pressed="true" class="view-toggle-btn is-active" title="Show the full pipeline and all components together">
+            Consolidated
+          </button>
+          <button id="view-btn-focus" type="button" onclick="setFocusView(true)" aria-pressed="false" class="view-toggle-btn" title="Read one component at a time in a larger isolated view">
+            Focused
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- COMPACT FOCUSED-READING BAR -->
+  <div id="focus-bar" class="hidden items-center justify-between gap-3 px-4 sm:px-6 py-2 border-b border-cyan-500/20 bg-slate-950/95 backdrop-blur-md">
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="text-[11px] font-mono uppercase tracking-wider text-cyan-300 font-bold shrink-0">Focused view</span>
+      <span id="focus-nav-current" class="text-xs text-slate-400 font-mono truncate">Section 1 of 9</span>
+    </div>
+    <button type="button" onclick="setFocusView(false)" class="shrink-0 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-300 hover:text-white hover:border-cyan-500/50 transition">
+      Exit focus <span class="text-slate-500">(Esc)</span>
+    </button>
+  </div>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 py-4 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+
+    <!-- LEFT PANE: INTERACTIVE SVG ARCHITECTURE BLUEPRINT (7 COLS) -->
+    <section class="xl:col-span-7 flex flex-col bg-slate-900/70 border border-slate-800/90 rounded-2xl overflow-hidden shadow-2xl">
+      
+      <!-- Canvas Header Bar -->
+      <div id="canvas-header" class="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="flex h-2.5 w-2.5 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+          </span>
+          <span class="text-xs font-mono uppercase tracking-wider text-slate-300 font-semibold">ML.NET Pipeline &amp; Execution Graph</span>
+        </div>
+        <div id="canvas-mode-hint" class="text-xs text-cyan-300 font-medium bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-0.5 rounded-md">
+          Click any numbered component (1–9) to inspect its C# API &amp; data schema
+        </div>
+      </div>
+
+      <!-- Interactive SVG Container -->
+      <div class="relative w-full bg-[#090e1a] p-2 sm:p-3 flex items-center justify-center overflow-hidden">
+        <svg id="mlnet-svg" viewBox="0 0 1050 640" class="w-full h-auto max-h-[620px] select-none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Subtle Blueprint Grid -->
+            <pattern id="blueprint-grid" width="25" height="25" patternUnits="userSpaceOnUse">
+              <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1e293b" stroke-width="0.6" stroke-opacity="0.65" />
+            </pattern>
+            <!-- Arrowhead Markers -->
+            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8" />
+            </marker>
+            <marker id="arrow-purple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#c084fc" />
+            </marker>
+            <marker id="arrow-emerald" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399" />
+            </marker>
+            <marker id="arrow-amber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 8 5 L 0 9 z" fill="#fbbf24" />
+            </marker>
+          </defs>
+
+          <!-- Background Grid -->
+          <rect id="blueprint-bg" width="1050" height="640" fill="url(#blueprint-grid)" rx="12" />
+
+          <!-- Top Banner Label inside SVG -->
+          <g id="svg-banner">
+            <rect x="16" y="10" width="1018" height="28" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1" />
+            <text x="28" y="28" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600">
+              WORKSPACE: SentimentClassification &amp; DeepLearning_Pipeline.cs
+            </text>
+            <text x="640" y="28" fill="#38bdf8" font-family="JetBrains Mono, monospace" font-size="11" font-weight="600">
+              LAZY DEFINITION (IEstimator)  ───.Fit(trainSet)───►  MATERIALIZED (ITransformer)
+            </text>
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PIPELINE CONNECTORS (ANIMATED ARROWS BETWEEN STAGES)      -->
+          <!-- ========================================================= -->
+          <g id="svg-connectors" opacity="0.85">
+            <!-- 1 (MLContext) -> 3 (IDataView) via LoadFromTextFile -->
+            <path d="M 295 135 L 322 135" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow-cyan)" />
+            <!-- 2 (Input Schema) -> 3 (IDataView) -->
+            <path d="M 630 135 L 656 135" stroke="#38bdf8" stroke-width="2" class="flow-line" marker-end="url(#arrow-cyan)" />
+            <!-- 3 (IDataView) -> 4 (Transform Estimator) -->
+            <path d="M 845 223 L 845 236 L 185 236 L 185 248" fill="none" stroke="#c084fc" stroke-width="2" class="flow-line" marker-end="url(#arrow-purple)" />
+            <!-- 4 (Transform Estimator) -> 5 (Trainer Estimator) via .Append() -->
+            <path d="M 350 338 L 382 338" stroke="#c084fc" stroke-width="2.5" class="flow-line" marker-end="url(#arrow-purple)" />
+            <!-- 5 (Trainer Estimator) -> 6 (Trained Transformer) via .Fit() -->
+            <path d="M 690 338 L 722 338" stroke="#34d399" stroke-width="2.5" class="flow-line" marker-end="url(#arrow-emerald)" />
+            <!-- 6 (Trained Transformer) -> 7 (Evaluation Metrics) -->
+            <path d="M 810 425 L 810 439 L 175 439 L 175 450" fill="none" stroke="#fbbf24" stroke-width="2" class="flow-line" marker-end="url(#arrow-amber)" />
+            <!-- 6 (Trained Transformer) -> 8 (PredictionEnginePool) -->
+            <path d="M 865 425 L 865 439 L 525 439 L 525 450" fill="none" stroke="#34d399" stroke-width="2" class="flow-line" marker-end="url(#arrow-emerald)" />
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PART 1: MLContext Environment & Catalogs                  -->
+          <!-- ========================================================= -->
+          <g class="svg-part" data-part="ml-context" onclick="handlePartClick('ml-context')" onmouseenter="handlePartHover('ml-context')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="16" y="48" width="278" height="174" rx="10" fill="#0f172a" stroke="#0284c7" stroke-width="2" />
+            <rect x="16" y="48" width="278" height="30" rx="10" fill="#0369a1" fill-opacity="0.35" />
+            <text x="48" y="67" fill="#7dd3fc" font-family="Inter, sans-serif" font-size="12.5" font-weight="700">MLContext &amp; Root Catalogs</text>
+            
+            <!-- Code Initialization line -->
+            <rect x="26" y="85" width="258" height="24" rx="5" fill="#090d16" stroke="#1e293b" />
+            <text x="34" y="101" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="10.5">
+              <tspan fill="#38bdf8">new</tspan> MLContext(<tspan fill="#94a3b8">seed:</tspan> <tspan fill="#fbbf24">42</tspan>);
+            </text>
+
+            <!-- 2x2 Catalog Grid -->
+            <rect x="26" y="117" width="124" height="44" rx="6" fill="#1e293b" stroke="#334155" />
+            <text x="34" y="134" fill="#38bdf8" font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="700">.Data</text>
+            <text x="34" y="150" fill="#94a3b8" font-family="Inter, sans-serif" font-size="9.5">LoadText, Split, Cache</text>
+
+            <rect x="160" y="117" width="124" height="44" rx="6" fill="#1e293b" stroke="#334155" />
+            <text x="168" y="134" fill="#c084fc" font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="700">.Transforms</text>
+            <text x="168" y="150" fill="#94a3b8" font-family="Inter, sans-serif" font-size="9.5">Text, Categorical, Norm</text>
+
+            <rect x="26" y="168" width="124" height="44" rx="6" fill="#1e293b" stroke="#334155" />
+            <text x="34" y="185" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">.BinaryClassification</text>
+            <text x="34" y="201" fill="#94a3b8" font-family="Inter, sans-serif" font-size="9.5">Trainers &amp; Evaluate()</text>
+
+            <rect x="160" y="168" width="124" height="44" rx="6" fill="#1e293b" stroke="#334155" />
+            <text x="168" y="185" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="700">.Model</text>
+            <text x="168" y="201" fill="#94a3b8" font-family="Inter, sans-serif" font-size="9.5">Save, Load, Engine</text>
+
+            <!-- Callout Badge 1 -->
+            <circle cx="31" cy="63" r="10" fill="#0284c7" stroke="#bae6fd" stroke-width="1.5" />
+            <text class="part-badge-text" data-num="1" x="31" y="67" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">1</text>
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PART 2: Input Schema POCO & Data Annotations              -->
+          <!-- ========================================================= -->
+          <g class="svg-part" data-part="input-schema" onclick="handlePartClick('input-schema')" onmouseenter="handlePartHover('input-schema')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="322" y="48" width="308" height="174" rx="10" fill="#0f172a" stroke="#3b82f6" stroke-width="2" />
+            <rect x="322" y="48" width="308" height="30" rx="10" fill="#1d4ed8" fill-opacity="0.35" />
+            <text x="354" y="67" fill="#93c5fd" font-family="Inter, sans-serif" font-size="12.5" font-weight="700">Input Schema POCO &amp; Attributes</text>
+
+            <!-- C# Class Box -->
+            <rect x="332" y="84" width="288" height="128" rx="6" fill="#090d16" stroke="#1e293b" />
+            <text x="342" y="102" fill="#60a5fa" font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="600">
+              public class <tspan fill="#f8fafc">SentimentData</tspan>
+            </text>
+            <text x="342" y="121" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-size="10">
+              [LoadColumn(0)] <tspan fill="#64748b">// CSV col 0</tspan>
+            </text>
+            <text x="342" y="136" fill="#cbd5e1" font-family="JetBrains Mono, monospace" font-size="10.5">
+              <tspan fill="#38bdf8">public string</tspan> Text { <tspan fill="#38bdf8">get; set;</tspan> }
+            </text>
+
+            <text x="342" y="160" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-size="10">
+              [LoadColumn(1), ColumnName(<tspan fill="#34d399">"Label"</tspan>)]
+            </text>
+            <text x="342" y="175" fill="#cbd5e1" font-family="JetBrains Mono, monospace" font-size="10.5">
+              <tspan fill="#38bdf8">public bool</tspan> Sentiment { <tspan fill="#38bdf8">get; set;</tspan> }
+            </text>
+            <rect x="342" y="187" width="268" height="18" rx="4" fill="#1e293b" />
+            <text x="350" y="199" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="9.5">
+              Maps raw CSV/SQL columns &rarr; Strongly-typed Schema
+            </text>
+
+            <!-- Callout Badge 2 -->
+            <circle cx="337" cy="63" r="10" fill="#2563eb" stroke="#bfdbfe" stroke-width="1.5" />
+            <text class="part-badge-text" data-num="2" x="337" y="67" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">2</text>
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PART 3: IDataView Lazy Cursor Table & TrainTestSplit      -->
+          <!-- ========================================================= -->
+          <g class="svg-part" data-part="idataview" onclick="handlePartClick('idataview')" onmouseenter="handlePartHover('idataview')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="656" y="48" width="378" height="174" rx="10" fill="#0f172a" stroke="#06b6d4" stroke-width="2" />
+            <rect x="656" y="48" width="378" height="30" rx="10" fill="#0891b2" fill-opacity="0.35" />
+            <text x="688" y="67" fill="#67e8f9" font-family="Inter, sans-serif" font-size="12.5" font-weight="700">IDataView (Lazy Cursor Table &amp; Split)</text>
+            <rect x="945" y="54" width="80" height="18" rx="4" fill="#0e7490" />
+            <text x="985" y="66" text-anchor="middle" fill="#ecfeff" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">LAZY STREAM</text>
+
+            <!-- Concrete Data Table -->
+            <rect x="668" y="85" width="354" height="92" rx="6" fill="#090d16" stroke="#1e293b" />
+            <!-- Table Header -->
+            <rect x="668" y="85" width="354" height="23" rx="6" fill="#1e293b" />
+            <text x="678" y="100" fill="#38bdf8" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">RowCursor</text>
+            <text x="752" y="100" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">Text (ReadOnlyMemory&lt;char&gt;)</text>
+            <text x="942" y="100" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">Label (Bool)</text>
+
+            <!-- Row 0 -->
+            <text x="678" y="122" fill="#64748b" font-family="JetBrains Mono, monospace" font-size="10">cursor[0]</text>
+            <text x="752" y="122" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="10">"Blazing fast UI!"</text>
+            <text x="955" y="122" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">true</text>
+            <line x1="674" y1="128" x2="1016" y2="128" stroke="#1e293b" stroke-width="1" />
+
+            <!-- Row 1 -->
+            <text x="678" y="144" fill="#64748b" font-family="JetBrains Mono, monospace" font-size="10">cursor[1]</text>
+            <text x="752" y="144" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="10">"Crashes on startup"</text>
+            <text x="955" y="144" fill="#fb7185" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">false</text>
+            <line x1="674" y1="150" x2="1016" y2="150" stroke="#1e293b" stroke-width="1" />
+
+            <!-- Row 2 -->
+            <text x="678" y="167" fill="#64748b" font-family="JetBrains Mono, monospace" font-size="10">cursor[2]</text>
+            <text x="752" y="167" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="10">"Seamless C# pipeline"</text>
+            <text x="955" y="167" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">true</text>
+
+            <!-- TrainTestSplit Bar -->
+            <rect x="668" y="185" width="268" height="26" rx="5" fill="#065f46" fill-opacity="0.45" stroke="#10b981" stroke-width="1" />
+            <text x="678" y="202" fill="#6ee7b7" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600">TrainSet (80%)</text>
+            <rect x="942" y="185" width="80" height="26" rx="5" fill="#92400e" fill-opacity="0.45" stroke="#f59e0b" stroke-width="1" />
+            <text x="950" y="202" fill="#fcd34d" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600">Test (20%)</text>
+
+            <!-- Callout Badge 3 -->
+            <circle cx="671" cy="63" r="10" fill="#0891b2" stroke="#a5f3fc" stroke-width="1.5" />
+            <text class="part-badge-text" data-num="3" x="671" y="67" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">3</text>
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PART 4: Feature Engineering Transform (IEstimator)        -->
+          <!-- ========================================================= -->
+          <g class="svg-part" data-part="transform-estimator" onclick="handlePartClick('transform-estimator')" onmouseenter="handlePartHover('transform-estimator')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="16" y="250" width="334" height="175" rx="10" fill="#0f172a" stroke="#a855f7" stroke-width="2" />
+            <rect x="16" y="250" width="334" height="30" rx="10" fill="#7e22ce" fill-opacity="0.35" />
+            <text x="48" y="269" fill="#d8b4fe" font-family="Inter, sans-serif" font-size="12.5" font-weight="700">Feature Transform (IEstimator)</text>
+            <rect x="258" y="256" width="84" height="18" rx="4" fill="#6b21a8" />
+            <text x="300" y="268" text-anchor="middle" fill="#f3e8ff" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">IEstimator</text>
+
+            <!-- Transform Method Call -->
+            <rect x="26" y="288" width="314" height="40" rx="6" fill="#090d16" stroke="#1e293b" />
+            <text x="34" y="304" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="10">
+              Transforms.Text.<tspan fill="#c084fc" font-weight="700">FeaturizeText</tspan>(
+            </text>
+            <text x="44" y="320" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10">
+              output: <tspan fill="#34d399">"Features"</tspan>, input: <tspan fill="#38bdf8">"Text"</tspan>)
+            </text>
+
+            <!-- Sub-steps: Normalize -> Tokenize -> N-Grams -> VBuffer -->
+            <rect x="26" y="335" width="314" height="32" rx="5" fill="#1e293b" />
+            <text x="34" y="350" fill="#cbd5e1" font-family="Inter, sans-serif" font-size="10" font-weight="600">
+              Pipeline: Normalize &rarr; Word/Char N-Grams &rarr; TF-IDF
+            </text>
+            <text x="34" y="362" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="9">
+              + Categorical.OneHotEncoding() + Concatenate("Features")
+            </text>
+
+            <!-- Resulting Vector Column Preview -->
+            <rect x="26" y="374" width="314" height="40" rx="6" fill="#131c31" stroke="#a855f7" stroke-opacity="0.5" />
+            <text x="34" y="390" fill="#d8b4fe" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">
+              Appended Column: Features (VBuffer&lt;float&gt;)
+            </text>
+            <text x="34" y="406" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="10.5">
+              [ 0.82f, -0.14f, 0.00f, 0.51f, 0.39f, ... ]
+            </text>
+
+            <!-- Callout Badge 4 -->
+            <circle cx="31" cy="265" r="10" fill="#9333ea" stroke="#e9d5ff" stroke-width="1.5" />
+            <text class="part-badge-text" data-num="4" x="31" y="269" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">4</text>
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PART 5: Trainer Algorithm (IEstimator)                    -->
+          <!-- ========================================================= -->
+          <g class="svg-part" data-part="trainer-estimator" onclick="handlePartClick('trainer-estimator')" onmouseenter="handlePartHover('trainer-estimator')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="382" y="250" width="308" height="175" rx="10" fill="#0f172a" stroke="#ec4899" stroke-width="2" />
+            <rect x="382" y="250" width="308" height="30" rx="10" fill="#be185d" fill-opacity="0.35" />
+            <text x="414" y="269" fill="#fbcfe8" font-family="Inter, sans-serif" font-size="12.5" font-weight="700">Trainer Algorithm (IEstimator)</text>
+            <rect x="612" y="256" width="68" height="18" rx="4" fill="#9d174d" />
+            <text x="646" y="268" text-anchor="middle" fill="#fce7f3" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">.Append()</text>
+
+            <!-- Trainer Code Box -->
+            <rect x="392" y="288" width="288" height="52" rx="6" fill="#090d16" stroke="#1e293b" />
+            <text x="400" y="304" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="10">
+              .Append(mlContext.BinaryClassification
+            </text>
+            <text x="408" y="319" fill="#f472b6" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">
+              .Trainers.SdcaLogisticRegression(
+            </text>
+            <text x="416" y="333" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="9.5">
+              label: <tspan fill="#34d399">"Label"</tspan>, features: <tspan fill="#38bdf8">"Features"</tspan>))
+            </text>
+
+            <!-- Visual Math / Decision Boundary Representation -->
+            <rect x="392" y="348" width="288" height="66" rx="6" fill="#131c31" stroke="#334155" />
+            <!-- Mini Sigmoid Curve SVG graphic -->
+            <line x1="405" y1="402" x2="495" y2="402" stroke="#475569" stroke-width="1" />
+            <line x1="450" y1="356" x2="450" y2="406" stroke="#475569" stroke-width="1" />
+            <path d="M 408 398 Q 445 398 450 379 T 492 360" fill="none" stroke="#f472b6" stroke-width="2.5" />
+            <circle cx="468" cy="366" r="3" fill="#34d399" />
+            <circle cx="428" cy="395" r="3" fill="#fb7185" />
+
+            <text x="508" y="368" fill="#f8fafc" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600">
+              P(y=1) = &sigma;(W&middot;Features + b)
+            </text>
+            <text x="508" y="385" fill="#94a3b8" font-family="Inter, sans-serif" font-size="10">
+              Optimizes L1/L2 weights via SDCA
+            </text>
+            <text x="508" y="402" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-size="9.5">
+              Alt: LightGbm(Deterministic=true)
+            </text>
+
+            <!-- Callout Badge 5 -->
+            <circle cx="397" cy="265" r="10" fill="#db2777" stroke="#fbcfe8" stroke-width="1.5" />
+            <text class="part-badge-text" data-num="5" x="397" y="269" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">5</text>
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PART 6: .Fit() Bridge & Trained ITransformer Model        -->
+          <!-- ========================================================= -->
+          <g class="svg-part" data-part="trained-transformer" onclick="handlePartClick('trained-transformer')" onmouseenter="handlePartHover('trained-transformer')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="722" y="250" width="312" height="175" rx="10" fill="#0f172a" stroke="#10b981" stroke-width="2" />
+            <rect x="722" y="250" width="312" height="30" rx="10" fill="#047857" fill-opacity="0.4" />
+            <text x="754" y="269" fill="#6ee7b7" font-family="Inter, sans-serif" font-size="12.5" font-weight="700">.Fit() &amp; Trained ITransformer</text>
+            <rect x="944" y="256" width="82" height="18" rx="4" fill="#065f46" />
+            <text x="985" y="268" text-anchor="middle" fill="#d1fae5" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">MATERIALIZED</text>
+
+            <!-- Fit Trigger Call -->
+            <rect x="732" y="288" width="292" height="28" rx="6" fill="#090d16" stroke="#10b981" stroke-opacity="0.6" />
+            <text x="740" y="306" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="10.5">
+              <tspan fill="#34d399" font-weight="700">ITransformer</tspan> model = pipeline.<tspan fill="#fbbf24" font-weight="700">Fit</tspan>(trainSet);
+            </text>
+
+            <!-- Learned Model Parameters -->
+            <rect x="732" y="324" width="292" height="50" rx="6" fill="#131c31" stroke="#1e293b" />
+            <text x="740" y="341" fill="#a7f3d0" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600">
+              Learned Parameters (Immutable &amp; Thread-Safe):
+            </text>
+            <text x="740" y="357" fill="#cbd5e1" font-family="JetBrains Mono, monospace" font-size="10">
+              Weights W = <tspan fill="#38bdf8">[ +2.41, -1.89, +1.15, ... ]</tspan>
+            </text>
+            <text x="740" y="370" fill="#cbd5e1" font-family="JetBrains Mono, monospace" font-size="10">
+              Bias b = <tspan fill="#fbbf24">+0.42f</tspan> | N-Gram Dict: <tspan fill="#c084fc">4,096 terms</tspan>
+            </text>
+
+            <!-- Saved Artifact ZIP -->
+            <rect x="732" y="381" width="292" height="33" rx="6" fill="#064e3b" fill-opacity="0.4" stroke="#059669" />
+            <text x="742" y="396" fill="#ecfdf5" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">
+              mlContext.Model.Save(model, schema, "Model.zip")
+            </text>
+            <text x="742" y="409" fill="#6ee7b7" font-family="Inter, sans-serif" font-size="9.5">
+              Bundles Transform Chain + Weights + Input Schema
+            </text>
+
+            <!-- Callout Badge 6 -->
+            <circle cx="737" cy="265" r="10" fill="#059669" stroke="#a7f3d0" stroke-width="1.5" />
+            <text class="part-badge-text" data-num="6" x="737" y="269" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">6</text>
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PART 7: Evaluation & Metrics Card                         -->
+          <!-- ========================================================= -->
+          <g class="svg-part" data-part="model-metrics" onclick="handlePartClick('model-metrics')" onmouseenter="handlePartHover('model-metrics')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="16" y="452" width="318" height="174" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="2" />
+            <rect x="16" y="452" width="318" height="30" rx="10" fill="#b45309" fill-opacity="0.35" />
+            <text x="48" y="471" fill="#fde68a" font-family="Inter, sans-serif" font-size="12.5" font-weight="700">Evaluation &amp; Calibrated Metrics</text>
+
+            <!-- Evaluate Code -->
+            <rect x="26" y="489" width="298" height="25" rx="5" fill="#090d16" stroke="#1e293b" />
+            <text x="34" y="505" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="10">
+              mlContext.BinaryClassification.<tspan fill="#fbbf24" font-weight="700">Evaluate</tspan>(testPreds)
+            </text>
+
+            <!-- Metrics KPI Boxes -->
+            <rect x="26" y="522" width="92" height="44" rx="6" fill="#1e293b" stroke="#334155" />
+            <text x="34" y="538" fill="#94a3b8" font-family="Inter, sans-serif" font-size="9.5">Accuracy</text>
+            <text x="34" y="557" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700">94.2%</text>
+
+            <rect x="128" y="522" width="92" height="44" rx="6" fill="#1e293b" stroke="#334155" />
+            <text x="136" y="538" fill="#94a3b8" font-family="Inter, sans-serif" font-size="9.5">AUC-ROC</text>
+            <text x="136" y="557" fill="#38bdf8" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700">0.974</text>
+
+            <rect x="230" y="522" width="94" height="44" rx="6" fill="#1e293b" stroke="#334155" />
+            <text x="238" y="538" fill="#94a3b8" font-family="Inter, sans-serif" font-size="9.5">F1 Score</text>
+            <text x="238" y="557" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-size="14" font-weight="700">0.941</text>
+
+            <!-- Confusion Matrix Summary -->
+            <rect x="26" y="574" width="298" height="40" rx="6" fill="#090d16" stroke="#1e293b" />
+            <text x="34" y="591" fill="#fde68a" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">
+              ConfusionMatrix: [ TP: 95 | FP: 5 | FN: 6 | TN: 94 ]
+            </text>
+            <text x="34" y="606" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="9">
+              LogLoss: 0.182 | PositivePrecision: 0.95 | Recall: 0.94
+            </text>
+
+            <!-- Callout Badge 7 -->
+            <circle cx="31" cy="467" r="10" fill="#d97706" stroke="#fde68a" stroke-width="1.5" />
+            <text class="part-badge-text" data-num="7" x="31" y="471" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">7</text>
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PART 8: Prediction Schema & PredictionEnginePool          -->
+          <!-- ========================================================= -->
+          <g class="svg-part" data-part="prediction-engine" onclick="handlePartClick('prediction-engine')" onmouseenter="handlePartHover('prediction-engine')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="358" y="452" width="338" height="174" rx="10" fill="#0f172a" stroke="#14b8a6" stroke-width="2" />
+            <rect x="358" y="452" width="338" height="30" rx="10" fill="#0f766e" fill-opacity="0.4" />
+            <text x="390" y="471" fill="#5eead4" font-family="Inter, sans-serif" font-size="12.5" font-weight="700">Prediction Schema &amp; Serving Pool</text>
+
+            <!-- Output POCO Payload -->
+            <rect x="368" y="489" width="318" height="72" rx="6" fill="#090d16" stroke="#1e293b" />
+            <text x="376" y="505" fill="#2dd4bf" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">
+              SentimentPrediction <tspan fill="#94a3b8">// Output Payload</tspan>
+            </text>
+            <text x="376" y="522" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="10">
+              [ColumnName(<tspan fill="#fbbf24">"PredictedLabel"</tspan>)] Prediction = <tspan fill="#34d399" font-weight="700">true</tspan>
+            </text>
+            <text x="376" y="538" fill="#cbd5e1" font-family="JetBrains Mono, monospace" font-size="10">
+              Probability = <tspan fill="#38bdf8" font-weight="700">0.964f</tspan> (96.4% Calibrated)
+            </text>
+            <text x="376" y="553" fill="#cbd5e1" font-family="JetBrains Mono, monospace" font-size="10">
+              Score       = <tspan fill="#c084fc" font-weight="700">+3.18f</tspan> (Raw Margin Logit)
+            </text>
+
+            <!-- Serving Engine Comparison -->
+            <rect x="368" y="568" width="150" height="46" rx="5" fill="#1e293b" stroke="#334155" />
+            <text x="376" y="584" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700">PredictionEngine</text>
+            <text x="376" y="598" fill="#94a3b8" font-family="Inter, sans-serif" font-size="9">Single-thread prototype</text>
+            <text x="376" y="609" fill="#fb7185" font-family="JetBrains Mono, monospace" font-size="8.5">! Not Thread-Safe</text>
+
+            <rect x="526" y="568" width="160" height="46" rx="5" fill="#042f2e" stroke="#14b8a6" />
+            <text x="534" y="584" fill="#5eead4" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700">PredictionEnginePool</text>
+            <text x="534" y="598" fill="#ccfbf1" font-family="Inter, sans-serif" font-size="9">ASP.NET Core DI Service</text>
+            <text x="534" y="609" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="8.5">&#10003; Thread-Safe + AutoReload</text>
+
+            <!-- Callout Badge 8 -->
+            <circle cx="373" cy="467" r="10" fill="#0d9488" stroke="#99f6e4" stroke-width="1.5" />
+            <text class="part-badge-text" data-num="8" x="373" y="471" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">8</text>
+          </g>
+
+          <!-- ========================================================= -->
+          <!-- PART 9: Modern Extensions (Tokenizers & TorchSharp)       -->
+          <!-- ========================================================= -->
+          <g class="svg-part" data-part="modern-extensions" onclick="handlePartClick('modern-extensions')" onmouseenter="handlePartHover('modern-extensions')" onmouseleave="handlePartLeave()">
+            <rect class="part-box" x="720" y="452" width="314" height="174" rx="10" fill="#0f172a" stroke="#6366f1" stroke-width="2" />
+            <rect x="720" y="452" width="314" height="30" rx="10" fill="#4338ca" fill-opacity="0.4" />
+            <text x="752" y="471" fill="#c7d2fe" font-family="Inter, sans-serif" font-size="12.5" font-weight="700">Tokenizers &amp; TorchSharp (v3/v4)</text>
+
+            <!-- Microsoft.ML.Tokenizers Box -->
+            <rect x="730" y="489" width="294" height="60" rx="6" fill="#090d16" stroke="#312e81" />
+            <text x="738" y="505" fill="#818cf8" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">
+              Microsoft.ML.Tokenizers (Tiktoken / Llama / BPE)
+            </text>
+            <text x="738" y="521" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="9.5">
+              TiktokenTokenizer.CreateForModel(<tspan fill="#34d399">"gpt-4"</tspan>)
+            </text>
+            <text x="738" y="538" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-size="9.5">
+              "Hello, World!" &rarr; IDs: [ 9906, 11, 4435, 0 ]
+            </text>
+
+            <!-- Microsoft.ML.TorchSharp & ONNX Box -->
+            <rect x="730" y="556" width="294" height="58" rx="6" fill="#131c31" stroke="#4f46e5" stroke-opacity="0.6" />
+            <text x="738" y="572" fill="#c084fc" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700">
+              Microsoft.ML.TorchSharp &amp; ONNX Runtime
+            </text>
+            <text x="738" y="588" fill="#cbd5e1" font-family="Inter, sans-serif" font-size="9.5">
+              RoBERTa Text Classification, Sentence Similarity,
+            </text>
+            <text x="738" y="603" fill="#38bdf8" font-family="JetBrains Mono, monospace" font-size="9.5">
+              NamedEntityRecognition (NER), QA, ObjectDetection
+            </text>
+
+            <!-- Callout Badge 9 -->
+            <circle cx="735" cy="467" r="10" fill="#4f46e5" stroke="#c7d2fe" stroke-width="1.5" />
+            <text class="part-badge-text" data-num="9" x="735" y="471" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">9</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- LIVE DOMAIN COORDINATES & SCHEMA TELEMETRY BAR -->
+      <div id="status-bar" class="px-4 py-2.5 bg-slate-950 border-t border-slate-800/90 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+        <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">Pipeline Stage</span>
+          <span id="status-stage" class="text-cyan-300 font-semibold truncate block">1. Environment Init</span>
+        </div>
+        <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">ML.NET Type</span>
+          <span id="status-type" class="text-purple-300 font-semibold truncate block">Microsoft.ML.MLContext</span>
+        </div>
+        <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">DataView Schema State</span>
+          <span id="status-schema" class="text-emerald-300 font-semibold truncate block">Unloaded (Catalog Ready)</span>
+        </div>
+        <div class="bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-800">
+          <span class="text-slate-500 block text-[10px] uppercase">Execution Semantics</span>
+          <span id="status-exec" class="text-amber-300 font-semibold truncate block">Seed: 42 (Deterministic)</span>
+        </div>
+      </div>
+
+      <!-- QUICK-JUMP COMPONENT FILTER CHIPS -->
+      <div id="part-chips-bar" class="px-4 py-2.5 bg-slate-900/95 border-t border-slate-800/80 flex items-center gap-1.5 overflow-x-auto">
+        <span class="text-[11px] font-mono uppercase text-slate-400 mr-1 shrink-0">Parts:</span>
+        <div id="part-chips-container" class="flex items-center gap-1.5"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANE: DYNAMIC INSPECTOR / QUIZ / CODE X-RAY (5 COLS) -->
+    <section class="xl:col-span-5 flex flex-col bg-slate-900/70 border border-slate-800/90 rounded-2xl overflow-hidden shadow-2xl min-h-[640px]">
+
+      <!-- ======================================================= -->
+      <!-- MODE 1 PANEL: VISUAL ANATOMY INSPECTOR                  -->
+      <!-- ======================================================= -->
+      <div id="panel-mode-1" class="flex-1 flex flex-col p-5 space-y-4">
+        <!-- Header -->
+        <div class="flex items-start justify-between gap-3 border-b border-slate-800 pb-3.5">
+          <div class="flex items-center gap-3">
+            <div id="m1-badge" class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-mono font-bold text-base flex items-center justify-center shrink-0">
+              1
+            </div>
+            <div>
+              <span id="m1-category" class="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                Root Context
+              </span>
+              <h2 id="m1-title" class="text-lg font-bold text-white mt-1">MLContext Environment &amp; Catalogs</h2>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button onclick="stepAnatomyPart(-1)" title="Previous Component" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+              &larr;
+            </button>
+            <button onclick="stepAnatomyPart(1)" title="Next Component" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+              &rarr;
+            </button>
+          </div>
+        </div>
+
+        <div id="m1-notes" class="flex flex-col gap-4">
+          <!-- Visual Intuition Card -->
+          <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-3.5">
+            <div class="text-xs font-mono uppercase tracking-wider text-cyan-400 font-semibold mb-1.5 flex items-center gap-1.5">
+              <span>&#9673;</span> What You See &amp; Architectural Intuition
+            </div>
+            <p id="m1-intuition" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+          </div>
+
+          <!-- Official Type & Access Path Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-3">
+              <span class="text-[10px] font-mono uppercase text-slate-400 block">Official .NET Type &amp; Package</span>
+              <code id="m1-type" class="text-xs font-mono text-purple-300 font-semibold mt-1 block break-all"></code>
+            </div>
+            <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-3">
+              <span class="text-[10px] font-mono uppercase text-slate-400 block">Access Path / Lifecycle Role</span>
+              <code id="m1-access" class="text-xs font-mono text-emerald-300 font-semibold mt-1 block break-all"></code>
+            </div>
+          </div>
+
+          <!-- Key Technical Takeaways -->
+          <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-3.5">
+            <div class="text-xs font-mono uppercase tracking-wider text-amber-300 font-semibold mb-2">
+              Critical Engineering Rules
+            </div>
+            <ul id="m1-bullets" class="space-y-1.5 text-xs text-slate-300 list-disc list-inside"></ul>
+          </div>
+        </div>
+
+        <!-- Side-by-Side C# Syntax Comparison -->
+        <div class="flex-1 flex flex-col bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="px-3.5 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <button id="syntax-tab-std" onclick="switchSyntaxTab('std')" class="px-2.5 py-1 rounded text-xs font-mono font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                Standard Pipeline API
+              </button>
+              <button id="syntax-tab-adv" onclick="switchSyntaxTab('adv')" class="px-2.5 py-1 rounded text-xs font-mono font-semibold text-slate-400 hover:text-slate-200">
+                Production / Advanced Pattern
+              </button>
+            </div>
+            <button onclick="copyActiveSyntax()" id="copy-syntax-btn" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 transition">
+              Copy C#
+            </button>
+          </div>
+          <pre class="p-3.5 text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed flex-1"><code id="m1-code"></code></pre>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- MODE 2 PANEL: BEGINNER TERMINOLOGY QUIZ                 -->
+      <!-- ======================================================= -->
+      <div id="panel-mode-2" class="hidden flex-1 flex flex-col p-5 space-y-4">
+        <!-- Quiz Scoreboard -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3.5">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              Interactive Recall Drill
+            </span>
+            <h2 class="text-lg font-bold text-white mt-1">Name That ML.NET Component</h2>
+          </div>
+          <div class="flex items-center gap-2.5 font-mono">
+            <div class="bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl text-center">
+              <span class="text-[10px] text-slate-400 block uppercase">Score</span>
+              <span id="quiz-score" class="text-sm font-bold text-emerald-400">0 / 0</span>
+            </div>
+            <div class="bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl text-center">
+              <span class="text-[10px] text-slate-400 block uppercase">Streak</span>
+              <span id="quiz-streak" class="text-sm font-bold text-amber-400">0 &#128293;</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prompt Card -->
+        <div class="bg-gradient-to-br from-amber-500/10 via-slate-900 to-slate-950 border border-amber-500/30 rounded-xl p-4">
+          <div class="flex items-center justify-between text-xs font-mono text-amber-300 mb-1.5">
+            <span id="quiz-q-num">QUESTION 1 OF 9</span>
+            <span>&#9733; Pulsing on Blueprint OR Choose Below</span>
+          </div>
+          <p id="quiz-prompt" class="text-sm sm:text-base font-semibold text-white leading-snug"></p>
+          <p class="text-xs text-slate-400 mt-2">
+            Tip: You can either click one of the 4 option cards below <strong class="text-slate-200">or click directly on the matching component in the SVG diagram</strong>!
+          </p>
+        </div>
+
+        <!-- 4 Multiple Choice Option Cards -->
+        <div id="quiz-options" class="grid grid-cols-1 gap-2.5"></div>
+
+        <!-- Feedback Box -->
+        <div id="quiz-feedback" class="hidden rounded-xl p-4 border text-xs sm:text-sm leading-relaxed"></div>
+
+        <!-- Next / Reset Controls -->
+        <div class="mt-auto pt-2 flex items-center justify-between border-t border-slate-800">
+          <button onclick="resetQuiz()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 transition">
+            Reset Score
+          </button>
+          <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs sm:text-sm transition shadow-lg shadow-amber-500/20">
+            Skip / Next Question &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- MODE 3 PANEL: PROGRESSIVE CODE-TO-OUTPUT X-RAY          -->
+      <!-- ======================================================= -->
+      <div id="panel-mode-3" class="hidden flex-1 flex flex-col p-5 space-y-3.5">
+        <!-- Top Bar: Recipe Selector & Step-by-Step Build Toggle -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+              Code-to-Blueprint Debugger
+            </span>
+            <h2 class="text-base sm:text-lg font-bold text-white mt-1">Progressive Pipeline X-Ray</h2>
+          </div>
+
+          <!-- Build Step-by-Step Toggle -->
+          <label class="flex items-center gap-2 cursor-pointer bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl self-start sm:self-auto">
+            <input type="checkbox" id="xray-progressive-toggle" checked onchange="renderXRayState()" class="sr-only peer">
+            <div class="w-8 h-4 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all relative peer-checked:bg-emerald-500"></div>
+            <span class="text-xs font-mono text-slate-300">Build Step-by-Step</span>
+          </label>
+        </div>
+
+        <!-- Recipe Selector Dropdown / Pills -->
+        <div>
+          <label for="recipe-select" class="text-[11px] font-mono uppercase text-slate-400 block mb-1">Select C# ML.NET Recipe:</label>
+          <select id="recipe-select" onchange="selectRecipe(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm font-mono text-emerald-300 focus:outline-none focus:border-emerald-500">
+            <option value="0">1. Binary Classification Pipeline (End-to-End)</option>
+            <option value="1">2. Tabular Feature Preprocessing (OneHot, Missing, Normalize)</option>
+            <option value="2">3. Model Evaluation, Saving &amp; Reloading (.zip)</option>
+            <option value="3">4. Production ASP.NET Core Web API (PredictionEnginePool)</option>
+            <option value="4">5. LLM Tokenizers (Tiktoken) &amp; TorchSharp Deep Learning</option>
+          </select>
+        </div>
+
+        <!-- Stepper Controls -->
+        <div class="flex items-center justify-between bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
+          <div class="flex items-center gap-1.5">
+            <button onclick="stepXRayLine(-1)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-200 transition">
+              &uarr; Prev Line
+            </button>
+            <button onclick="stepXRayLine(1)" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-xs font-mono text-white font-semibold transition">
+              Next Line &darr;
+            </button>
+          </div>
+          <span id="xray-line-indicator" class="text-xs font-mono text-slate-400">Line 1 of 10</span>
+        </div>
+
+        <!-- Interactive Code Listing -->
+        <div id="xray-code-container" class="bg-slate-950 border border-slate-800 rounded-xl overflow-y-auto max-h-[250px] font-mono text-xs divide-y divide-slate-900/60"></div>
+
+        <!-- Active Line Explanation Card -->
+        <div class="flex-1 bg-gradient-to-br from-emerald-950/40 via-slate-950 to-slate-950 border border-emerald-500/30 rounded-xl p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span id="xray-explain-stage" class="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
+                STAGE: CONTEXT INIT
+              </span>
+              <span id="xray-explain-badges" class="flex items-center gap-1"></span>
+            </div>
+            <h3 id="xray-explain-title" class="text-sm font-bold text-white mb-1"></h3>
+            <p id="xray-explain-body" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-400">
+            <span id="xray-schema-delta" class="text-cyan-300"></span>
+            <span>Use &uarr;/&darr; keys or click any line</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- APPLICATION DATA & INTERACTIVE LOGIC -->
+  <script>
+    // =========================================================================
+    // 1. COMPREHENSIVE ML.NET COMPONENT METADATA (9 PARTS)
+    // =========================================================================
+    const MLNET_PARTS = [
+      {
+        id: 'ml-context',
+        num: 1,
+        shortName: 'MLContext',
+        title: 'MLContext Environment & Catalogs',
+        category: 'Root Environment',
+        stage: '1. Context & Seed Init',
+        mlType: 'Microsoft.ML.MLContext',
+        accessPath: 'new MLContext(seed: 42)',
+        schemaState: 'Unloaded (Catalogs Ready)',
+        execState: 'Eager Context / Deterministic Seed',
+        intuition: 'MLContext is the universal starting point for every ML.NET workflow—conceptually similar to SparkSession in Apache Spark or DbContext in Entity Framework. It holds the optional random seed for reproducible data splits/training and exposes specialized catalogs (.Data, .Transforms, .BinaryClassification, .Model, .Auto).',
+        bullets: [
+          'Pass a fixed seed (e.g., new MLContext(seed: 42)) to make TrainTestSplit and stochastic trainers reproducible.',
+          'Exposes task catalogs: BinaryClassification, MulticlassClassification, Regression, Clustering, AnomalyDetection, Forecasting, and Ranking.',
+          'Provides logging hooks via mlContext.Log += (sender, e) => ... to monitor internal trainer iterations.'
+        ],
+        stdCode: `using Microsoft.ML;
+
+// Initialize with fixed seed for deterministic splits & training
+var mlContext = new MLContext(seed: 42);
+
+// Access root catalogs off mlContext:
+// mlContext.Data                  -> Loading, filtering, splitting
+// mlContext.Transforms            -> Feature engineering estimators
+// mlContext.BinaryClassification  -> Trainers & evaluation metrics
+// mlContext.Model                 -> Save, load, PredictionEngine`,
+        advCode: `using Microsoft.ML;
+
+var mlContext = new MLContext(seed: 42);
+
+// Subscribe to internal ML.NET diagnostic & trainer logs
+mlContext.Log += (object? sender, LoggingEventArgs e) =>
+{
+    if (e.Kind == ChannelMessageKind.Info && e.Source.Contains("Sdca"))
+    {
+        Console.WriteLine($"[ML.NET Trace] {e.Message}");
+    }
+};
+
+// Optional: Configure GPU fallback device ID for TorchSharp/ONNX
+mlContext.GpuDeviceId = 0;
+mlContext.FallbackToCpu = true;`
+      },
+      {
+        id: 'input-schema',
+        num: 2,
+        shortName: 'Input POCO',
+        title: 'Input Schema POCO & Attributes',
+        category: 'Schema Definition',
+        stage: '2. Compile-Time Schema Mapping',
+        mlType: 'Microsoft.ML.Data.LoadColumnAttribute',
+        accessPath: '[LoadColumn(index), ColumnName("Label")]',
+        schemaState: 'Text: String, Label: Boolean',
+        execState: 'Compile-Time POCO Reflection',
+        intuition: 'Before loading data, you define a strongly-typed C# class (POCO) decorated with [LoadColumn(i)] attributes to tell ML.NET which column indices in your CSV/TSV file map to which properties, and [ColumnName("Label")] to alias the target property to the default "Label" column expected by trainers.',
+        bullets: [
+          '[LoadColumn(0)] binds CSV column index 0 to the C# property.',
+          '[ColumnName("Label")] renames Sentiment to "Label" inside the IDataView schema so trainers find it automatically.',
+          'Supports VectorType(dimension) attributes when loading pre-computed numeric arrays directly.'
+        ],
+        stdCode: `using Microsoft.ML.Data;
+
+public class SentimentData
+{
+    [LoadColumn(0)]
+    public string Text { get; set; } = string.Empty;
+
+    [LoadColumn(1), ColumnName("Label")]
+    public bool Sentiment { get; set; }
+}`,
+        advCode: `using Microsoft.ML.Data;
+
+public class CustomerChurnInput
+{
+    [LoadColumn(0)]
+    public string CustomerId { get; set; } = string.Empty;
+
+    // Load contiguous CSV columns 1..4 directly into a fixed-size vector
+    [LoadColumn(1, 4), VectorType(4)]
+    public float[] UsageMetrics { get; set; } = Array.Empty<float>();
+
+    [LoadColumn(5), ColumnName("Label")]
+    public bool Churned { get; set; }
+}`
+      },
+      {
+        id: 'idataview',
+        num: 3,
+        shortName: 'IDataView',
+        title: 'IDataView Lazy Cursor Table & Split',
+        category: 'Lazy Data Pipeline',
+        stage: '3. Lazy Data Loading & Split',
+        mlType: 'Microsoft.ML.IDataView',
+        accessPath: 'mlContext.Data.LoadFromTextFile<T>()',
+        schemaState: 'Columns: Text (String), Label (Bool)',
+        execState: 'Lazy Evaluation (Zero Rows in RAM)',
+        intuition: 'IDataView is ML.NET’s foundational data abstraction (inspired by IEnumerable<T> and SQL views). Calling LoadFromTextFile or TrainTestSplit does NOT load the file into memory; it creates a schema-backed lazy view that streams rows via forward-only cursors only when .Fit() or .Evaluate() pulls data.',
+        bullets: [
+          'Handles datasets larger than RAM (>2GB per column supported in ML.NET 3.0+) via streaming RowCursors.',
+          'Immutable & Composable: Every transform returns a new wrapping IDataView with an expanded Schema.',
+          'Also interoperates seamlessly with Microsoft.Data.Analysis.DataFrame, IEnumerable<T>, and SQL DatabaseLoader.'
+        ],
+        stdCode: `// 1. Create lazy IDataView over CSV file (does not read disk yet!)
+IDataView dataView = mlContext.Data.LoadFromTextFile<SentimentData>(
+    path: "sentiment.csv",
+    hasHeader: true,
+    separatorChar: ',');
+
+// 2. Split into 80% TrainSet and 20% TestSet
+var splitData = mlContext.Data.TrainTestSplit(
+    data: dataView,
+    testFraction: 0.2);
+
+IDataView trainSet = splitData.TrainSet;
+IDataView testSet  = splitData.TestSet;`,
+        advCode: `using Microsoft.Data.Analysis;
+
+// Load from in-memory IEnumerable<T> or convert to DataFrame (ML.NET 3.0+)
+IDataView inMemoryView = mlContext.Data.LoadFromEnumerable(records);
+
+// Inspect first 5 rows using DataFrame conversion
+DataFrame df = inMemoryView.ToDataFrame(maxRows: 5);
+Console.WriteLine(df);
+
+// Cache in RAM before iterative trainers if dataset fits in memory
+var cachedPipeline = mlContext.Transforms.Text
+    .FeaturizeText("Features", "Text")
+    .AppendCacheCheckpoint(mlContext);`
+      },
+      {
+        id: 'transform-estimator',
+        num: 4,
+        shortName: 'Transform (IEstimator)',
+        title: 'Feature Engineering Transform (IEstimator)',
+        category: 'Feature Engineering',
+        stage: '4. Feature Vectorization Blueprint',
+        mlType: 'Microsoft.ML.IEstimator<ITransformer>',
+        accessPath: 'mlContext.Transforms.Text.FeaturizeText()',
+        schemaState: '+Features: VBuffer<float>[N]',
+        execState: 'Lazy Estimator Blueprint (Unfitted)',
+        intuition: 'Machine learning algorithms cannot train on raw strings or disparate columns directly—they expect a single consolidated float vector column named "Features". Feature transforms (like FeaturizeText, OneHotEncoding, NormalizeMeanVariance, and Concatenate) define the blueprint (IEstimator) for computing that vector.',
+        bullets: [
+          'FeaturizeText is a composite estimator: it normalizes text, tokenizes words, removes stop words, extracts word/char n-grams, and computes TF-IDF vectors.',
+          'VBuffer<float> automatically uses sparse representation when most vector entries are zero, saving massive memory.',
+          'Transforms.Concatenate("Features", col1, col2) merges multiple numeric columns into the single "Features" vector.'
+        ],
+        stdCode: `// Convert raw 'Text' string column into a numeric 'Features' vector
+var featurePipeline = mlContext.Transforms.Text.FeaturizeText(
+    outputColumnName: "Features",
+    inputColumnName: nameof(SentimentData.Text));`,
+        advCode: `// Multi-column Tabular Feature Engineering Pipeline
+var tabularPipeline = mlContext.Transforms.Categorical.OneHotEncoding(
+        outputColumnName: "CategoryEncoded", inputColumnName: "Category")
+    .Append(mlContext.Transforms.ReplaceMissingValues(
+        outputColumnName: "AgeClean", inputColumnName: "Age",
+        replacementMode: MissingValueReplacingEstimator.ReplacementMode.Mean))
+    .Append(mlContext.Transforms.NormalizeMeanVariance(
+        outputColumnName: "FareNorm", inputColumnName: "Fare"))
+    .Append(mlContext.Transforms.Concatenate(
+        "Features", "CategoryEncoded", "AgeClean", "FareNorm"));`
+      },
+      {
+        id: 'trainer-estimator',
+        num: 5,
+        shortName: 'Trainer (IEstimator)',
+        title: 'Trainer Algorithm (IEstimator)',
+        category: 'Learning Algorithm',
+        stage: '5. Trainer Appended to Pipeline',
+        mlType: 'SdcaLogisticRegressionBinaryTrainer',
+        accessPath: 'mlContext.BinaryClassification.Trainers.*',
+        schemaState: '+Score (Single), +Probability, +PredictedLabel',
+        execState: 'Estimator Chain Ready to .Fit()',
+        intuition: 'Appending a Trainer estimator (such as SdcaLogisticRegression, FastTree, or LightGbm) to your feature transforms completes the EstimatorChain. At this point, zero training has occurred—you have constructed a type-safe blueprint that knows how to transform raw inputs and train a model.',
+        bullets: [
+          'SDCA (Stochastic Dual Coordinate Ascent) is ML.NET’s fast built-in linear trainer with L1/L2 regularization and calibrated probabilities.',
+          'Tree-based trainers like LightGbm and FastTree excel on structured tabular data.',
+          'ML.NET 4.0 added Deterministic = true and ForceRowWise = true options to LightGbm for reproducible training.'
+        ],
+        stdCode: `// Chain the trainer onto the feature engineering estimator
+var trainingPipeline = mlContext.Transforms.Text.FeaturizeText(
+        outputColumnName: "Features",
+        inputColumnName: nameof(SentimentData.Text))
+    .Append(mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(
+        labelColumnName: "Label",
+        featureColumnName: "Features"));`,
+        advCode: `using Microsoft.ML.Trainers.LightGbm;
+
+// High-performance Gradient Boosted Trees with deterministic seeding
+var lightGbmOptions = new LightGbmBinaryTrainer.Options
+{
+    LabelColumnName = "Label",
+    FeatureColumnName = "Features",
+    NumberOfLeaves = 31,
+    MinimumExampleCountPerLeaf = 20,
+    LearningRate = 0.05,
+    Deterministic = true,
+    ForceRowWise = true
+};
+
+var pipeline = featurePipeline.Append(
+    mlContext.BinaryClassification.Trainers.LightGbm(lightGbmOptions));`
+      },
+      {
+        id: 'trained-transformer',
+        num: 6,
+        shortName: '.Fit() & ITransformer',
+        title: '.Fit() Bridge & Trained ITransformer Model',
+        category: 'Materialized Model',
+        stage: '6. Execution Trigger & Model Artifact',
+        mlType: 'Microsoft.ML.ITransformer',
+        accessPath: 'pipeline.Fit(trainSet) / Model.Save()',
+        schemaState: 'Fitted Vocabulary + Learned Weights (W, b)',
+        execState: 'Materialized Execution (Pulls Cursor)',
+        intuition: 'Calling pipeline.Fit(trainSet) is the crucial execution bridge in ML.NET. It triggers data streaming through the IDataView cursor, builds vocabulary dictionaries, normalizes statistics, optimizes model weights W and bias b, and returns an immutable, thread-safe ITransformer.',
+        bullets: [
+          'IEstimator.Fit(IDataView) is the ONLY moment training happens; the returned ITransformer is completely stateless and thread-safe.',
+          'The trained ITransformer encapsulates BOTH the fitted preprocessing steps (e.g., N-gram dictionaries) AND the trained model weights.',
+          'mlContext.Model.Save(model, schema, "Model.zip") persists the entire pipeline so production servers never repeat preprocessing code.'
+        ],
+        stdCode: `// 1. Trigger training over the lazy TrainSet cursor
+ITransformer trainedModel = trainingPipeline.Fit(splitData.TrainSet);
+
+// 2. Persist the complete pipeline + schema to a portable .zip file
+mlContext.Model.Save(
+    model: trainedModel,
+    inputSchema: splitData.TrainSet.Schema,
+    filePath: "SentimentModel.zip");`,
+        advCode: `// Reload a persisted model .zip in any .NET service
+DataViewSchema modelSchema;
+ITransformer loadedModel = mlContext.Model.Load(
+    filePath: "SentimentModel.zip",
+    inputSchema: out modelSchema);
+
+// Batch inference: Transform an entire IDataView at once
+IDataView batchPredictions = loadedModel.Transform(newCustomerDataView);`
+      },
+      {
+        id: 'model-metrics',
+        num: 7,
+        shortName: 'Evaluate & Metrics',
+        title: 'Evaluation & Calibrated Metrics Card',
+        category: 'Model Validation',
+        stage: '7. Holdout Test Set Evaluation',
+        mlType: 'CalibratedBinaryClassificationMetrics',
+        accessPath: 'mlContext.BinaryClassification.Evaluate()',
+        schemaState: 'Compares Label vs. Score / PredictedLabel',
+        execState: 'Materialized Metric Aggregation',
+        intuition: 'To verify the model generalizes to unseen data, you pass the holdout TestSet into model.Transform(testSet) to produce lazy prediction columns, and then pass that result to BinaryClassification.Evaluate() to compute Accuracy, Area Under ROC Curve (AUC), F1Score, and ConfusionMatrix.',
+        bullets: [
+          'AreaUnderRocCurve (AUC) measures ranking quality across all thresholds (1.0 is perfect, 0.5 is random guessing).',
+          'F1Score balances Precision and Recall—critical when positive/negative classes are imbalanced.',
+          'CrossValidate(data, pipeline, numberOfFolds: 5) can evaluate robustness across k folds.'
+        ],
+        stdCode: `// 1. Generate lazy predictions on the 20% holdout test set
+IDataView testPredictions = trainedModel.Transform(splitData.TestSet);
+
+// 2. Compute evaluation metrics
+CalibratedBinaryClassificationMetrics metrics =
+    mlContext.BinaryClassification.Evaluate(
+        data: testPredictions,
+        labelColumnName: "Label",
+        scoreColumnName: "Score");
+
+Console.WriteLine($"Accuracy: {metrics.Accuracy:P2}");
+Console.WriteLine($"AUC-ROC:  {metrics.AreaUnderRocCurve:F3}");
+Console.WriteLine($"F1 Score: {metrics.F1Score:F3}");`,
+        advCode: `// 5-Fold Cross-Validation + Confusion Matrix Table Output
+var cvResults = mlContext.BinaryClassification.CrossValidate(
+    data: dataView,
+    estimator: trainingPipeline,
+    numberOfFolds: 5,
+    labelColumnName: "Label");
+
+double avgAuc = cvResults.Average(fold => fold.Metrics.AreaUnderRocCurve);
+Console.WriteLine($"5-Fold Mean AUC: {avgAuc:P2}");
+Console.WriteLine(cvResults[0].Metrics.ConfusionMatrix.GetFormattedConfusionTable());`
+      },
+      {
+        id: 'prediction-engine',
+        num: 8,
+        shortName: 'PredictionEnginePool',
+        title: 'Prediction Schema & PredictionEnginePool',
+        category: 'Real-Time Inference',
+        stage: '8. Single-Record & Web API Serving',
+        mlType: 'PredictionEnginePool<TData, TPrediction>',
+        accessPath: 'services.AddPredictionEnginePool<TIn, TOut>()',
+        schemaState: 'PredictedLabel: Bool, Probability: Float, Score: Float',
+        execState: 'Low-Latency In-Memory Scoring',
+        intuition: 'For real-time inference on single C# objects, ML.NET maps output columns into a Prediction POCO. Use PredictionEngine<TSrc, TDst> for quick single-threaded console tests, and always use PredictionEnginePool<TSrc, TDst> in ASP.NET Core Web APIs for thread-safe object pooling and zero-downtime hot reloading.',
+        bullets: [
+          'PredictionEngine<TSrc, TDst> is NOT thread-safe and is expensive to instantiate on every HTTP request.',
+          'PredictionEnginePool<TSrc, TDst> (from Microsoft.Extensions.ML) maintains a thread-safe pool of reusable engines.',
+          'Setting watchForChanges: true automatically reloads the .zip model when a new version is deployed to disk.'
+        ],
+        stdCode: `public class SentimentPrediction
+{
+    [ColumnName("PredictedLabel")]
+    public bool Prediction { get; set; }
+    public float Probability { get; set; }
+    public float Score { get; set; }
+}
+
+// Single-threaded convenience wrapper
+var engine = mlContext.Model.CreatePredictionEngine<SentimentData, SentimentPrediction>(trainedModel);
+var result = engine.Predict(new SentimentData { Text = "Blazing fast UI!" });
+Console.WriteLine($"Positive: {result.Prediction} ({result.Probability:P1})");`,
+        advCode: `using Microsoft.Extensions.ML;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Thread-safe DI pool with automatic hot-reloading on file change
+builder.Services.AddPredictionEnginePool<SentimentData, SentimentPrediction>()
+    .FromFile(
+        modelName: "SentimentModel",
+        filePath: "SentimentModel.zip",
+        watchForChanges: true);
+
+var app = builder.Build();
+app.MapPost("/predict", (
+    PredictionEnginePool<SentimentData, SentimentPrediction> pool,
+    SentimentData input) =>
+        Results.Ok(pool.Predict(modelName: "SentimentModel", example: input)));`
+      },
+      {
+        id: 'modern-extensions',
+        num: 9,
+        shortName: 'Tokenizers & TorchSharp',
+        title: 'Deep Learning & Tokenizer Extensions',
+        category: 'Modern AI & LLMs',
+        stage: '9. LLM Tokenization & TorchSharp DL',
+        mlType: 'Microsoft.ML.Tokenizers / TorchSharp',
+        accessPath: 'TiktokenTokenizer / mlContext.MulticlassClassification.Trainers',
+        schemaState: 'Token IDs: IReadOnlyList<int> / Deep Tensors',
+        execState: 'Native LibTorch & Span<char> Tokenization',
+        intuition: 'Modern ML.NET (v3.0 and v4.0) extends far beyond classical tabular ML. Microsoft.ML.Tokenizers provides high-speed Span<char>-optimized BPE, Tiktoken (GPT-4/4o), Llama, and CodeGen tokenizers for LLM workflows, while Microsoft.ML.TorchSharp brings RoBERTa transformers and deep vision models directly into the ML.NET pipeline.',
+        bullets: [
+          'Microsoft.ML.Tokenizers supports TiktokenTokenizer, LlamaTokenizer, CodeGenTokenizer, and byte-level BpeTokenizer.',
+          'Microsoft.ML.TorchSharp enables fine-tuning RoBERTa for Text Classification, Sentence Similarity, Named Entity Recognition (NER), and Question Answering (QA).',
+          'Also supports Object Detection (Microsoft Research transformer vision backbone) and ONNX Runtime inference.'
+        ],
+        stdCode: `using Microsoft.ML.Tokenizers;
+
+// Initialize GPT-4 Tiktoken tokenizer
+Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");
+string text = "Hello, World!";
+
+// Encode to token IDs and count tokens for LLM context management
+IReadOnlyList<int> ids = tokenizer.EncodeToIds(text);
+int count = tokenizer.CountTokens(text); // 4 tokens: [9906, 11, 4435, 0]
+string? decoded = tokenizer.Decode(ids);`,
+        advCode: `using Microsoft.ML;
+using Microsoft.ML.TorchSharp;
+
+var mlContext = new MLContext();
+mlContext.GpuDeviceId = 0;
+mlContext.FallbackToCpu = true;
+
+// Fine-tune a TorchSharp RoBERTa Deep Learning model for Sentence Similarity
+var dlPipeline = mlContext.Regression.Trainers.SentenceSimilarity(
+    labelColumnName: "SimilarityScore",
+    sentence1ColumnName: "Sentence1",
+    sentence2ColumnName: "Sentence2",
+    batchSize: 32,
+    maxEpochs: 10);`
+      }
+    ];
+
+    // =========================================================================
+    // 2. MODE 2 QUIZ QUESTIONS
+    // =========================================================================
+    const QUIZ_QUESTIONS = [
+      {
+        targetId: 'ml-context',
+        prompt: 'Which root object initializes the ML.NET environment, holds the deterministic random seed, and exposes catalogs like .Data, .Transforms, and .Model?',
+        explanation: 'MLContext is the mandatory entry point for all ML.NET operations, providing catalogs for data loading, feature engineering, trainers, and model persistence.'
+      },
+      {
+        targetId: 'input-schema',
+        prompt: 'Which component uses C# attributes like [LoadColumn(0)] and [ColumnName("Label")] to map raw file columns into a strongly-typed class?',
+        explanation: 'The Input Schema POCO class uses [LoadColumn] and [ColumnName] attributes so ML.NET knows how to parse raw CSV/TSV columns into typed schema columns.'
+      },
+      {
+        targetId: 'idataview',
+        prompt: 'Which lazy-evaluated, cursor-based tabular data structure streams datasets larger than RAM without loading rows eagerly into memory?',
+        explanation: 'IDataView is ML.NET’s lazy, immutable tabular data pipeline. Operations on IDataView only record schema transformations until .Fit() pulls a RowCursor.'
+      },
+      {
+        targetId: 'transform-estimator',
+        prompt: 'Which unfitted pipeline stage converts raw text or categorical columns into a single consolidated numeric VBuffer<float> column named "Features"?',
+        explanation: 'Feature Engineering Transforms (implementing IEstimator<ITransformer>) such as FeaturizeText, OneHotEncoding, and Concatenate produce the numeric "Features" vector.'
+      },
+      {
+        targetId: 'trainer-estimator',
+        prompt: 'Which component is appended via .Append() to specify the machine learning algorithm (such as SdcaLogisticRegression or LightGbm) before training begins?',
+        explanation: 'A Trainer IEstimator defines the learning algorithm and hyperparameters that will optimize weights mapping "Features" to "Label" once .Fit() is called.'
+      },
+      {
+        targetId: 'trained-transformer',
+        prompt: 'Which component represents the materialized, immutable ITransformer produced by calling .Fit(trainSet) and saved to a portable .zip artifact?',
+        explanation: 'Calling .Fit(trainSet) executes the lazy pipeline, learns the feature dictionaries and model weights (W, b), and returns a thread-safe ITransformer.'
+      },
+      {
+        targetId: 'model-metrics',
+        prompt: 'Which stage computes Accuracy, AUC-ROC, F1Score, and the ConfusionMatrix by scoring the holdout 20% test split?',
+        explanation: 'BinaryClassification.Evaluate(testPredictions) compares the ground-truth Label column against the model’s PredictedLabel, Probability, and Score columns.'
+      },
+      {
+        targetId: 'prediction-engine',
+        prompt: 'Which component maps model outputs to a C# Prediction POCO and uses a thread-safe Dependency Injection pool for ASP.NET Core Web APIs?',
+        explanation: 'PredictionEnginePool<TData, TPrediction> provides thread-safe, pooled single-example inference with hot-reloading (watchForChanges: true) in production.'
+      },
+      {
+        targetId: 'modern-extensions',
+        prompt: 'Which modern ML.NET extension layer provides Tiktoken/Llama LLM tokenizers and TorchSharp deep learning trainers (NER, QA, Object Detection)?',
+        explanation: 'Microsoft.ML.Tokenizers and Microsoft.ML.TorchSharp extend ML.NET with GPT-4/Llama tokenization and native LibTorch neural network trainers.'
+      }
+    ];
+
+    // =========================================================================
+    // 3. MODE 3 PROGRESSIVE CODE-TO-OUTPUT X-RAY RECIPES (5 RECIPES)
+    // =========================================================================
+    const XRAY_RECIPES = [
+      {
+        name: '1. Binary Classification Pipeline (End-to-End)',
+        lines: [
+          {
+            code: 'var mlContext = new MLContext(seed: 42);',
+            stage: 'STAGE 1: CONTEXT INITIALIZATION',
+            title: 'Create Deterministic MLContext Environment',
+            explanation: 'Instantiates the central MLContext with seed 42 so random operations like TrainTestSplit and stochastic gradient updates produce identical results across runs.',
+            schemaDelta: 'Schema: [Empty] | Catalogs: Ready',
+            targetParts: ['ml-context'],
+            revealParts: ['ml-context']
+          },
+          {
+            code: '[LoadColumn(0)] public string Text; [LoadColumn(1), ColumnName("Label")] public bool Sentiment;',
+            stage: 'STAGE 2: INPUT SCHEMA POCO',
+            title: 'Bind CSV Columns to Strongly-Typed C# Properties',
+            explanation: 'Declares SentimentData where column 0 maps to Text and column 1 is aliased to "Label", matching the default label column name expected by binary trainers.',
+            schemaDelta: 'POCO Schema: Text (String), Label (Boolean)',
+            targetParts: ['input-schema'],
+            revealParts: ['ml-context', 'input-schema']
+          },
+          {
+            code: 'IDataView dataView = mlContext.Data.LoadFromTextFile<SentimentData>("sentiment.csv", hasHeader: true, separatorChar: \',\');',
+            stage: 'STAGE 3: LAZY IDATAVIEW CREATION',
+            title: 'Construct Lazy IDataView Over CSV File',
+            explanation: 'Creates an IDataView bound to sentiment.csv. Because IDataView is lazy, zero rows are read from disk on this line—only the schema header is configured.',
+            schemaDelta: 'IDataView: [Text: String, Label: Bool] (Lazy)',
+            targetParts: ['idataview'],
+            revealParts: ['ml-context', 'input-schema', 'idataview']
+          },
+          {
+            code: 'var split = mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2);',
+            stage: 'STAGE 3B: TRAIN / TEST SPLIT',
+            title: 'Partition Lazy Stream into 80% TrainSet & 20% TestSet',
+            explanation: 'Wraps the original IDataView into two filtered views using a hash of the row index: split.TrainSet (80%) for fitting and split.TestSet (20%) for holdout evaluation.',
+            schemaDelta: 'Split: TrainSet (80%) | TestSet (20%)',
+            targetParts: ['idataview'],
+            revealParts: ['ml-context', 'input-schema', 'idataview']
+          },
+          {
+            code: 'var pipeline = mlContext.Transforms.Text.FeaturizeText(outputColumnName: "Features", inputColumnName: "Text")',
+            stage: 'STAGE 4: FEATURE ENGINEERING ESTIMATOR',
+            title: 'Define Text Vectorization Blueprint (IEstimator)',
+            explanation: 'Creates an unfitted TextFeaturizingEstimator that will normalize text, tokenize words, extract word/char n-grams, and output a numeric VBuffer<float> column named "Features".',
+            schemaDelta: 'Pending Column: +Features (VBuffer<float>)',
+            targetParts: ['transform-estimator'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator']
+          },
+          {
+            code: '    .Append(mlContext.BinaryClassification.Trainers.SdcaLogisticRegression("Label", "Features"));',
+            stage: 'STAGE 5: APPEND TRAINER ESTIMATOR',
+            title: 'Chain SDCA Logistic Regression Trainer onto Pipeline',
+            explanation: 'Appends the Stochastic Dual Coordinate Ascent binary trainer to the estimator chain. The pipeline is still a lazy blueprint—no weights have been learned yet.',
+            schemaDelta: 'Pending Columns: +Score, +Probability, +PredictedLabel',
+            targetParts: ['trainer-estimator'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator', 'trainer-estimator']
+          },
+          {
+            code: 'ITransformer model = pipeline.Fit(split.TrainSet);',
+            stage: 'STAGE 6: .FIT() EXECUTION BRIDGE',
+            title: 'Materialize Pipeline & Train Model Weights on TrainSet',
+            explanation: 'Calling .Fit() pulls rows through the TrainSet RowCursor, fits the N-gram vocabulary dictionary, optimizes logistic regression weights W and bias b, and returns an immutable ITransformer.',
+            schemaDelta: 'Materialized: ITransformer (Weights W, Bias b)',
+            targetParts: ['trained-transformer'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator', 'trainer-estimator', 'trained-transformer']
+          },
+          {
+            code: 'var metrics = mlContext.BinaryClassification.Evaluate(model.Transform(split.TestSet));',
+            stage: 'STAGE 7: HOLDOUT EVALUATION',
+            title: 'Score TestSet & Calculate Accuracy, AUC, and F1',
+            explanation: 'model.Transform(split.TestSet) creates a lazy view with predictions, and Evaluate() pulls the test cursor to compute Accuracy (94.2%), AUC (0.974), F1Score (0.941), and ConfusionMatrix.',
+            schemaDelta: 'Metrics: Accuracy=94.2%, AUC=0.974, F1=0.941',
+            targetParts: ['model-metrics'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator', 'trainer-estimator', 'trained-transformer', 'model-metrics']
+          },
+          {
+            code: 'var engine = mlContext.Model.CreatePredictionEngine<SentimentData, SentimentPrediction>(model);',
+            stage: 'STAGE 8: PREDICTION ENGINE CREATION',
+            title: 'Bind Trained Model to Input/Output C# POCOs',
+            explanation: 'Creates a PredictionEngine that compiles fast delegates mapping SentimentData properties in and SentimentPrediction properties (PredictedLabel, Probability, Score) out.',
+            schemaDelta: 'Bound: SentimentData -> SentimentPrediction',
+            targetParts: ['prediction-engine'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator', 'trainer-estimator', 'trained-transformer', 'model-metrics', 'prediction-engine']
+          },
+          {
+            code: 'var result = engine.Predict(new SentimentData { Text = "Blazing fast UI!" });',
+            stage: 'STAGE 8B: REAL-TIME INFERENCE',
+            title: 'Execute Single-Record Prediction in Memory',
+            explanation: 'Runs the input string through the fitted FeaturizeText transform and Sdca dot-product, returning Prediction = true, Probability = 0.964f, and raw Score = +3.18f.',
+            schemaDelta: 'Output: Prediction=true, Prob=0.964, Score=+3.18',
+            targetParts: ['prediction-engine', 'input-schema'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator', 'trainer-estimator', 'trained-transformer', 'model-metrics', 'prediction-engine']
+          }
+        ]
+      },
+      {
+        name: '2. Tabular Feature Preprocessing (OneHot, Missing, Normalize)',
+        lines: [
+          {
+            code: 'var mlContext = new MLContext(seed: 42);',
+            stage: 'STAGE 1: CONTEXT INIT',
+            title: 'Initialize MLContext for Tabular Workflow',
+            explanation: 'Creates the root context to access mlContext.Transforms.Categorical, MissingValueReplacing, Normalization, and Concatenate catalogs.',
+            schemaDelta: 'Catalog: mlContext.Transforms Ready',
+            targetParts: ['ml-context'],
+            revealParts: ['ml-context']
+          },
+          {
+            code: 'IDataView rawData = mlContext.Data.LoadFromEnumerable(customerRecords);',
+            stage: 'STAGE 2: IN-MEMORY IDATAVIEW',
+            title: 'Wrap IEnumerable<CustomerInput> as Lazy IDataView',
+            explanation: 'Streams objects directly from an in-memory C# collection into an IDataView without needing an intermediate CSV file.',
+            schemaDelta: 'Schema: [Category: String, Age: Single, Fare: Single, Label: Bool]',
+            targetParts: ['input-schema', 'idataview'],
+            revealParts: ['ml-context', 'input-schema', 'idataview']
+          },
+          {
+            code: 'var pipeline = mlContext.Transforms.Categorical.OneHotEncoding("CategoryVec", "Category")',
+            stage: 'STAGE 3: CATEGORICAL ONE-HOT ENCODING',
+            title: 'Convert String Category into Indicator Vector',
+            explanation: 'Builds a dictionary of unique string categories during .Fit() and maps each category into a binary one-hot VBuffer<float> column named "CategoryVec".',
+            schemaDelta: 'Schema + CategoryVec: VBuffer<float>',
+            targetParts: ['transform-estimator'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator']
+          },
+          {
+            code: '    .Append(mlContext.Transforms.ReplaceMissingValues("AgeClean", "Age", ReplacementMode.Mean))',
+            stage: 'STAGE 4: IMPUTE MISSING VALUES',
+            title: 'Replace NaN Floats with Training Column Mean',
+            explanation: 'Computes the mean of non-missing Age values on the training split during .Fit() and substitutes any Single.NaN values with that learned mean.',
+            schemaDelta: 'Schema + AgeClean: Single (No NaNs)',
+            targetParts: ['transform-estimator'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator']
+          },
+          {
+            code: '    .Append(mlContext.Transforms.NormalizeMeanVariance("FareNorm", "Fare"))',
+            stage: 'STAGE 5: FEATURE SCALING',
+            title: 'Zero-Mean Unit-Variance Normalization',
+            explanation: 'Linear trainers like SDCA are sensitive to feature scale. NormalizeMeanVariance scales Fare by subtracting mean and dividing by standard deviation.',
+            schemaDelta: 'Schema + FareNorm: Single (Normalized)',
+            targetParts: ['transform-estimator'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator']
+          },
+          {
+            code: '    .Append(mlContext.Transforms.Concatenate("Features", "CategoryVec", "AgeClean", "FareNorm"))',
+            stage: 'STAGE 6: VECTOR CONCATENATION',
+            title: 'Merge Processed Columns into Single "Features" Vector',
+            explanation: 'Combines CategoryVec, AgeClean, and FareNorm into the single unified VBuffer<float> "Features" column required by ML.NET trainers.',
+            schemaDelta: 'Schema + Features: VBuffer<float>',
+            targetParts: ['transform-estimator'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator']
+          },
+          {
+            code: '    .Append(mlContext.BinaryClassification.Trainers.LightGbm(new LightGbmBinaryTrainer.Options { Deterministic = true }));',
+            stage: 'STAGE 7: DETERMINISTIC LIGHTGBM TRAINER',
+            title: 'Append Gradient Boosted Decision Tree Trainer',
+            explanation: 'Adds the LightGBM trainer configured with Deterministic = true so multi-threaded histogram construction produces reproducible trees.',
+            schemaDelta: 'Pipeline: 4 Transforms + LightGbm Trainer',
+            targetParts: ['trainer-estimator'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator', 'trainer-estimator']
+          },
+          {
+            code: 'ITransformer model = pipeline.Fit(rawData);',
+            stage: 'STAGE 8: FIT PREPROCESSING + TREES',
+            title: 'Learn Imputation Means, Scalers, One-Hot Dict & Trees',
+            explanation: 'Executes the entire chain on rawData: fits the category vocabulary, mean imputer, variance scaler, and LightGBM ensemble inside one unified ITransformer.',
+            schemaDelta: 'Materialized: Unified Preprocessing + LightGBM Model',
+            targetParts: ['trained-transformer'],
+            revealParts: ['ml-context', 'input-schema', 'idataview', 'transform-estimator', 'trainer-estimator', 'trained-transformer']
+          }
+        ]
+      },
+      {
+        name: '3. Model Evaluation, Saving & Reloading (.zip)',
+        lines: [
+          {
+            code: 'ITransformer trainedModel = pipeline.Fit(split.TrainSet);',
+            stage: 'STAGE 1: TRAIN PIPELINE',
+            title: 'Produce Fitted ITransformer from Training Split',
+            explanation: 'Materializes all estimators on the 80% training split so we can validate generalization on the unseen 20% test split.',
+            schemaDelta: 'Model Fitted in Memory',
+            targetParts: ['trained-transformer'],
+            revealParts: ['ml-context', 'idataview', 'trained-transformer']
+          },
+          {
+            code: 'IDataView testPredictions = trainedModel.Transform(split.TestSet);',
+            stage: 'STAGE 2: BATCH SCORING ON TEST SET',
+            title: 'Apply Fitted Model to Holdout TestSet',
+            explanation: 'Returns a new lazy IDataView containing all original TestSet columns plus Features, Score, Probability, and PredictedLabel.',
+            schemaDelta: 'TestView + [Score, Probability, PredictedLabel]',
+            targetParts: ['idataview', 'trained-transformer'],
+            revealParts: ['ml-context', 'idataview', 'trained-transformer']
+          },
+          {
+            code: 'var metrics = mlContext.BinaryClassification.Evaluate(testPredictions, labelColumnName: "Label");',
+            stage: 'STAGE 3: METRIC COMPUTATION',
+            title: 'Compute Calibrated Binary Classification Metrics',
+            explanation: 'Streams through testPredictions and calculates Accuracy, AreaUnderRocCurve (AUC), F1Score, LogLoss, and the 2x2 ConfusionMatrix.',
+            schemaDelta: 'Evaluated: Acc=94.2%, AUC=0.974, F1=0.941',
+            targetParts: ['model-metrics'],
+            revealParts: ['ml-context', 'idataview', 'trained-transformer', 'model-metrics']
+          },
+          {
+            code: 'mlContext.Model.Save(trainedModel, split.TrainSet.Schema, "SentimentModel.zip");',
+            stage: 'STAGE 4: SERIALIZE MODEL ARTIFACT',
+            title: 'Save Complete Pipeline & Input Schema to .zip',
+            explanation: 'Writes the entire transformer chain (text featurizer vocabulary + model weights) and the expected DataViewSchema into a self-contained zip file.',
+            schemaDelta: 'Disk Artifact: SentimentModel.zip Written',
+            targetParts: ['ml-context', 'trained-transformer'],
+            revealParts: ['ml-context', 'idataview', 'trained-transformer', 'model-metrics']
+          },
+          {
+            code: 'ITransformer loadedModel = mlContext.Model.Load("SentimentModel.zip", out DataViewSchema schema);',
+            stage: 'STAGE 5: RELOAD IN PRODUCTION',
+            title: 'Rehydrate ITransformer & Schema from Disk',
+            explanation: 'Loads the zip archive back into memory and outputs the recorded DataViewSchema so you can inspect required input column names and types.',
+            schemaDelta: 'Rehydrated: loadedModel + DataViewSchema',
+            targetParts: ['ml-context', 'trained-transformer', 'prediction-engine'],
+            revealParts: ['ml-context', 'idataview', 'trained-transformer', 'model-metrics', 'prediction-engine']
+          }
+        ]
+      },
+      {
+        name: '4. Production ASP.NET Core Web API (PredictionEnginePool)',
+        lines: [
+          {
+            code: 'var builder = WebApplication.CreateBuilder(args);',
+            stage: 'STAGE 1: ASP.NET CORE HOST',
+            title: 'Initialize Minimal Web API Builder',
+            explanation: 'Sets up the ASP.NET Core dependency injection container where the thread-safe ML.NET prediction pool will be registered.',
+            schemaDelta: 'Host: WebApplicationBuilder Ready',
+            targetParts: ['prediction-engine'],
+            revealParts: ['prediction-engine']
+          },
+          {
+            code: 'builder.Services.AddPredictionEnginePool<SentimentData, SentimentPrediction>()',
+            stage: 'STAGE 2: REGISTER THREAD-SAFE POOL',
+            title: 'Configure Object Pool for Input & Output POCOs',
+            explanation: 'Unlike single-instance PredictionEngine (which is NOT thread-safe), PredictionEnginePool manages a concurrent pool of reusable engines across HTTP threads.',
+            schemaDelta: 'DI Service: PredictionEnginePool<SentimentData, SentimentPrediction>',
+            targetParts: ['input-schema', 'prediction-engine'],
+            revealParts: ['input-schema', 'prediction-engine']
+          },
+          {
+            code: '    .FromFile(modelName: "SentimentModel", filePath: "SentimentModel.zip", watchForChanges: true);',
+            stage: 'STAGE 3: HOT-RELOAD MODEL WATCHER',
+            title: 'Bind Pool to Model.zip with Zero-Downtime File Watcher',
+            explanation: 'Loads SentimentModel.zip and attaches a FileSystemWatcher. Whenever a newly trained .zip overwrites the file, the pool hot-swaps the model without restarting the web server.',
+            schemaDelta: 'Loaded: SentimentModel.zip (watchForChanges=true)',
+            targetParts: ['trained-transformer', 'prediction-engine'],
+            revealParts: ['input-schema', 'trained-transformer', 'prediction-engine']
+          },
+          {
+            code: 'app.MapPost("/predict", (PredictionEnginePool<SentimentData, SentimentPrediction> pool, SentimentData input) =>',
+            stage: 'STAGE 4: MINIMAL API ENDPOINT',
+            title: 'Inject PredictionEnginePool & Deserialize JSON Body',
+            explanation: 'ASP.NET Core automatically deserializes the incoming JSON request into SentimentData and injects the singleton PredictionEnginePool.',
+            schemaDelta: 'HTTP POST /predict -> SentimentData',
+            targetParts: ['input-schema', 'prediction-engine'],
+            revealParts: ['input-schema', 'trained-transformer', 'prediction-engine']
+          },
+          {
+            code: '    Results.Ok(pool.Predict(modelName: "SentimentModel", example: input)));',
+            stage: 'STAGE 5: POOLED CONCURRENT SCORING',
+            title: 'Rent Engine, Score Input, Return Engine to Pool',
+            explanation: 'Rents a warm PredictionEngine instance from the pool, runs the embedded transform + model pipeline, returns the engine to the pool, and serializes SentimentPrediction to JSON.',
+            schemaDelta: 'HTTP 200 JSON: { prediction: true, probability: 0.964, score: 3.18 }',
+            targetParts: ['prediction-engine'],
+            revealParts: ['input-schema', 'trained-transformer', 'prediction-engine']
+          }
+        ]
+      },
+      {
+        name: '5. LLM Tokenizers (Tiktoken) & TorchSharp Deep Learning',
+        lines: [
+          {
+            code: 'Tokenizer tokenizer = TiktokenTokenizer.CreateForModel("gpt-4");',
+            stage: 'STAGE 1: MICROSOFT.ML.TOKENIZERS',
+            title: 'Initialize High-Speed GPT-4 Tiktoken Tokenizer',
+            explanation: 'Loads the BPE vocabulary rules for GPT-4 using Microsoft.ML.Tokenizers (which also supports LlamaTokenizer, CodeGenTokenizer, and byte-level BpeTokenizer).',
+            schemaDelta: 'Tokenizer: Tiktoken (cl100k_base)',
+            targetParts: ['modern-extensions'],
+            revealParts: ['modern-extensions']
+          },
+          {
+            code: 'IReadOnlyList<int> tokenIds = tokenizer.EncodeToIds("Hello, World!".AsSpan());',
+            stage: 'STAGE 2: ZERO-ALLOCATION SPAN TOKENIZATION',
+            title: 'Encode Text Span into Token IDs [9906, 11, 4435, 0]',
+            explanation: 'Uses the ML.NET 4.0 Span<char> overload to tokenize text into integer IDs and measure exact token budgets before calling local or cloud LLMs.',
+            schemaDelta: 'EncodedIds: [9906, 11, 4435, 0] (Count: 4)',
+            targetParts: ['modern-extensions'],
+            revealParts: ['modern-extensions']
+          },
+          {
+            code: 'var mlContext = new MLContext(seed: 42) { GpuDeviceId = 0, FallbackToCpu = true };',
+            stage: 'STAGE 3: GPU-ENABLED MLCONTEXT',
+            title: 'Configure MLContext for TorchSharp CUDA Acceleration',
+            explanation: 'Sets GpuDeviceId = 0 so TorchSharp-backed deep learning trainers run on NVIDIA CUDA if available, or gracefully fall back to CPU.',
+            schemaDelta: 'Device: CUDA:0 (FallbackToCpu = true)',
+            targetParts: ['ml-context', 'modern-extensions'],
+            revealParts: ['ml-context', 'modern-extensions']
+          },
+          {
+            code: 'var dlTrainer = mlContext.MulticlassClassification.Trainers.NamedEntityRecognition(labelColumnName: "Label", outputColumnName: "Predictions");',
+            stage: 'STAGE 4: TORCHSHARP DEEP LEARNING TRAINER',
+            title: 'Configure TorchSharp RoBERTa Trainer (NER / QA / Similarity)',
+            explanation: 'Uses Microsoft.ML.TorchSharp to build a transformer neural network trainer for Named Entity Recognition, Question Answering, Sentence Similarity, or Object Detection.',
+            schemaDelta: 'Deep Trainer: TorchSharp RoBERTa Backbone',
+            targetParts: ['trainer-estimator', 'modern-extensions'],
+            revealParts: ['ml-context', 'idataview', 'trainer-estimator', 'modern-extensions']
+          },
+          {
+            code: 'ITransformer dlModel = dlTrainer.Fit(trainDataView);',
+            stage: 'STAGE 5: NATIVE LIBTORCH FINE-TUNING',
+            title: 'Fine-Tune Transformer Weights via LibTorch C++ Engine',
+            explanation: 'Streams batches from the IDataView into native LibTorch tensors, runs forward/backward autograd passes, and packages the trained neural network as a standard ML.NET ITransformer.',
+            schemaDelta: 'Materialized: TorchSharp ITransformer Model',
+            targetParts: ['trained-transformer', 'modern-extensions'],
+            revealParts: ['ml-context', 'idataview', 'trainer-estimator', 'trained-transformer', 'modern-extensions']
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 4. APPLICATION STATE & INTERACTIVE CONTROLLERS
+    // =========================================================================
+    let currentMode = 1;
+    let selectedPartId = 'ml-context';
+    let currentSyntaxTab = 'std';
+    let focusMode = false;
+
+    // Mode 2 Quiz State
+    let quizIndex = 0;
+    let quizScore = 0;
+    let quizAnsweredCount = 0;
+    let quizStreak = 0;
+    let quizLocked = false;
+
+    // Mode 3 X-Ray State
+    let currentRecipeIdx = 0;
+    let currentLineIdx = 0;
+
+    // Initialize on DOM load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderPartChips();
+      selectAnatomyPart('ml-context');
+      initQuiz();
+      selectRecipe(0);
+
+      const initialFocusPart = partIdFromHash();
+      if (initialFocusPart) setFocusView(true, initialFocusPart);
+
+      // Keyboard navigation for Mode 1 and Mode 3
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && focusMode) {
+          setFocusView(false);
+          return;
+        }
+        if (currentMode === 3) {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            stepXRayLine(1);
+          } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            stepXRayLine(-1);
+          }
+        } else if (currentMode === 1) {
+          if (e.key === 'ArrowRight') {
+            stepAnatomyPart(1);
+          } else if (e.key === 'ArrowLeft') {
+            stepAnatomyPart(-1);
+          }
+        }
+      });
+
+      window.addEventListener('hashchange', () => {
+        const hashPart = partIdFromHash();
+        if (hashPart) {
+          if (!focusMode) setFocusView(true, hashPart);
+          else selectAnatomyPart(hashPart);
+        } else if (focusMode) {
+          setFocusView(false);
+        }
+      });
+    });
+
+    // Render bottom quick-select chips
+    function renderPartChips() {
+      const container = document.getElementById('part-chips-container');
+      container.innerHTML = MLNET_PARTS.map(p => `
+        <button id="chip-${p.id}" onclick="handlePartClick('${p.id}')"
+          class="part-chip shrink-0 px-2.5 py-1 rounded-lg text-xs font-mono border transition flex items-center gap-1.5 bg-slate-950 text-slate-300 border-slate-800 hover:border-cyan-500/50">
+          <span class="w-4 h-4 rounded-full bg-slate-800 text-[10px] font-bold flex items-center justify-center text-cyan-300">${p.num}</span>
+          <span>${p.shortName}</span>
+        </button>
+      `).join('');
+    }
+
+    // Update the compact focused-reading bar with the current section
+    function updateFocusBar() {
+      const part = MLNET_PARTS.find(p => p.id === selectedPartId);
+      const label = document.getElementById('focus-nav-current');
+      if (label && part) {
+        label.textContent = `Section ${part.num} of ${MLNET_PARTS.length} · ${part.title}`;
+      }
+    }
+
+    function partIdFromHash() {
+      const hash = decodeURIComponent((window.location.hash || '').replace(/^#/, ''));
+      return MLNET_PARTS.some(p => p.id === hash) ? hash : null;
+    }
+
+    // Switch between the consolidated blueprint and the focused one-section view
+    function setFocusView(enabled, partId) {
+      if (enabled && !focusMode) {
+        focusMode = true;
+        document.body.classList.add('focus-mode');
+        if (currentMode !== 1) switchMode(1);
+        selectAnatomyPart(partId || selectedPartId);
+        updateCanvasBackdrop();
+        updateViewToggle();
+      } else if (!enabled && focusMode) {
+        focusMode = false;
+        document.body.classList.remove('focus-mode');
+        updateCanvasBackdrop();
+        updateFocusViewBox();
+        updateViewToggle();
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+        switchMode(1);
+      }
+    }
+
+    function updateViewToggle() {
+      const consolidatedBtn = document.getElementById('view-btn-consolidated');
+      const focusBtn = document.getElementById('view-btn-focus');
+      if (!consolidatedBtn || !focusBtn) return;
+      consolidatedBtn.classList.toggle('is-active', !focusMode);
+      focusBtn.classList.toggle('is-active', focusMode);
+      consolidatedBtn.setAttribute('aria-pressed', String(!focusMode));
+      focusBtn.setAttribute('aria-pressed', String(focusMode));
+    }
+
+    // Enlarge the blueprint backdrop so a centered 2x crop never runs out of grid
+    function updateCanvasBackdrop() {
+      const backdrop = document.getElementById('blueprint-bg');
+      if (!backdrop) return;
+      if (focusMode) {
+        backdrop.setAttribute('x', '-600');
+        backdrop.setAttribute('y', '-400');
+        backdrop.setAttribute('width', '2400');
+        backdrop.setAttribute('height', '1600');
+      } else {
+        backdrop.setAttribute('x', '0');
+        backdrop.setAttribute('y', '0');
+        backdrop.setAttribute('width', '1050');
+        backdrop.setAttribute('height', '640');
+      }
+    }
+
+    // Crop to half the canvas around the selected part -> 2x size on screen
+    function updateFocusViewBox() {
+      const svg = document.getElementById('mlnet-svg');
+      if (!svg) return;
+      if (!focusMode) {
+        svg.setAttribute('viewBox', '0 0 1050 640');
+        return;
+      }
+      const group = svg.querySelector(`.svg-part[data-part="${selectedPartId}"]`);
+      if (!group) return;
+      const box = group.getBBox();
+      const focusW = 420;
+      const focusH = 240;
+      const centerX = box.x + box.width / 2;
+      const centerY = box.y + box.height / 2;
+      svg.setAttribute('viewBox', `${(centerX - focusW / 2).toFixed(1)} ${(centerY - focusH / 2).toFixed(1)} ${focusW} ${focusH}`);
+    }
+
+    // Switch between Mode 1, Mode 2, Mode 3
+    function switchMode(mode) {
+      currentMode = mode;
+
+      // Update Top Mode Buttons
+      const tabStyles = {
+        1: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm',
+        2: 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm',
+        3: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm'
+      };
+
+      [1, 2, 3].forEach(m => {
+        const btn = document.getElementById(`mode-btn-${m}`);
+        const panel = document.getElementById(`panel-mode-${m}`);
+        if (m === mode) {
+          btn.className = `mode-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 border ${tabStyles[m]}`;
+          panel.classList.remove('hidden');
+        } else {
+          btn.className = 'mode-tab px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-400 hover:text-slate-200 border border-transparent';
+          panel.classList.add('hidden');
+        }
+      });
+
+      // Toggle SVG Callout Badges (1..9 vs '?' in Mode 2)
+      document.querySelectorAll('.part-badge-text').forEach(badge => {
+        badge.textContent = (mode === 2) ? '?' : badge.getAttribute('data-num');
+      });
+
+      // Update Canvas Header Hint
+      const hintEl = document.getElementById('canvas-mode-hint');
+      if (mode === 1) {
+        hintEl.textContent = 'Click any numbered component (1–9) to inspect its C# API & data schema';
+        hintEl.className = 'text-xs text-cyan-300 font-medium bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-0.5 rounded-md';
+        selectAnatomyPart(selectedPartId);
+      } else if (mode === 2) {
+        hintEl.textContent = 'Quiz Mode: Identify the pulsing yellow component on the blueprint!';
+        hintEl.className = 'text-xs text-amber-300 font-medium bg-amber-950/60 border border-amber-500/30 px-2.5 py-0.5 rounded-md';
+        renderQuizQuestion();
+      } else if (mode === 3) {
+        hintEl.textContent = 'Code X-Ray: Step through C# lines to watch the ML.NET pipeline materialize';
+        hintEl.className = 'text-xs text-emerald-300 font-medium bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-md';
+        renderXRayState();
+      }
+    }
+
+    // Handle Hover on SVG Parts -> Updates Live Status Bar
+    function handlePartHover(partId) {
+      const part = MLNET_PARTS.find(p => p.id === partId);
+      if (!part) return;
+      updateStatusBar(part);
+    }
+
+    function handlePartLeave() {
+      if (currentMode === 1) {
+        const activePart = MLNET_PARTS.find(p => p.id === selectedPartId);
+        if (activePart) updateStatusBar(activePart);
+      }
+    }
+
+    function updateStatusBar(part) {
+      document.getElementById('status-stage').textContent = part.stage;
+      document.getElementById('status-type').textContent = part.mlType;
+      document.getElementById('status-schema').textContent = part.schemaState;
+      document.getElementById('status-exec').textContent = part.execState;
+    }
+
+    // Handle Clicking an SVG Part or Chip across all 3 Modes
+    function handlePartClick(partId) {
+      if (currentMode === 1) {
+        selectAnatomyPart(partId);
+      } else if (currentMode === 2) {
+        submitQuizAnswer(partId);
+      } else if (currentMode === 3) {
+        // In Mode 3, clicking a part jumps to the first line in the current recipe that targets it
+        const recipe = XRAY_RECIPES[currentRecipeIdx];
+        const lineIdx = recipe.lines.findIndex(l => l.targetParts.includes(partId));
+        if (lineIdx !== -1) {
+          currentLineIdx = lineIdx;
+          renderXRayState();
+        }
+      }
+    }
+
+    // =========================================================================
+    // MODE 1: VISUAL ANATOMY INSPECTOR LOGIC
+    // =========================================================================
+    function selectAnatomyPart(partId) {
+      selectedPartId = partId;
+      const part = MLNET_PARTS.find(p => p.id === partId);
+      if (!part) return;
+
+      // Highlight SVG part
+      document.querySelectorAll('.svg-part').forEach(el => {
+        el.classList.remove('active-part', 'dimmed-part', 'quiz-target', 'quiz-correct', 'quiz-wrong', 'xray-hidden', 'xray-revealed', 'xray-active');
+        if (el.getAttribute('data-part') === partId) {
+          el.classList.add('active-part');
+        } else {
+          el.classList.add('dimmed-part');
+        }
+      });
+
+      // Highlight bottom chip
+      document.querySelectorAll('.part-chip').forEach(chip => {
+        if (chip.id === `chip-${partId}`) {
+          chip.className = 'part-chip shrink-0 px-2.5 py-1 rounded-lg text-xs font-mono border transition flex items-center gap-1.5 bg-cyan-500/20 text-cyan-200 border-cyan-400 shadow-sm';
+        } else {
+          chip.className = 'part-chip shrink-0 px-2.5 py-1 rounded-lg text-xs font-mono border transition flex items-center gap-1.5 bg-slate-950 text-slate-400 border-slate-800 hover:border-cyan-500/40';
+        }
+      });
+
+      // Populate Right Inspector Panel
+      document.getElementById('m1-badge').textContent = part.num;
+      document.getElementById('m1-category').textContent = part.category;
+      document.getElementById('m1-title').textContent = part.title;
+      document.getElementById('m1-intuition').textContent = part.intuition;
+      document.getElementById('m1-type').textContent = part.mlType;
+      document.getElementById('m1-access').textContent = part.accessPath;
+
+      document.getElementById('m1-bullets').innerHTML = part.bullets
+        .map(b => `<li class="leading-relaxed">${b}</li>`)
+        .join('');
+
+      updateAnatomyCodeBlock();
+      updateStatusBar(part);
+
+      if (focusMode) {
+        updateFocusViewBox();
+        updateFocusBar();
+        history.replaceState(null, '', `#${partId}`);
+        const notes = document.getElementById('m1-notes');
+        if (notes) notes.scrollTop = 0;
+      }
+    }
+
+    function stepAnatomyPart(delta) {
+      const idx = MLNET_PARTS.findIndex(p => p.id === selectedPartId);
+      const nextIdx = (idx + delta + MLNET_PARTS.length) % MLNET_PARTS.length;
+      selectAnatomyPart(MLNET_PARTS[nextIdx].id);
+    }
+
+    function switchSyntaxTab(tab) {
+      currentSyntaxTab = tab;
+      const stdBtn = document.getElementById('syntax-tab-std');
+      const advBtn = document.getElementById('syntax-tab-adv');
+      if (tab === 'std') {
+        stdBtn.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
+        advBtn.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold text-slate-400 hover:text-slate-200';
+      } else {
+        advBtn.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30';
+        stdBtn.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold text-slate-400 hover:text-slate-200';
+      }
+      updateAnatomyCodeBlock();
+    }
+
+    function updateAnatomyCodeBlock() {
+      const part = MLNET_PARTS.find(p => p.id === selectedPartId);
+      if (!part) return;
+      document.getElementById('m1-code').textContent = currentSyntaxTab === 'std' ? part.stdCode : part.advCode;
+    }
+
+    function copyActiveSyntax() {
+      const codeText = document.getElementById('m1-code').textContent;
+      const tempArea = document.createElement('textarea');
+      tempArea.value = codeText;
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempArea);
+
+      const btn = document.getElementById('copy-syntax-btn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('text-emerald-300');
+      setTimeout(() => {
+        btn.textContent = 'Copy C#';
+        btn.classList.remove('text-emerald-300');
+      }, 1400);
+    }
+
+    // =========================================================================
+    // MODE 2: BEGINNER TERMINOLOGY QUIZ LOGIC
+    // =========================================================================
+    function initQuiz() {
+      quizIndex = 0;
+      quizScore = 0;
+      quizAnsweredCount = 0;
+      quizStreak = 0;
+      quizLocked = false;
+      updateQuizScoreboard();
+    }
+
+    function resetQuiz() {
+      initQuiz();
+      renderQuizQuestion();
+    }
+
+    function updateQuizScoreboard() {
+      document.getElementById('quiz-score').textContent = `${quizScore} / ${quizAnsweredCount}`;
+      document.getElementById('quiz-streak').innerHTML = `${quizStreak} &#128293;`;
+    }
+
+    function renderQuizQuestion() {
+      quizLocked = false;
+      const q = QUIZ_QUESTIONS[quizIndex];
+      const targetPart = MLNET_PARTS.find(p => p.id === q.targetId);
+
+      document.getElementById('quiz-q-num').textContent = `QUESTION ${quizIndex + 1} OF ${QUIZ_QUESTIONS.length}`;
+      document.getElementById('quiz-prompt').textContent = q.prompt;
+
+      const feedbackEl = document.getElementById('quiz-feedback');
+      feedbackEl.classList.add('hidden');
+
+      // Highlight target part on SVG with pulsing amber border
+      document.querySelectorAll('.svg-part').forEach(el => {
+        el.classList.remove('active-part', 'dimmed-part', 'quiz-target', 'quiz-correct', 'quiz-wrong', 'xray-hidden', 'xray-revealed', 'xray-active');
+        if (el.getAttribute('data-part') === q.targetId) {
+          el.classList.add('quiz-target');
+        } else {
+          el.classList.add('dimmed-part');
+        }
+      });
+
+      // Build 4 option cards (1 correct + 3 deterministic distractors)
+      const distractors = MLNET_PARTS
+        .filter(p => p.id !== q.targetId)
+        .sort((a, b) => ((a.num * 7 + quizIndex * 3) % 11) - ((b.num * 7 + quizIndex * 3) % 11))
+        .slice(0, 3);
+
+      const options = [targetPart, ...distractors].sort((a, b) => a.title.localeCompare(b.title));
+
+      document.getElementById('quiz-options').innerHTML = options.map(opt => `
+        <button id="quiz-opt-${opt.id}" onclick="submitQuizAnswer('${opt.id}')"
+          class="quiz-opt-btn w-full text-left p-3 rounded-xl bg-slate-950 hover:bg-slate-800/90 border border-slate-800 hover:border-amber-500/50 transition flex items-center justify-between gap-3">
+          <div>
+            <div class="font-semibold text-xs sm:text-sm text-white">${opt.title}</div>
+            <div class="text-[11px] font-mono text-slate-400 mt-0.5">${opt.mlType}</div>
+          </div>
+          <span class="text-xs font-mono text-slate-500 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Select</span>
+        </button>
+      `).join('');
+    }
+
+    function submitQuizAnswer(chosenPartId) {
+      if (quizLocked) return;
+      quizLocked = true;
+
+      const q = QUIZ_QUESTIONS[quizIndex];
+      const isCorrect = (chosenPartId === q.targetId);
+      const chosenPart = MLNET_PARTS.find(p => p.id === chosenPartId);
+      const correctPart = MLNET_PARTS.find(p => p.id === q.targetId);
+
+      quizAnsweredCount++;
+      if (isCorrect) {
+        quizScore++;
+        quizStreak++;
+      } else {
+        quizStreak = 0;
+      }
+      updateQuizScoreboard();
+
+      // Update SVG visual states
+      document.querySelectorAll('.svg-part').forEach(el => {
+        const pid = el.getAttribute('data-part');
+        el.classList.remove('quiz-target', 'dimmed-part');
+        if (pid === q.targetId) {
+          el.classList.add('quiz-correct');
+        } else if (pid === chosenPartId && !isCorrect) {
+          el.classList.add('quiz-wrong');
+        } else {
+          el.classList.add('dimmed-part');
+        }
+      });
+
+      // Reveal the number on the correct SVG badge
+      const badge = document.querySelector(`.svg-part[data-part="${q.targetId}"] .part-badge-text`);
+      if (badge) badge.textContent = correctPart.num;
+
+      // Style option buttons
+      document.querySelectorAll('.quiz-opt-btn').forEach(btn => {
+        if (btn.id === `quiz-opt-${q.targetId}`) {
+          btn.className = 'quiz-opt-btn w-full text-left p-3 rounded-xl bg-emerald-950/60 border-2 border-emerald-500 flex items-center justify-between gap-3';
+        } else if (btn.id === `quiz-opt-${chosenPartId}` && !isCorrect) {
+          btn.className = 'quiz-opt-btn w-full text-left p-3 rounded-xl bg-rose-950/60 border-2 border-rose-500 flex items-center justify-between gap-3';
+        } else {
+          btn.classList.add('opacity-40');
+        }
+      });
+
+      // Show explanation feedback
+      const feedbackEl = document.getElementById('quiz-feedback');
+      feedbackEl.classList.remove('hidden');
+      if (isCorrect) {
+        feedbackEl.className = 'rounded-xl p-3.5 border bg-emerald-950/50 border-emerald-500/40 text-emerald-200 text-xs sm:text-sm';
+        feedbackEl.innerHTML = `<strong class="text-emerald-400 block mb-1">&#10003; Spot On! (#${correctPart.num} ${correctPart.title})</strong>${q.explanation}`;
+      } else {
+        feedbackEl.className = 'rounded-xl p-3.5 border bg-rose-950/50 border-rose-500/40 text-rose-200 text-xs sm:text-sm';
+        feedbackEl.innerHTML = `<strong class="text-rose-400 block mb-1">&#10007; Not quite (You clicked ${chosenPart ? chosenPart.shortName : 'another part'} — Correct is #${correctPart.num} ${correctPart.title})</strong>${q.explanation}`;
+      }
+    }
+
+    function nextQuizQuestion() {
+      // Reset badge text back to '?'
+      document.querySelectorAll('.part-badge-text').forEach(badge => {
+        badge.textContent = '?';
+      });
+      quizIndex = (quizIndex + 1) % QUIZ_QUESTIONS.length;
+      renderQuizQuestion();
+    }
+
+    // =========================================================================
+    // MODE 3: PROGRESSIVE CODE-TO-OUTPUT X-RAY LOGIC
+    // =========================================================================
+    function selectRecipe(recipeIdx) {
+      currentRecipeIdx = parseInt(recipeIdx, 10);
+      currentLineIdx = 0;
+      renderXRayState();
+    }
+
+    function stepXRayLine(delta) {
+      const recipe = XRAY_RECIPES[currentRecipeIdx];
+      currentLineIdx = Math.max(0, Math.min(recipe.lines.length - 1, currentLineIdx + delta));
+      renderXRayState();
+    }
+
+    function selectXRayLine(idx) {
+      currentLineIdx = idx;
+      renderXRayState();
+    }
+
+    function renderXRayState() {
+      const recipe = XRAY_RECIPES[currentRecipeIdx];
+      const activeLine = recipe.lines[currentLineIdx];
+      const isProgressive = document.getElementById('xray-progressive-toggle').checked;
+
+      // Update Line Counter
+      document.getElementById('xray-line-indicator').textContent = `Line ${currentLineIdx + 1} of ${recipe.lines.length}`;
+
+      // Render Interactive Code Lines
+      const codeContainer = document.getElementById('xray-code-container');
+      codeContainer.innerHTML = recipe.lines.map((line, idx) => {
+        const isCurrent = (idx === currentLineIdx);
+        const isPast = (idx < currentLineIdx);
+        return `
+          <div onclick="selectXRayLine(${idx})"
+            class="code-line px-3 py-2 flex items-start gap-3 ${isCurrent ? 'active-line' : (isPast ? 'opacity-90' : 'opacity-60')}">
+            <span class="text-slate-500 select-none w-5 text-right shrink-0">${idx + 1}</span>
+            <code class="text-slate-100 whitespace-pre-wrap break-all">${escapeHtml(line.code)}</code>
+          </div>
+        `;
+      }).join('');
+
+      // Update Active Line Explanation Panel
+      document.getElementById('xray-explain-stage').textContent = activeLine.stage;
+      document.getElementById('xray-explain-title').textContent = activeLine.title;
+      document.getElementById('xray-explain-body').textContent = activeLine.explanation;
+      document.getElementById('xray-schema-delta').textContent = activeLine.schemaDelta;
+
+      // Render target part badges on explanation card
+      document.getElementById('xray-explain-badges').innerHTML = activeLine.targetParts.map(pid => {
+        const p = MLNET_PARTS.find(item => item.id === pid);
+        return p ? `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[10px]">#${p.num} ${p.shortName}</span>` : '';
+      }).join('');
+
+      // Update SVG Parts for Mode 3 X-Ray
+      if (currentMode === 3) {
+        document.querySelectorAll('.svg-part').forEach(el => {
+          const pid = el.getAttribute('data-part');
+          el.classList.remove('active-part', 'dimmed-part', 'quiz-target', 'quiz-correct', 'quiz-wrong', 'xray-hidden', 'xray-revealed', 'xray-active');
+
+          if (activeLine.targetParts.includes(pid)) {
+            el.classList.add('xray-active');
+          } else if (activeLine.revealParts.includes(pid)) {
+            el.classList.add('xray-revealed');
+          } else if (isProgressive) {
+            el.classList.add('xray-hidden');
+          } else {
+            el.classList.add('dimmed-part');
+          }
+        });
+
+        // Update bottom status bar to match primary target part of current line
+        const primaryPart = MLNET_PARTS.find(p => p.id === activeLine.targetParts[0]);
+        if (primaryPart) updateStatusBar(primaryPart);
+      }
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+  </script>
+</body>
+</html>
